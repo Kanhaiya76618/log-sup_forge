@@ -1,5 +1,9 @@
+# Covered by root .gitignore — kept for clarity when working inside this dir
 node_modules/
 dist/
 .env
+.env.local
+.env.*.local
+!.env.example
 *.log
 .DS_Store

@@ -208,9 +208,11 @@ async def generate_mock_feed():
             await manager.broadcast({"type": "NEW_DISRUPTION", "payload": disruption.dict()})
             active_disruptions[disruption.id] = disruption
             
-            # Fire pipeline ticking asynchronously
-            loop = asyncio.get_event_loop()
-            loop.run_in_executor(None, lambda: list(engine.tick([sig], broadcast_cb)))
+            # Fire pipeline ticking synchronously to run state progression immediately
+            try:
+                list(engine.tick([sig], broadcast_cb))
+            except Exception as e:
+                print("Error ticking engine:", e)
 
 @app.on_event("startup")
 async def startup_event():

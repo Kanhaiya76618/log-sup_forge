@@ -3,6 +3,7 @@ from typing import Generator
 from .registry import Registry
 from ..contracts import PipelineRecord, Decision, RawSignal, AuditEntry
 from ..contracts.enums import ActionType
+from ..execution.gate import Gate
 
 class Orchestrator:
     def __init__(self, registry: Registry) -> None:
@@ -78,28 +79,11 @@ class Orchestrator:
                 verification = self.registry.verifier.verify(disruption, record.plans)
                 record.verification = verification
             
-            # Step 5: Gate Decisions
-            gate_decision = Decision.ESCALATED
-            if record.verification:
-                # Apply gate logic
-                max_cost = getattr(self.registry, "max_auto_cost", 5000.0)
-                min_conf = getattr(self.registry, "auto_approve_confidence", 0.85)
-                
-                best_plan = record.plan.recommended()
-                if not best_plan:
-                    gate_decision = Decision.REJECTED
-                else:
-                    conf_ok = record.verification.confidence >= min_conf
-                    cost_ok = best_plan.total_cost <= max_cost
-                    rev_ok = all(step.reversible for step in best_plan.steps)
-                    if conf_ok and cost_ok and rev_ok:
-                        gate_decision = Decision.AUTO_APPROVED
-                    else:
-                        gate_decision = Decision.ESCALATED
-
+            # Step 5: Gate Decision — delegate entirely to Gate
+            gate_decision = Gate().evaluate(record)
             record.decision = gate_decision
             disruption.status = gate_decision.value
-            
+
             if broadcast_cb:
                 broadcast_cb("STATUS_UPDATE", {"id": disruption.id, "status": disruption.status})
                 broadcast_cb("TRACE_STEP", {

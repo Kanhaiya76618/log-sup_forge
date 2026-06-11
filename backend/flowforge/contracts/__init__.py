@@ -6,6 +6,7 @@ from .verification import VerifierReport
 from .execution import ActionRequest, ExecutionResult
 from .audit import AuditEntry
 from .pipeline import PipelineRecord
+from .trust import EntityTrust, SystemTrustProfile
 
 __all__ = [
     "Severity",
@@ -23,4 +24,6 @@ __all__ = [
     "ExecutionResult",
     "AuditEntry",
     "PipelineRecord",
+    "EntityTrust",
+    "SystemTrustProfile",
 ]

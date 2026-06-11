@@ -4,7 +4,7 @@ import time
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import list, dict, Any, Optional
+from typing import List, Dict, Any, Optional
 
 from ..core import build_engine
 from ..contracts import RawSignal, Disruption, PlanOption, Decision, AuditEntry, ExecutionResult
@@ -22,15 +22,15 @@ app.add_middleware(
 )
 
 # Shared In-memory cache of disruptions & generated plans to coordinate solver requests
-active_disruptions: dict[str, Disruption] = {}
-plans_store: dict[str, list[PlanOption]] = {}
+active_disruptions: Dict[str, Disruption] = {}
+plans_store: Dict[str, List[PlanOption]] = {}
 
 # Instantiate flowforge core engine
 engine = build_engine()
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -72,11 +72,11 @@ def broadcast_cb(event_type: str, payload: Any):
         loop.create_task(manager.broadcast(msg))
 
 @app.get("/api/disruptions")
-async def get_disruptions() -> list[Disruption]:
+async def get_disruptions() -> List[Disruption]:
     return list(active_disruptions.values())
 
 @app.get("/api/disruptions/{disruption_id}/plans")
-async def get_plans(disruption_id: str) -> list[PlanOption]:
+async def get_plans(disruption_id: str) -> List[PlanOption]:
     return plans_store.get(disruption_id, [])
 
 class ApproveRequest(BaseModel):
@@ -159,7 +159,7 @@ async def approve_disruption(disruption_id: str, req: ApproveRequest):
     return {"success": True}
 
 @app.get("/api/audit")
-async def get_audit() -> list[AuditEntry]:
+async def get_audit() -> List[AuditEntry]:
     return engine.registry.audit_sink.fetch_all()
 
 @app.get("/api/metrics")

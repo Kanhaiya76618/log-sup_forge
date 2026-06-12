@@ -1,19 +1,27 @@
-import { useApp } from "../context/AppContext";
-import { Cpu, Clock, ShieldAlert } from "lucide-react";
+// Renders the REAL audit trail of the selected resolution — every stage the
+// orchestrator logged (watcher -> diagnosis -> planner -> verifier -> gate ->
+// executor) with its actual summary and payload. No invented confidences.
+import { useSelectedRecord } from "../context/AppContext";
+import { Cpu } from "lucide-react";
+
+const STAGE_LABEL: Record<string, string> = {
+  watcher: "Anomaly Detection",
+  diagnosis: "Severity & Blast Radius",
+  planner: "LLM Framing + Solver",
+  verifier: "Policy & Red-Team",
+  gate: "HITL Gate",
+  executor: "Deterministic Actions",
+};
+
+function fmtPayload(payload: Record<string, unknown>): string[] {
+  return Object.entries(payload)
+    .filter(([, v]) => v !== null && v !== "" && !(Array.isArray(v) && v.length === 0))
+    .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : String(v)}`);
+}
 
 export default function ReasoningTrace() {
-  const { state } = useApp();
-  const activeDisruptionId = state.selectedDisruptionId;
-  const activeDisruption = state.disruptions.find((d) => d.id === activeDisruptionId);
-  const steps = activeDisruptionId ? state.traces[activeDisruptionId] ?? [] : [];
-
-  const chainTemplate = [
-    { name: "Watcher",   label: "Anomaly Detection" },
-    { name: "Diagnosis", label: "Severity & Blast Radius" },
-    { name: "Planner",   label: "Constraint Solver" },
-    { name: "Verifier",  label: "Policy & Red-Team" },
-    { name: "Executor",  label: "ERP & PO Dispatch" },
-  ];
+  const record = useSelectedRecord();
+  const steps = record?.audit_trail ?? [];
 
   return (
     <div className="glass rounded-2xl p-6 flex flex-col h-[600px]">
@@ -22,108 +30,69 @@ export default function ReasoningTrace() {
           <Cpu className="w-5 h-5 text-red" />
           Agentic Reasoning Trace
         </h2>
-        {activeDisruptionId && (
+        {record && (
           <span className="font-mono text-xs text-ink-soft bg-cream px-2 py-0.5 rounded border border-cream-deep">
-            {activeDisruptionId}
+            {record.plan.id}
           </span>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto pr-1">
-        {!activeDisruptionId ? (
+        {!record ? (
           <div className="flex items-center justify-center h-full text-ink-soft text-sm">
             Select a disruption to view the agent decision timeline.
           </div>
         ) : (
-          <div className="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-cream-deep">
-            {chainTemplate.map((templateStep, index) => {
-              const matchedStep = steps.find(
-                (s) => s.agentName.toLowerCase() === templateStep.name.toLowerCase()
-              );
-              const isEscalated =
-                activeDisruption?.status === "escalated" &&
-                templateStep.name === "Executor";
-              const isFuture = !matchedStep && !isEscalated;
-
+          <div className="relative pl-6 space-y-5 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-cream-deep">
+            {steps.map((step) => {
+              const isGate = step.stage === "gate";
+              const details = fmtPayload(step.payload);
               return (
-                <div
-                  key={index}
-                  className={`relative transition-all duration-300 ${isFuture ? "opacity-40" : "opacity-100"}`}
-                >
+                <div key={step.id} className="relative">
                   <span
                     className={`absolute -left-[20px] top-1.5 w-3.5 h-3.5 rounded-full border-2 bg-white ${
-                      isFuture
-                        ? "border-cream-deep"
-                        : isEscalated
-                        ? "border-red bg-red/10 animate-pulse"
-                        : "border-sakura bg-sakura"
+                      isGate ? "border-gold bg-gold/20" : "border-sakura bg-sakura"
                     }`}
                   />
-
-                  <div
-                    className={`p-4 rounded-xl border ${
-                      isFuture
-                        ? "bg-cream/20 border-cream-deep/40"
-                        : isEscalated
-                        ? "bg-red/5 border-red/20 shadow-sm"
-                        : "bg-white border-cream-deep shadow-sm"
-                    }`}
-                  >
+                  <div className={`p-4 rounded-xl border shadow-sm ${
+                    isGate ? "bg-gold/5 border-gold/30" : "bg-white border-cream-deep"
+                  }`}>
                     <div className="flex justify-between items-center mb-1">
                       <h4 className="font-mono text-xs font-bold text-ink uppercase tracking-wider">
-                        {templateStep.name}{" "}
+                        {step.stage}{" "}
                         <span className="text-[10px] font-normal text-ink-soft normal-case">
-                          ({templateStep.label})
+                          ({STAGE_LABEL[step.stage] ?? "stage"})
                         </span>
                       </h4>
-                      {matchedStep && (
-                        <div className="flex items-center gap-2 text-[10px] font-mono text-ink-soft">
-                          {matchedStep.confidence !== undefined && (
-                            <span className="bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded">
-                              Conf: {(matchedStep.confidence * 100).toFixed(0)}%
-                            </span>
-                          )}
-                          <span className="flex items-center gap-0.5 bg-cream px-1.5 py-0.5 rounded border border-cream-deep">
-                            <Clock className="w-2.5 h-2.5" />
-                            {matchedStep.timeTakenMs}ms
-                          </span>
-                        </div>
-                      )}
+                      <span className="text-[10px] font-mono text-ink-soft bg-cream px-1.5 py-0.5 rounded border border-cream-deep">
+                        {new Date(step.ts).toLocaleTimeString([], {
+                          hour: "2-digit", minute: "2-digit", second: "2-digit",
+                        })}
+                      </span>
                     </div>
-
-                    {isEscalated ? (
-                      <div className="mt-2 text-xs text-red font-semibold flex items-center gap-1.5 bg-red/5 p-2 rounded border border-red/10">
-                        <ShieldAlert className="w-4 h-4" />
-                        Execution halted — escalated to HITL Approval Gate.
+                    <p className="text-xs text-ink bg-cream/60 p-1.5 rounded mt-2 whitespace-pre-wrap font-mono">
+                      {step.summary}
+                    </p>
+                    {details.length > 0 && (
+                      <div className="mt-1.5 space-y-0.5">
+                        {details.map((line) => (
+                          <p key={line} className="text-[10px] font-mono text-ink-soft">{line}</p>
+                        ))}
                       </div>
-                    ) : isFuture ? (
-                      <p className="text-xs text-ink-soft italic">
-                        Awaiting upstream step execution…
-                      </p>
-                    ) : matchedStep ? (
-                      <div className="space-y-2 mt-2 text-xs">
-                        <div>
-                          <span className="block font-mono text-[9px] uppercase tracking-wider text-ink-soft/70 mb-0.5">
-                            Input
-                          </span>
-                          <span className="text-ink font-mono bg-cream/60 p-1.5 rounded block whitespace-pre-wrap">
-                            {matchedStep.input}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="block font-mono text-[9px] uppercase tracking-wider text-ink-soft/70 mb-0.5">
-                            Output
-                          </span>
-                          <span className="text-ink bg-cream-deep/30 p-1.5 rounded block whitespace-pre-wrap">
-                            {matchedStep.output}
-                          </span>
-                        </div>
-                      </div>
-                    ) : null}
+                    )}
                   </div>
                 </div>
               );
             })}
+
+            {record.pending && (
+              <div className="relative">
+                <span className="absolute -left-[20px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-red bg-red/10 animate-pulse" />
+                <div className="p-4 rounded-xl border bg-red/5 border-red/20 shadow-sm text-xs text-red font-semibold">
+                  Execution halted — escalated to the HITL Approval Gate.
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -1,219 +1,99 @@
-import asyncio
-import json
+"""FastAPI surface — the contract P5's frontend consumes. OWNER: P1.
+Run:  uvicorn flowforge.api.app:app --reload
+Every number served here is computed from real engine activity — no baked-in
+demo metrics."""
 import time
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
-
 from ..core import build_engine
-from ..contracts import RawSignal, Disruption, PlanOption, Decision, AuditEntry, ExecutionResult
-from ..contracts.enums import ActionType
-from ..connectors.logistics.generator import generate_signal
+from ..contracts import Domain, Decision, ResolutionRecord
 
-app = FastAPI(title="FlowForge API", version="0.1.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Shared In-memory cache of disruptions & generated plans to coordinate solver requests
-active_disruptions: Dict[str, Disruption] = {}
-plans_store: Dict[str, List[PlanOption]] = {}
-
-# Instantiate flowforge core engine
+app = FastAPI(title="FlowForge", version="0.1.0")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 engine = build_engine()
 
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
+# Session history: every record this process produced, by plan id (insertion-ordered).
+_records: dict[str, ResolutionRecord] = {}
+_tick_ms: list[float] = []
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
+@app.get("/health")
+def health():
+    return {"ok": True, "domains": [d.value for d in engine.registry.domains()]}
 
-    async def broadcast(self, message: dict):
-        for connection in self.active_connections:
-            try:
-                await connection.send_json(message)
-            except Exception:
-                pass
 
-manager = ConnectionManager()
+@app.post("/tick")
+def tick(domain: Domain = Domain.LOGISTICS):
+    """Run one detect->diagnose->plan->verify->gate->execute cycle."""
+    t0 = time.perf_counter()
+    records = engine.tick(domain)
+    _tick_ms.append(1000 * (time.perf_counter() - t0))
+    for r in records:
+        _records[r.plan.id] = r
+    return [r.model_dump() for r in records]
 
-def broadcast_cb(event_type: str, payload: Any):
-    # Synchronous callback designed to bridge the engine pipeline with WebSocket event loop
-    loop = asyncio.get_event_loop()
-    msg = {"type": event_type, "payload": payload}
-    
-    # Cache locally to coordinate with REST requests
-    if event_type == "NEW_DISRUPTION":
-        d = payload
-        active_disruptions[d.id] = d
-    elif event_type == "STATUS_UPDATE":
-        did = payload["id"]
-        status = payload["status"]
-        if did in active_disruptions:
-            active_disruptions[did].status = status
-    elif event_type == "PLANS_GENERATED":
-        did = payload["disruptionId"]
-        plans_raw = payload["plans"]
-        plans_store[did] = [PlanOption(**p) for p in plans_raw]
 
-    if loop.is_running():
-        loop.create_task(manager.broadcast(msg))
+@app.get("/records")
+def records():
+    """Every resolution this session, newest last (the dashboard's feed)."""
+    return [r.model_dump() for r in _records.values()]
 
-@app.get("/api/disruptions")
-async def get_disruptions() -> List[Disruption]:
-    return list(active_disruptions.values())
 
-@app.get("/api/disruptions/{disruption_id}/plans")
-async def get_plans(disruption_id: str) -> List[PlanOption]:
-    return plans_store.get(disruption_id, [])
+@app.get("/pending")
+def pending():
+    """Resolutions escalated to a human (the HITL queue)."""
+    return [r.model_dump() for r in engine.pending()]
 
-class ApproveRequest(BaseModel):
-    decision: Decision
-    planIndex: int
 
-@app.post("/api/disruptions/{disruption_id}/approve")
-async def approve_disruption(disruption_id: str, req: ApproveRequest):
-    disruption = active_disruptions.get(disruption_id)
-    if not disruption:
-        return {"success": False, "detail": "Disruption not found."}
-
-    # Lock status and inform components
-    disruption.status = req.decision.value
-    await manager.broadcast({"type": "STATUS_UPDATE", "payload": {"id": disruption_id, "status": disruption.status}})
-
-    if req.decision == Decision.REJECTED:
-        await manager.broadcast({
-            "type": "TRACE_STEP",
-            "payload": {
-                "disruptionId": disruption_id,
-                "step": {
-                    "agentName": "HITL Gate",
-                    "input": "Operator decision",
-                    "output": "Plan rejected. Disruption escalated.",
-                    "timeTakenMs": 50
-                }
-            }
-        })
-        return {"success": True}
-
-    plans = plans_store.get(disruption_id, [])
-    if not plans or req.planIndex >= len(plans):
-        return {"success": False, "detail": "Plan option index not found."}
-
-    plan = plans[req.planIndex]
-    
-    # Execute Plan steps
-    disruption.status = "executing"
-    await manager.broadcast({"type": "STATUS_UPDATE", "payload": {"id": disruption_id, "status": disruption.status}})
-
-    results = []
-    for step in plan.steps:
-        res = engine.registry.executor.execute_step(step, engine.registry.connectors)
-        results.append(res)
-        await manager.broadcast({
-            "type": "TRACE_STEP",
-            "payload": {
-                "disruptionId": disruption_id,
-                "step": {
-                    "agentName": "Executor",
-                    "input": f"Executing action: {step.action.value} target: {step.target}",
-                    "output": res.detail,
-                    "timeTakenMs": 100
-                }
-            }
-        })
-
-    disruption.status = "resolved"
-    await manager.broadcast({"type": "STATUS_UPDATE", "payload": {"id": disruption_id, "status": disruption.status}})
-
-    # Write to database audit log
-    audit_entry = AuditEntry(
-        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        disruption_id=disruption_id,
-        agent="HITL Gate",
-        action=plan.steps[0].action if plan.steps else ActionType.UPDATE_ERP,
-        decision=req.decision,
-        cost=plan.total_cost,
-        reversible=all(s.reversible for s in plan.steps),
-        execution_result=results[0] if results else ExecutionResult(
-            action=ActionType.UPDATE_ERP,
-            target="system",
-            success=True,
-            detail="Success"
-        )
-    )
-    engine.registry.audit_sink.log(audit_entry)
-
-    return {"success": True}
-
-@app.get("/api/audit")
-async def get_audit() -> List[AuditEntry]:
-    return engine.registry.audit_sink.fetch_all()
-
-@app.get("/api/metrics")
-async def get_metrics():
-    # Calculate real-time metrics dynamically from DB logs
-    logs = engine.registry.audit_sink.fetch_all()
-    auto_count = sum(1 for l in logs if l.decision == Decision.AUTO_APPROVED)
-    esc_count = sum(1 for l in logs if l.decision == Decision.ESCALATED)
-    
-    success_rate = 94.2
-    avg_time = 1280
-    cost_saved = sum(l.cost for l in logs) or 42350
-    catch_rate = 0.89
-
-    return {
-        "successRate": success_rate,
-        "avgTimeMs": avg_time,
-        "costSaved": cost_saved,
-        "catchRate": catch_rate,
-        "autoCount": auto_count + 28,  # Add baseline mock values
-        "escCount": esc_count + 6,
-    }
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+@app.post("/approve/{plan_id}")
+def approve(plan_id: str, domain: Domain = Domain.LOGISTICS):
     try:
-        while True:
-            # Keep connection alive
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        return engine.approve(plan_id, domain).model_dump()
+    except KeyError:
+        raise HTTPException(404, f"No pending plan {plan_id}")
 
-# Background task to inject synthetic events
-async def generate_mock_feed():
-    index = 200
-    while True:
-        await asyncio.sleep(20)
-        index += 1
-        sig = generate_signal(index)
-        
-        # Ingest signal using engine pipeline
-        disruptions = engine.registry.watcher.scan([sig])
-        for disruption in disruptions:
-            # Broadcast new disruption
-            await manager.broadcast({"type": "NEW_DISRUPTION", "payload": disruption.dict()})
-            active_disruptions[disruption.id] = disruption
-            
-            # Fire pipeline ticking synchronously to run state progression immediately
-            try:
-                list(engine.tick([sig], broadcast_cb))
-            except Exception as e:
-                print("Error ticking engine:", e)
 
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(generate_mock_feed())
+@app.post("/reject/{plan_id}")
+def reject(plan_id: str):
+    try:
+        return engine.reject(plan_id).model_dump()
+    except KeyError:
+        raise HTTPException(404, f"No pending plan {plan_id}")
+
+
+@app.get("/audit")
+def audit():
+    return [e.model_dump() for e in engine.audit.all()]
+
+
+@app.get("/metrics")
+def metrics():
+    """Honest session metrics, derived from actual resolution records."""
+    recs = list(_records.values())
+    auto = sum(r.gate.decision == Decision.AUTO_APPROVED for r in recs)
+    escalated = sum(r.pending for r in recs)
+    executed_by_human = sum(r.gate.decision == Decision.EXECUTED for r in recs)
+    rejected = sum(r.gate.decision == Decision.REJECTED for r in recs)
+    executed = [r for r in recs if r.results]
+    actions = [res for r in executed for res in r.results]
+    chosen_cost = 0.0
+    value_protected = 0.0
+    for r in executed:
+        opt = r.plan.recommended() or (r.plan.options[0] if r.plan.options else None)
+        if opt:
+            chosen_cost += opt.total_cost
+        value_protected += r.disruption.blast_radius.value_at_risk
+    return {
+        "disruptions": len(recs),
+        "autoApproved": auto,
+        "pendingHuman": escalated,
+        "humanApproved": executed_by_human,
+        "rejected": rejected,
+        "humanLoadPct": round(100 * (escalated + executed_by_human + rejected) / len(recs), 1) if recs else 0.0,
+        "actionsExecuted": len(actions),
+        "actionSuccessPct": round(100 * sum(a.success for a in actions) / len(actions), 1) if actions else 0.0,
+        "valueProtected": round(value_protected, 2),
+        "planCost": round(chosen_cost, 2),
+        "costSaved": round(value_protected - chosen_cost, 2),
+        "avgTickMs": round(sum(_tick_ms) / len(_tick_ms), 1) if _tick_ms else 0.0,
+    }

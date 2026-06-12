@@ -1,161 +1,93 @@
-import time
-from typing import Generator
+"""The engine loop. OWNER: P1. Depends only on interfaces + contracts, so each
+lane can swap its implementation without ever touching this file."""
+from ..contracts import (Domain, Event, ActionRequest, AuditEntry, GateOutcome,
+                         Decision, ResolutionRecord)
+from ..interfaces import (Watcher, Diagnoser, Planner, Verifier,
+                          BaseExecutor, BaseAuditSink)
 from .registry import Registry
-from ..contracts import PipelineRecord, Decision, RawSignal, AuditEntry
-from ..contracts.enums import ActionType
+from .gate import Gate
+
 
 class Orchestrator:
-    def __init__(self, registry: Registry) -> None:
-        self.registry = registry
+    def __init__(self, registry: Registry, watcher: Watcher, diagnoser: Diagnoser,
+                 planner: Planner, verifier: Verifier, executor: BaseExecutor,
+                 gate: Gate, audit: BaseAuditSink) -> None:
+        self.registry, self.watcher, self.diagnoser = registry, watcher, diagnoser
+        self.planner, self.verifier, self.executor = planner, verifier, executor
+        self.gate, self.audit = gate, audit
+        self._pending: dict[str, ResolutionRecord] = {}
 
-    def run_pipeline(self, signals: list[RawSignal], broadcast_cb=None) -> Generator[PipelineRecord, None, None]:
-        if not self.registry.watcher:
-            return
+    def _log(self, stage: str, ref_id: str, summary: str, **payload) -> AuditEntry:
+        e = AuditEntry(stage=stage, ref_id=ref_id, summary=summary, payload=payload)
+        self.audit.write(e)
+        return e
 
-        disruptions = self.registry.watcher.scan(signals)
-        for disruption in disruptions:
-            # Step 1: Diagnosed
-            disruption.status = "diagnosed"
-            if broadcast_cb:
-                broadcast_cb("STATUS_UPDATE", {"id": disruption.id, "status": disruption.status})
-                broadcast_cb("TRACE_STEP", {
-                    "disruptionId": disruption.id,
-                    "step": {
-                        "agentName": "Watcher",
-                        "input": "Raw signals received",
-                        "output": f"Disruption identified: {disruption.summary}",
-                        "confidence": 0.99,
-                        "timeTakenMs": 45
-                    }
-                })
+    def tick(self, domain: Domain = Domain.LOGISTICS) -> list[ResolutionRecord]:
+        connector = self.registry.connector(domain)
+        events = self.watcher.scan(connector.fetch_signals())
+        out: list[ResolutionRecord] = []
+        for ev in (e for e in events if e.is_anomaly):
+            out.append(self._resolve(ev, domain))
+        return out
 
-            record = PipelineRecord(disruption=disruption)
-            yield record
+    def _resolve(self, ev: Event, domain: Domain) -> ResolutionRecord:
+        trail = [self._log("watcher", ev.id, "anomaly detected", kind=ev.kind)]
+        disruption = self.diagnoser.diagnose(ev)
+        trail.append(self._log("diagnosis", disruption.id, disruption.summary,
+                               severity=disruption.severity))
+        plan = self.planner.plan(disruption)
+        opt = plan.recommended() or (plan.options[0] if plan.options else None)
+        trail.append(self._log("planner", plan.id,
+                               f"{len(plan.options)} option(s)",
+                               recommended=opt.id if opt else None))
+        report = self.verifier.verify(plan, opt.id) if opt else None
+        if report:
+            trail.append(self._log("verifier", plan.id,
+                                   f"passed={report.passed} conf={report.confidence:.2f}",
+                                   risk_flags=report.risk_flags))
+        gate = (self.gate.decide(report, opt) if report and opt
+                else GateOutcome(decision=Decision.REJECTED, reason="No plan"))
+        trail.append(self._log("gate", plan.id, gate.decision, reason=gate.reason))
 
-            # Step 2: Diagnose / Analyze
-            if self.registry.diagnoser:
-                disruption = self.registry.diagnoser.diagnose(disruption)
-                record.disruption = disruption
-            
-            disruption.status = "planning"
-            if broadcast_cb:
-                broadcast_cb("STATUS_UPDATE", {"id": disruption.id, "status": disruption.status})
-                broadcast_cb("TRACE_STEP", {
-                    "disruptionId": disruption.id,
-                    "step": {
-                        "agentName": "Diagnosis",
-                        "input": f"Enriching blast radius for {disruption.id}",
-                        "output": f"Affected SKUs: {disruption.blast_radius.affected_skus}, Risk: ${disruption.blast_radius.value_at_risk}",
-                        "confidence": 0.95,
-                        "timeTakenMs": 120
-                    }
-                })
-            yield record
+        record = ResolutionRecord(disruption=disruption, plan=plan, report=report,
+                                  gate=gate, audit_trail=trail,
+                                  pending=gate.requires_human)
+        if gate.decision == Decision.AUTO_APPROVED and opt:
+            record.results = self._execute(plan, opt, domain, trail)
+        elif gate.requires_human:
+            self._pending[plan.id] = record
+        return record
 
-            # Step 3: Propose Plans
-            if self.registry.planner:
-                plans = self.registry.planner.propose_plans(disruption)
-                record.plans = plans
+    def _execute(self, plan, opt, domain, trail):
+        connector = self.registry.connector(domain)
+        results = []
+        for step in opt.steps:
+            req = ActionRequest(plan_id=plan.id, option_id=opt.id,
+                                action=step.action, target=step.target, params=step.params)
+            res = self.executor.execute(req, connector)
+            results.append(res)
+            trail.append(self._log("executor", plan.id,
+                                   f"{step.action.value}->{step.target} ok={res.success}"))
+        return results
 
-            disruption.status = "verifying"
-            if broadcast_cb:
-                broadcast_cb("STATUS_UPDATE", {"id": disruption.id, "status": disruption.status})
-                broadcast_cb("PLANS_GENERATED", {"disruptionId": disruption.id, "plans": [p.dict() for p in record.plans]})
-                broadcast_cb("TRACE_STEP", {
-                    "disruptionId": disruption.id,
-                    "step": {
-                        "agentName": "Planner",
-                        "input": "Running mathematical optimization solver constraints",
-                        "output": f"Proposals generated: {len(record.plans)} options.",
-                        "confidence": 0.90,
-                        "timeTakenMs": 230
-                    }
-                })
-            yield record
+    # --- human-in-the-loop ---
+    def pending(self) -> list[ResolutionRecord]:
+        return list(self._pending.values())
 
-            # Step 4: Verify
-            if self.registry.verifier:
-                verification = self.registry.verifier.verify(disruption, record.plans)
-                record.verification = verification
-            
-            # Step 5: Gate Decisions
-            gate_decision = Decision.ESCALATED
-            if record.verification:
-                # Apply gate logic
-                max_cost = getattr(self.registry, "max_auto_cost", 5000.0)
-                min_conf = getattr(self.registry, "auto_approve_confidence", 0.85)
-                
-                best_plan = record.plan.recommended()
-                if not best_plan:
-                    gate_decision = Decision.REJECTED
-                else:
-                    conf_ok = record.verification.confidence >= min_conf
-                    cost_ok = best_plan.total_cost <= max_cost
-                    rev_ok = all(step.reversible for step in best_plan.steps)
-                    if conf_ok and cost_ok and rev_ok:
-                        gate_decision = Decision.AUTO_APPROVED
-                    else:
-                        gate_decision = Decision.ESCALATED
+    def approve(self, plan_id: str, domain: Domain = Domain.LOGISTICS) -> ResolutionRecord:
+        rec = self._pending.pop(plan_id)
+        opt = rec.plan.recommended() or rec.plan.options[0]
+        rec.audit_trail.append(self._log("gate", plan_id, "approved by human operator"))
+        rec.results = self._execute(rec.plan, opt, domain, rec.audit_trail)
+        rec.pending = False
+        rec.gate = GateOutcome(decision=Decision.EXECUTED,
+                               reason="Approved by human operator", requires_human=False)
+        return rec
 
-            record.decision = gate_decision
-            disruption.status = gate_decision.value
-            
-            if broadcast_cb:
-                broadcast_cb("STATUS_UPDATE", {"id": disruption.id, "status": disruption.status})
-                broadcast_cb("TRACE_STEP", {
-                    "disruptionId": disruption.id,
-                    "step": {
-                        "agentName": "Verifier",
-                        "input": "Red-teaming plans",
-                        "output": f"Checks passed: {record.verification.passed if record.verification else False}. Decision: {gate_decision.value}",
-                        "confidence": record.verification.confidence if record.verification else 0.50,
-                        "timeTakenMs": 150
-                    }
-                })
-            yield record
-
-            # Step 6: Executor (if AUTO_APPROVED)
-            if gate_decision == Decision.AUTO_APPROVED:
-                disruption.status = "executing"
-                if broadcast_cb:
-                    broadcast_cb("STATUS_UPDATE", {"id": disruption.id, "status": disruption.status})
-
-                best_plan = record.plan.recommended()
-                if best_plan and self.registry.executor:
-                    for step in best_plan.steps:
-                        res = self.registry.executor.execute_step(step, self.registry.connectors)
-                        record.results.append(res)
-                        if broadcast_cb:
-                            broadcast_cb("TRACE_STEP", {
-                                "disruptionId": disruption.id,
-                                "step": {
-                                    "agentName": "Executor",
-                                    "input": f"Executing: {step.action.value} on target: {step.target}",
-                                    "output": f"Result: {res.detail}",
-                                    "timeTakenMs": 80
-                                }
-                            })
-                
-                disruption.status = "resolved"
-                if broadcast_cb:
-                    broadcast_cb("STATUS_UPDATE", {"id": disruption.id, "status": disruption.status})
-
-                # Write to Audit Sink
-                if self.registry.audit_sink and best_plan:
-                    audit_entry = AuditEntry(
-                        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                        disruption_id=disruption.id,
-                        agent="Auto-Pilot",
-                        action=best_plan.steps[0].action if best_plan.steps else ActionType.UPDATE_ERP,
-                        decision=Decision.AUTO_APPROVED,
-                        cost=best_plan.total_cost,
-                        reversible=all(s.reversible for s in best_plan.steps),
-                        execution_result=record.results[0] if record.results else {
-                            "action": ActionType.UPDATE_ERP,
-                            "target": "system",
-                            "success": True,
-                            "detail": "Success"
-                        }
-                    )
-                    self.registry.audit_sink.log(audit_entry)
-                yield record
+    def reject(self, plan_id: str) -> ResolutionRecord:
+        rec = self._pending.pop(plan_id)
+        rec.pending = False
+        rec.gate = GateOutcome(decision=Decision.REJECTED,
+                               reason="Rejected by human operator", requires_human=False)
+        rec.audit_trail.append(self._log("gate", plan_id, "rejected by human operator"))
+        return rec

@@ -1,29 +1,29 @@
-from ..contracts import PipelineRecord, Decision, VerifierReport
+"""The confidence/cost human-in-the-loop gate. OWNER: P1.
+This is scalability pillar #3: auto-handle the confident, cheap, reversible
+cases; escalate only the uncertain ones, so human load grows sublinearly."""
+from ..contracts import VerifierReport, PlanOption, GateOutcome, Decision
+from .config import GateThresholds
+
 
 class Gate:
-    def __init__(self, max_cost: float = 5000.0, min_confidence: float = 0.85) -> None:
-        self.max_cost = max_cost
-        self.min_confidence = min_confidence
+    def __init__(self, thresholds: GateThresholds) -> None:
+        self.t = thresholds
 
-    def evaluate(self, record: PipelineRecord) -> Decision:
-        if not record.plans:
-            return Decision.REJECTED
-
-        best_plan = record.plan.recommended()
-        if not best_plan:
-            return Decision.REJECTED
-
-        # Verification report check
-        verification: VerifierReport = record.verification
-        if not verification:
-            return Decision.ESCALATED
-
-        # Gate Logic
-        confidence_ok = verification.confidence >= self.min_confidence
-        cost_ok = best_plan.total_cost <= self.max_cost
-        reversible_ok = all(step.reversible for step in best_plan.steps)
-
-        if confidence_ok and cost_ok and reversible_ok:
-            return Decision.AUTO_APPROVED
-        else:
-            return Decision.ESCALATED
+    def decide(self, report: VerifierReport, option: PlanOption) -> GateOutcome:
+        if not report.passed:
+            return GateOutcome(decision=Decision.REJECTED,
+                               reason="Verifier rejected the plan", requires_human=False)
+        irreversible = any(not s.reversible for s in option.steps)
+        if self.t.block_irreversible_auto and irreversible:
+            return GateOutcome(decision=Decision.ESCALATED,
+                               reason="Plan contains an irreversible action", requires_human=True)
+        if report.confidence < self.t.auto_approve_confidence:
+            return GateOutcome(decision=Decision.ESCALATED,
+                               reason=f"Confidence {report.confidence:.2f} below threshold",
+                               requires_human=True)
+        if option.total_cost > self.t.max_auto_cost:
+            return GateOutcome(decision=Decision.ESCALATED,
+                               reason=f"Cost {option.total_cost:.0f} exceeds auto ceiling",
+                               requires_human=True)
+        return GateOutcome(decision=Decision.AUTO_APPROVED,
+                           reason="Confident, cheap, reversible", requires_human=False)

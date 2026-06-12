@@ -1,19 +1,25 @@
+"""Engine settings + gate thresholds. OWNER: P1.
+Thresholds are env-tunable (AUTO_APPROVE_CONFIDENCE, MAX_AUTO_COST) so demos
+can show the HITL gate tightening/loosening without code changes."""
 import os
-from pydantic_settings import BaseSettings
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, default))
+    except ValueError:
+        return default
+
 
 class GateThresholds(BaseModel):
-    max_cost: float = 5000.0
-    min_confidence: float = 0.85
+    # Auto-execute only when the Verifier is confident AND the plan is cheap/reversible.
+    auto_approve_confidence: float = Field(
+        default_factory=lambda: _env_float("AUTO_APPROVE_CONFIDENCE", 0.80))
+    max_auto_cost: float = Field(
+        default_factory=lambda: _env_float("MAX_AUTO_COST", 5000.0))
+    block_irreversible_auto: bool = True
 
-class Settings(BaseSettings):
-    LLM_API_KEY: str = "sk-..."
-    REDIS_URL: str = "redis://localhost:6379/0"
-    DATABASE_URL: str = "sqlite:///flowforge.db"
-    AUTO_APPROVE_CONFIDENCE: float = 0.85
-    MAX_AUTO_COST: float = 5000.0
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"
+class Settings(BaseModel):
+    gate: GateThresholds = Field(default_factory=GateThresholds)

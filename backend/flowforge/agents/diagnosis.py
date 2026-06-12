@@ -1,22 +1,26 @@
-from ..interfaces.agent import Diagnoser
-from ..contracts import Disruption, BlastRadius
+"""Diagnosis agent. OWNER: P2.
+REPLACE with real classification + blast-radius + severity (LLM + lookups).
+KEEP the signature: Event -> Disruption."""
+from ..interfaces import Diagnoser
+from ..contracts import Event, Disruption, BlastRadius, DisruptionType, Severity
 
-class DiagnosisAgent(Diagnoser):
-    @property
-    def name(self) -> str:
-        return "Diagnosis"
 
-    def diagnose(self, disruption: Disruption) -> Disruption:
-        # Enriches the disruption details, matching order/SKU indices
-        orders = disruption.blast_radius.affected_orders or [f"ORD-{disruption.id}"]
-        skus = disruption.blast_radius.affected_skus
-        if not skus:
-            # Deterministic SKU association for demo purposes
-            skus = [f"SKU-{orders[0].split('-')[-1]}"] if orders else ["SKU-LOCAL"]
-
-        disruption.blast_radius = BlastRadius(
-            affected_orders=orders,
-            affected_skus=skus,
-            value_at_risk=disruption.blast_radius.value_at_risk
+class StubDiagnoser(Diagnoser):
+    def diagnose(self, event: Event) -> Disruption:
+        d = event.data
+        context = {"blocked": d.get("blocked", [])}
+        if d.get("provenance"):
+            context["provenance"] = d["provenance"]   # live / live_news / synthetic_*
+        return Disruption(
+            domain=event.domain,
+            type=DisruptionType(d.get("type", "shipment_delay")),
+            severity=Severity(d.get("severity", "high")),
+            summary=d.get("summary", "Disruption detected"),
+            blast_radius=BlastRadius(
+                affected_orders=d.get("orders", []),
+                affected_skus=d.get("skus", []),
+                value_at_risk=float(d.get("value_at_risk", 0.0)),
+            ),
+            context=context,
+            source_event_id=event.id,
         )
-        return disruption

@@ -1,18 +1,18 @@
+"""Executor + audit-sink contracts. OWNER: P1. IMPLEMENTED BY P4."""
 from abc import ABC, abstractmethod
-from typing import Dict, List
-from ..contracts import PlanStep, ExecutionResult, AuditEntry
+from ..contracts import ActionRequest, ExecutionResult, AuditEntry
 from .connector import BaseConnector
+
 
 class BaseExecutor(ABC):
     @abstractmethod
-    def execute_step(self, step: PlanStep, connectors: Dict[str, BaseConnector]) -> ExecutionResult:
-        pass
+    def execute(self, request: ActionRequest, connector: BaseConnector) -> ExecutionResult:
+        """Perform one action through the domain connector. Deterministic only."""
+
 
 class BaseAuditSink(ABC):
     @abstractmethod
-    def log(self, entry: AuditEntry) -> None:
-        pass
+    def write(self, entry: AuditEntry) -> None: ...
 
     @abstractmethod
-    def fetch_all(self) -> List[AuditEntry]:
-        pass
+    def all(self) -> list[AuditEntry]: ...

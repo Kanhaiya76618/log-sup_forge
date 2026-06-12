@@ -1,20 +1,18 @@
 [project]
 name = "flowforge"
 version = "0.1.0"
-description = "FlowForge Exception Resolution Backend"
+description = "Autonomous exception-resolution layer (FAR AWAY 2026)"
+requires-python = ">=3.11"
 dependencies = [
-    "fastapi>=0.100.0",
-    "uvicorn[standard]>=0.22.0",
-    "pydantic>=2.0.0",
-    "ortools>=9.6.0",
-    "sqlalchemy>=2.0.0",
-    "python-dotenv>=1.0.0",
-    "websockets>=11.0",
-    "numpy>=1.20.0",
-    "pandas>=1.3.0",
-    "pydantic-settings>=2.0.0",
+    "pydantic>=2.6",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "ortools>=9.6",
+    "numpy>=1.26",
+    # P4 adds: sqlalchemy / psycopg (DB audit sink)
+    # P1 adds: celery, redis (async workers) when scaling out
 ]
 
-[build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["flowforge*"]

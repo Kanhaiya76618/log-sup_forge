@@ -1,29 +1,41 @@
+"""Agent contracts. OWNER: P1. Each lane implements one of these ABCs.
+Implementations return the shared contract types — the orchestrator depends
+on these signatures, never on a concrete class, so internals can change freely."""
 from abc import ABC, abstractmethod
-from typing import Optional, List, Dict
-from ..contracts import RawSignal, Disruption, PlanOption, VerifierReport
+from ..contracts import RawSignal, Event, Disruption, Plan, VerifierReport
+
 
 class BaseAgent(ABC):
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        pass
+    name: str = "agent"
 
-class Watcher(BaseAgent):
-    @abstractmethod
-    def scan(self, signals: List[RawSignal]) -> List[Disruption]:
-        pass
 
-class Diagnoser(BaseAgent):
-    @abstractmethod
-    def diagnose(self, disruption: Disruption) -> Disruption:
-        pass
+class Watcher(BaseAgent):          # IMPLEMENTED BY P2
+    name = "watcher"
 
-class Planner(BaseAgent):
     @abstractmethod
-    def propose_plans(self, disruption: Disruption) -> List[PlanOption]:
-        pass
+    def scan(self, signals: list[RawSignal]) -> list[Event]:
+        """Normalize signals to Events and flag anomalies (is_anomaly=True)."""
 
-class Verifier(BaseAgent):
+
+class Diagnoser(BaseAgent):        # IMPLEMENTED BY P2
+    name = "diagnosis"
+
     @abstractmethod
-    def verify(self, disruption: Disruption, plans: List[PlanOption]) -> VerifierReport:
-        pass
+    def diagnose(self, event: Event) -> Disruption:
+        """Classify the anomaly, compute blast radius, score severity."""
+
+
+class Planner(BaseAgent):          # IMPLEMENTED BY P3
+    name = "planner"
+
+    @abstractmethod
+    def plan(self, disruption: Disruption) -> Plan:
+        """Generate candidate PlanOptions (LLM reasons, solver computes)."""
+
+
+class Verifier(BaseAgent):         # IMPLEMENTED BY P4
+    name = "verifier"
+
+    @abstractmethod
+    def verify(self, plan: Plan, option_id: str) -> VerifierReport:
+        """Red-team the chosen option; return pass/fail + confidence 0..1."""

@@ -1,18 +1,15 @@
-from ...interfaces.connector import BaseConnector
+"""Manufacturing connector — Day-6 proof the engine generalizes. OWNER: P4/P3.
+Same interface, different domain (machine_downtime -> reschedule + replenish).
+Register it in core/engine.py to switch it on. Until then, left unimplemented."""
+from ...interfaces import BaseConnector
 from ...contracts import RawSignal, ActionRequest, ExecutionResult, Domain
 
+
 class ManufacturingConnector(BaseConnector):
-    @property
-    def domain(self) -> Domain:
-        return Domain.MANUFACTURING
+    domain = Domain.MANUFACTURING
 
     def fetch_signals(self) -> list[RawSignal]:
-        return []
+        raise NotImplementedError("P4/P3 — implement on Day 6 if logistics is solid")
 
     def apply_action(self, request: ActionRequest) -> ExecutionResult:
-        return ExecutionResult(
-            action=request.action,
-            target=request.target,
-            success=True,
-            detail=f"Manufacturing action applied: {request.action.value} on {request.target}."
-        )
+        raise NotImplementedError("P4/P3 — implement on Day 6 if logistics is solid")

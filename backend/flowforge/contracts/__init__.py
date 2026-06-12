@@ -1,26 +1,19 @@
-from .enums import Severity, DisruptionType, ActionType, Decision, Domain
-from .events import RawSignal
+"""FlowForge shared contracts — the API between humans. OWNER: P1 ONLY.
+Everyone imports from here; nobody else edits these files. Schema changes
+go through P1 so all five lanes stay in lockstep."""
+from .enums import Domain, DisruptionType, Severity, ActionType, Decision
+from .events import RawSignal, Event
 from .disruption import BlastRadius, Disruption
-from .plan import PlanStep, PlanOption
-from .verification import VerifierReport
-from .execution import ActionRequest, ExecutionResult
+from .plan import PlanStep, PlanOption, Plan
+from .verification import Check, VerifierReport
+from .execution import ActionRequest, ExecutionResult, GateOutcome
 from .audit import AuditEntry
-from .pipeline import PipelineRecord
+from .pipeline import ResolutionRecord
 
 __all__ = [
-    "Severity",
-    "DisruptionType",
-    "ActionType",
-    "Decision",
-    "Domain",
-    "RawSignal",
-    "BlastRadius",
-    "Disruption",
-    "PlanStep",
-    "PlanOption",
-    "VerifierReport",
-    "ActionRequest",
-    "ExecutionResult",
-    "AuditEntry",
-    "PipelineRecord",
+    "Domain", "DisruptionType", "Severity", "ActionType", "Decision",
+    "RawSignal", "Event", "BlastRadius", "Disruption",
+    "PlanStep", "PlanOption", "Plan", "Check", "VerifierReport",
+    "ActionRequest", "ExecutionResult", "GateOutcome", "AuditEntry",
+    "ResolutionRecord",
 ]

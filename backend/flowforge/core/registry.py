@@ -1,27 +1,21 @@
-from typing import Dict, Optional
-from ..interfaces.agent import Watcher, Diagnoser, Planner, Verifier
-from ..interfaces.connector import BaseConnector
-from ..interfaces.executor import BaseExecutor, BaseAuditSink
+"""Connector + agent registry. OWNER: P1.
+Pluggability lives here: register a connector for a domain and the engine can
+serve it. Adding manufacturing in Round 2 is ONE line, no edits elsewhere."""
+from ..interfaces import BaseConnector
+from ..contracts import Domain
+
 
 class Registry:
     def __init__(self) -> None:
-        self._connectors: Dict[str, BaseConnector] = {}
-        self.watcher: Optional[Watcher] = None
-        self.diagnoser: Optional[Diagnoser] = None
-        self.planner: Optional[Planner] = None
-        self.verifier: Optional[Verifier] = None
-        self.executor: Optional[BaseExecutor] = None
-        self.audit_sink: Optional[BaseAuditSink] = None
+        self._connectors: dict[Domain, BaseConnector] = {}
 
     def register_connector(self, connector: BaseConnector) -> None:
-        # Register connector under its class name, domain name, or custom string
-        self._connectors[connector.domain.value] = connector
-        # Support fallback registration
-        self._connectors[connector.__class__.__name__] = connector
+        self._connectors[connector.domain] = connector
 
-    def get_connector(self, name: str) -> Optional[BaseConnector]:
-        return self._connectors.get(name)
+    def connector(self, domain: Domain) -> BaseConnector:
+        if domain not in self._connectors:
+            raise KeyError(f"No connector registered for domain {domain}")
+        return self._connectors[domain]
 
-    @property
-    def connectors(self) -> Dict[str, BaseConnector]:
-        return self._connectors
+    def domains(self) -> list[Domain]:
+        return list(self._connectors)

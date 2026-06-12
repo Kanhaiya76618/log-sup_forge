@@ -1,47 +1,36 @@
-import os
-from typing import Generator
+"""Default engine factory. OWNER: P1.
+Assembles the stub implementations + the logistics connector so `tick()` runs
+end-to-end on Day 1. Each lane later swaps its stub for the real class here."""
 from .config import Settings
 from .registry import Registry
+from .gate import Gate
 from .orchestrator import Orchestrator
-from ..contracts import PipelineRecord, RawSignal
+from ..agents.watcher import StubWatcher          # P2 replaces
+from ..agents.diagnosis import StubDiagnoser       # P2 replaces
+from ..agents.planner import StubPlanner           # P3 replaces
+from ..agents.verifier import StubVerifier         # P4 replaces
+from ..execution.executor import StubExecutor      # P4 replaces
+from ..execution.audit import InMemoryAuditSink    # P4 replaces (DB-backed)
+from ..connectors.logistics.connector import LogisticsConnector  # P2
+from ..connectors.logistics.live import LiveLogisticsConnector    # P2 — live weather
+import os
 
-class Engine:
-    def __init__(self, registry: Registry, settings: Settings) -> None:
-        self.registry = registry
-        self.settings = settings
-        self.orchestrator = Orchestrator(registry)
-        
-        # Inject config values into registry for gate access
-        self.registry.auto_approve_confidence = settings.AUTO_APPROVE_CONFIDENCE
-        self.registry.max_auto_cost = settings.MAX_AUTO_COST
 
-    def tick(self, signals: list[RawSignal] = None, broadcast_cb=None) -> Generator[PipelineRecord, None, None]:
-        # If signals is None, query connectors
-        if signals is None:
-            signals = []
-            for connector in self.registry.connectors.values():
-                signals.extend(connector.fetch_signals())
-        
-        yield from self.orchestrator.run_pipeline(signals, broadcast_cb)
-
-def build_engine() -> Engine:
-    # Build default engine with default configs
-    settings = Settings()
+def build_engine(settings: Settings | None = None) -> Orchestrator:
+    settings = settings or Settings()
     registry = Registry()
-    
-    # Import locally to avoid circular dependencies
-    from ..agents.watcher import WatcherAgent
-    from ..agents.diagnosis import DiagnosisAgent
-    from ..agents.planner import PlannerAgent
-    from ..agents.verifier import VerifierAgent
-    from ..execution.executor import StubExecutor
-    from ..execution.audit import SQLiteAuditSink
-    
-    registry.watcher = WatcherAgent()
-    registry.diagnoser = DiagnosisAgent()
-    registry.planner = PlannerAgent()
-    registry.verifier = VerifierAgent()
-    registry.executor = StubExecutor()
-    registry.audit_sink = SQLiteAuditSink(settings.DATABASE_URL)
-    
-    return Engine(registry, settings)
+    if os.environ.get("FLOWFORGE_LIVE") == "1":
+        registry.register_connector(LiveLogisticsConnector())
+    else:
+        registry.register_connector(LogisticsConnector())
+    # registry.register_connector(ManufacturingConnector())  # P4/P3 enable on Day 6
+    return Orchestrator(
+        registry=registry,
+        watcher=StubWatcher(),
+        diagnoser=StubDiagnoser(),
+        planner=StubPlanner(),
+        verifier=StubVerifier(),
+        executor=StubExecutor(),
+        gate=Gate(settings.gate),
+        audit=InMemoryAuditSink(),
+    )

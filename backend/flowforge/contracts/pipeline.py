@@ -1,30 +1,17 @@
-from pydantic import BaseModel
-from typing import List, Optional
+"""The end-to-end record one tick produces. OWNER: P1. Returned by the API to P5."""
+from pydantic import BaseModel, Field
 from .disruption import Disruption
-from .plan import PlanOption
+from .plan import Plan
 from .verification import VerifierReport
-from .enums import Decision
-from .execution import ExecutionResult
+from .execution import GateOutcome, ExecutionResult
+from .audit import AuditEntry
 
-class PipelineRecord(BaseModel):
+
+class ResolutionRecord(BaseModel):
     disruption: Disruption
-    plans: List[PlanOption] = []
-    verification: Optional[VerifierReport] = None
-    decision: Optional[Decision] = None
-    results: List[ExecutionResult] = []
-
-    @property
-    def gate(self):
-        class GateState:
-            def __init__(self, decision: Optional[Decision]):
-                self.decision = decision
-        return GateState(self.decision)
-
-    @property
-    def plan(self):
-        class PlanState:
-            def __init__(self, plans: List[PlanOption]):
-                self.plans = plans
-            def recommended(self) -> Optional[PlanOption]:
-                return PlanOption.recommended(self.plans)
-        return PlanState(self.plans)
+    plan: Plan
+    report: VerifierReport
+    gate: GateOutcome
+    results: list[ExecutionResult] = Field(default_factory=list)
+    audit_trail: list[AuditEntry] = Field(default_factory=list)
+    pending: bool = False

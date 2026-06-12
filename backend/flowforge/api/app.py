@@ -97,3 +97,9 @@ def metrics():
         "costSaved": round(value_protected - chosen_cost, 2),
         "avgTickMs": round(sum(_tick_ms) / len(_tick_ms), 1) if _tick_ms else 0.0,
     }
+
+
+@app.get("/signals")
+def signals(domain: Domain = Domain.LOGISTICS):
+    """Latest raw signals — includes calm LIVE port readings, not just anomalies."""
+    return [s.model_dump() for s in engine.registry.connector(domain).fetch_signals()]

@@ -54,6 +54,7 @@ def test_synthetic_fallback_on_network_failure(monkeypatch):
 def test_force_demo_injects_clearly_labeled_synthetic(monkeypatch):
     monkeypatch.setattr(live, "fetch_weather",
                         lambda timeout=8.0: [_calm(p) for p in live.PORTS])
+    monkeypatch.setenv("FLOWFORGE_FORECAST", "0")
     monkeypatch.setenv("FLOWFORGE_FORCE_DEMO", "1")
     monkeypatch.delenv("FLOWFORGE_NEWS", raising=False)
     sigs = LiveLogisticsConnector().fetch_signals()
@@ -106,6 +107,7 @@ def test_news_union_merges_with_weather(monkeypatch):
     ])
     monkeypatch.setattr(news, "fetch_headlines",
                         lambda timeout=8.0: ["Typhoon shuts Yokohama port"])
+    monkeypatch.setenv("FLOWFORGE_FORECAST", "0")
     monkeypatch.setenv("FLOWFORGE_NEWS", "1")
     sigs = LiveLogisticsConnector().fetch_signals()
     anomalies = [s for s in sigs if s.payload.get("anomaly")]
@@ -151,6 +153,7 @@ def test_serp_union_and_dedup_with_news(monkeypatch):
         "Typhoon shuts Yokohama port",            # duplicate of the news hit
         "Busan port closed amid evacuation"])     # new port
     monkeypatch.setenv("FLOWFORGE_NEWS", "1")
+    monkeypatch.setenv("FLOWFORGE_FORECAST", "0")
     monkeypatch.setenv("FLOWFORGE_BRIGHTDATA", "1")
     sigs = LiveLogisticsConnector().fetch_signals()
     anomalies = [s for s in sigs if s.payload.get("anomaly")]

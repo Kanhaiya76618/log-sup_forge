@@ -66,6 +66,57 @@ def fetch_weather(timeout: float = 8.0) -> list[dict]:
     return [{"port": n, **b.get("current", {})} for n, b in zip(names, blocks)]
 
 
+_FORECAST_API = ("https://api.open-meteo.com/v1/forecast"
+                 "?latitude={lats}&longitude={lons}"
+                 "&hourly=wind_gusts_10m,precipitation"
+                 "&forecast_days=3&wind_speed_unit=kmh")
+
+
+def fetch_forecast(timeout: float = 8.0) -> list[dict]:
+    """3-day hourly forecast for all ports, one batched call. Returns 'hourly'
+    blocks in PORTS order. Raises on failure (caller skips silently)."""
+    names = list(PORTS)
+    url = _FORECAST_API.format(lats=",".join(str(PORTS[n][0]) for n in names),
+                               lons=",".join(str(PORTS[n][1]) for n in names))
+    with urllib.request.urlopen(url, timeout=timeout, context=_ssl_context()) as r:
+        data = json.loads(r.read().decode())
+    blocks = data if isinstance(data, list) else [data]
+    return [{"port": n, **b.get("hourly", {})} for n, b in zip(names, blocks)]
+
+
+def forecast_to_signals(hourly: list[dict], sensitivity: float = 1.0) -> list[RawSignal]:
+    """Pure: flag ports whose forecast peak gust/rain crosses the (scaled)
+    thresholds — predictive disruptions for pre-planning, same blocked-union."""
+    g_hi, g_cr, r_hi = (GUST_HIGH * sensitivity, GUST_CRITICAL * sensitivity,
+                        RAIN_HIGH * sensitivity)
+    hits = []
+    for h in hourly:
+        gusts = [float(x or 0.0) for x in h.get("wind_gusts_10m") or []]
+        rains = [float(x or 0.0) for x in h.get("precipitation") or []]
+        if not gusts:
+            continue
+        peak = max(gusts)
+        peak_rain = max(rains) if rains else 0.0
+        if peak >= g_hi or peak_rain >= r_hi:
+            hits.append((h["port"], peak, gusts.index(peak), peak_rain))
+    blocked = [p for p, *_ in hits]
+    signals = []
+    for port, peak, hrs, rain in hits:
+        severity = "critical" if peak >= g_cr else "high"
+        signals.append(RawSignal(source="open-meteo-forecast", domain=Domain.LOGISTICS, payload={
+            "kind": "port_forecast", "provenance": "live_forecast",
+            "port": port, "anomaly": True,
+            "wind_gusts_kmh": peak, "precip_mm": rain,
+            "type": "shipment_delay", "severity": severity,
+            "summary": (f"{port}: {peak:.0f} km/h gusts forecast in {hrs}h — "
+                        "pre-planning contingency"),
+            "blocked": blocked,
+            "orders": [f"ORD-{port[:3].upper()}-1", f"ORD-{port[:3].upper()}-2"],
+            "value_at_risk": 12000.0 if severity == "critical" else 6000.0,
+        }))
+    return signals
+
+
 def weather_to_signals(current: list[dict], sensitivity: float = 1.0) -> list[RawSignal]:
     """Pure + unit-testable: convert weather blocks to RawSignals, flagging
     anomalies where thresholds (scaled by sensitivity) are crossed."""
@@ -129,6 +180,17 @@ class LiveLogisticsConnector(BaseConnector):
             flagged = {s.payload.get("port") for s in extra}
             extra.extend(s for s in fetch_serp_signals()
                          if s.payload.get("port") not in flagged)
+        # Predictive layer: 3-day forecast peaks (default ON; FLOWFORGE_FORECAST=0
+        # disables). Skips ports already flagged now; fails silently.
+        if env_flag("FLOWFORGE_FORECAST") or "FLOWFORGE_FORECAST" not in os.environ:
+            try:
+                flagged = ({s.payload.get("port") for s in extra}
+                           | {s.payload.get("port") for s in signals
+                              if s.payload.get("anomaly")})
+                extra.extend(f for f in forecast_to_signals(fetch_forecast(), sensitivity)
+                             if f.payload.get("port") not in flagged)
+            except Exception:
+                pass
         if extra:
             signals.extend(extra)
             union = sorted({p for s in signals if s.payload.get("anomaly")

@@ -116,19 +116,25 @@ class LiveLogisticsConnector(BaseConnector):
             for s in fallback:
                 s.payload["provenance"] = f"synthetic_fallback ({type(exc).__name__})"
             return fallback
+        # Extra live sources (each degrades silently to []), folded into ONE
+        # blocked-port union with the weather anomalies so the solver never
+        # routes into a storm, a news-flagged, or a SERP-flagged port.
+        extra: list[RawSignal] = []
         if os.environ.get("FLOWFORGE_NEWS") == "1":
-            # second keyless live source: RSS headlines (degrades silently to []),
-            # folded into ONE blocked-port union with the weather anomalies so
-            # the solver never routes into a storm OR a news-flagged port.
             from .news import fetch_news_signals
-            news = fetch_news_signals()
-            if news:
-                signals.extend(news)
-                union = sorted({p for s in signals if s.payload.get("anomaly")
-                                for p in s.payload.get("blocked", [])})
-                for s in signals:
-                    if s.payload.get("anomaly"):
-                        s.payload["blocked"] = union
+            extra.extend(fetch_news_signals())
+        if os.environ.get("FLOWFORGE_BRIGHTDATA") == "1":
+            from .brightdata import fetch_serp_signals
+            flagged = {s.payload.get("port") for s in extra}
+            extra.extend(s for s in fetch_serp_signals()
+                         if s.payload.get("port") not in flagged)
+        if extra:
+            signals.extend(extra)
+            union = sorted({p for s in signals if s.payload.get("anomaly")
+                            for p in s.payload.get("blocked", [])})
+            for s in signals:
+                if s.payload.get("anomaly"):
+                    s.payload["blocked"] = union
         if not any(s.payload.get("anomaly") for s in signals) \
                 and os.environ.get("FLOWFORGE_FORCE_DEMO") == "1":
             # calm seas everywhere + a demo to run: add one injected disruption,

@@ -39,9 +39,12 @@ def fetch_headlines(timeout: float = 8.0) -> list[str]:
 
 
 def headlines_to_signals(headlines: Iterable[str],
-                         ports: Iterable[str] | None = None) -> list[RawSignal]:
+                         ports: Iterable[str] | None = None,
+                         source: str = "google-news-rss",
+                         provenance: str = "live_news") -> list[RawSignal]:
     """Pure + unit-testable: keyword+port match -> one signal per matched port,
-    each carrying the union of all news-matched ports in `blocked`."""
+    each carrying the union of all news-matched ports in `blocked`.
+    Shared by every headline-shaped live source (RSS, Bright Data SERP)."""
     ports = list(ports or PORTS)
     hits: dict[str, str] = {}            # port -> first matching headline
     for headline in headlines:
@@ -55,12 +58,12 @@ def headlines_to_signals(headlines: Iterable[str],
     signals: list[RawSignal] = []
     for port, headline in hits.items():
         critical = any(k in headline.lower() for k in _CRITICAL)
-        signals.append(RawSignal(source="google-news-rss", domain=Domain.LOGISTICS, payload={
-            "kind": "port_news", "provenance": "live_news",
+        signals.append(RawSignal(source=source, domain=Domain.LOGISTICS, payload={
+            "kind": "port_news", "provenance": provenance,
             "port": port, "headline": headline, "anomaly": True,
             "type": "port_closure" if critical else "shipment_delay",
             "severity": "critical" if critical else "high",
-            "summary": f"{port} flagged by live news: {headline}",
+            "summary": f"{port} flagged by {provenance.replace('_', ' ')}: {headline}",
             "blocked": blocked,
             # Orders whose default lane traverses this port (demo order book)
             "orders": [f"ORD-{port[:3].upper()}-1", f"ORD-{port[:3].upper()}-2"],

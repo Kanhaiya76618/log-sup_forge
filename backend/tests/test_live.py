@@ -113,3 +113,52 @@ def test_news_union_merges_with_weather(monkeypatch):
     # weather-blocked Kobe and news-blocked Yokohama merge into ONE union
     for s in anomalies:
         assert set(s.payload["blocked"]) == {"Kobe", "Yokohama"}
+
+
+def test_serp_titles_parser_and_matcher():
+    from flowforge.connectors.logistics.brightdata import serp_json_to_titles
+    blob = {
+        "organic": [
+            {"title": "Typhoon forces Yokohama port closure", "description": "Ships divert south"},
+            {"title": "Unrelated result"},
+        ],
+        "news": [{"title": "Kobe terminal shut after storm surge"}],
+        "general": {"ignored": True},
+    }
+    titles = serp_json_to_titles(blob)
+    assert "Typhoon forces Yokohama port closure" in titles
+    assert "Kobe terminal shut after storm surge" in titles
+    sigs = headlines_to_signals(titles, source="brightdata-serp", provenance="live_serp")
+    assert {s.payload["port"] for s in sigs} == {"Yokohama", "Kobe"}
+    assert all(s.payload["provenance"] == "live_serp" for s in sigs)
+    assert all(s.source == "brightdata-serp" for s in sigs)
+
+
+def test_serp_degrades_silently_without_credentials(monkeypatch):
+    from flowforge.connectors.logistics.brightdata import fetch_serp_signals
+    monkeypatch.delenv("BRIGHT_DATA_API_KEY", raising=False)
+    monkeypatch.delenv("BRIGHT_DATA_ZONE", raising=False)
+    assert fetch_serp_signals() == []
+
+
+def test_serp_union_and_dedup_with_news(monkeypatch):
+    from flowforge.connectors.logistics import brightdata
+    monkeypatch.setattr(live, "fetch_weather", lambda timeout=8.0: [
+        {"port": "Shanghai", "wind_gusts_10m": 70.0, "precipitation": 0.0}])
+    monkeypatch.setattr(news, "fetch_headlines",
+                        lambda timeout=8.0: ["Typhoon shuts Yokohama port"])
+    monkeypatch.setattr(brightdata, "fetch_serp_titles", lambda timeout=12.0: [
+        "Typhoon shuts Yokohama port",            # duplicate of the news hit
+        "Busan port closed amid evacuation"])     # new port
+    monkeypatch.setenv("FLOWFORGE_NEWS", "1")
+    monkeypatch.setenv("FLOWFORGE_BRIGHTDATA", "1")
+    sigs = LiveLogisticsConnector().fetch_signals()
+    anomalies = [s for s in sigs if s.payload.get("anomaly")]
+    # Yokohama appears once (news wins the dedup), Busan comes from SERP only
+    yoko = [s for s in anomalies if s.payload.get("port") == "Yokohama"]
+    assert len(yoko) == 1 and yoko[0].payload["provenance"] == "live_news"
+    assert any(s.payload.get("provenance") == "live_serp"
+               and s.payload.get("port") == "Busan" for s in anomalies)
+    # one union across weather + news + serp
+    for s in anomalies:
+        assert set(s.payload["blocked"]) == {"Busan", "Shanghai", "Yokohama"}

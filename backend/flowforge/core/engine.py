@@ -1,7 +1,7 @@
 """Default engine factory. OWNER: P1.
 Assembles the stub implementations + the logistics connector so `tick()` runs
 end-to-end on Day 1. Each lane later swaps its stub for the real class here."""
-from .config import Settings
+from .config import Settings, env_flag
 from .registry import Registry
 from .gate import Gate
 from .orchestrator import Orchestrator
@@ -19,7 +19,7 @@ import os
 def build_engine(settings: Settings | None = None) -> Orchestrator:
     settings = settings or Settings()
     registry = Registry()
-    if os.environ.get("FLOWFORGE_LIVE") == "1":
+    if env_flag("FLOWFORGE_LIVE"):
         registry.register_connector(LiveLogisticsConnector())
     else:
         registry.register_connector(LogisticsConnector())

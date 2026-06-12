@@ -5,6 +5,11 @@ import os
 from pydantic import BaseModel, Field
 
 
+def env_flag(name: str) -> bool:
+    """Truthy env switch: 1/true/yes/on, case-insensitive."""
+    return os.environ.get(name, "").strip().lower() in ("1", "true", "yes", "on")
+
+
 def _env_float(name: str, default: float) -> float:
     try:
         return float(os.environ.get(name, default))

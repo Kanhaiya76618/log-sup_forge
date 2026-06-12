@@ -20,6 +20,7 @@ import os
 import ssl
 import urllib.request
 
+from ...core.config import env_flag
 from ...interfaces import BaseConnector
 from ...contracts import RawSignal, ActionRequest, ExecutionResult, Domain
 from .generator import generate_signals
@@ -120,10 +121,10 @@ class LiveLogisticsConnector(BaseConnector):
         # blocked-port union with the weather anomalies so the solver never
         # routes into a storm, a news-flagged, or a SERP-flagged port.
         extra: list[RawSignal] = []
-        if os.environ.get("FLOWFORGE_NEWS") == "1":
+        if env_flag("FLOWFORGE_NEWS"):
             from .news import fetch_news_signals
             extra.extend(fetch_news_signals())
-        if os.environ.get("FLOWFORGE_BRIGHTDATA") == "1":
+        if env_flag("FLOWFORGE_BRIGHTDATA"):
             from .brightdata import fetch_serp_signals
             flagged = {s.payload.get("port") for s in extra}
             extra.extend(s for s in fetch_serp_signals()
@@ -136,7 +137,7 @@ class LiveLogisticsConnector(BaseConnector):
                 if s.payload.get("anomaly"):
                     s.payload["blocked"] = union
         if not any(s.payload.get("anomaly") for s in signals) \
-                and os.environ.get("FLOWFORGE_FORCE_DEMO") == "1":
+                and env_flag("FLOWFORGE_FORCE_DEMO"):
             # calm seas everywhere + a demo to run: add one injected disruption,
             # clearly labeled synthetic, alongside the real readings.
             inject = generate_signals(inject_disruption=True)[-1]

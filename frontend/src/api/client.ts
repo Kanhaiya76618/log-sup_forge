@@ -2,7 +2,7 @@
 // Flip USE_MOCK=true to build and demo the whole UI offline against the same
 // contract — this is how P5 never blocks on backend progress. The mock is
 // clearly labeled in the UI (conn status "mock"), never silently substituted.
-import type { AuditEntry, Metrics, ResolutionRecord } from "../types";
+import type { AuditEntry, Metrics, RawSignal, ResolutionRecord } from "../types";
 
 const BASE = import.meta.env.VITE_API ?? "http://localhost:8000";
 export const USE_MOCK = false;
@@ -36,6 +36,11 @@ export async function approve(planId: string): Promise<ResolutionRecord> {
 export async function reject(planId: string): Promise<ResolutionRecord> {
   if (USE_MOCK) return (await import("./mock")).mockReject(planId);
   return http(`/reject/${planId}`, { method: "POST" });
+}
+
+export async function signals(): Promise<RawSignal[]> {
+  if (USE_MOCK) return [];
+  return http("/signals");
 }
 
 export async function audit(): Promise<AuditEntry[]> {

@@ -82,10 +82,14 @@ export default function DisruptionFeed() {
                       <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${
                         provenance.startsWith("live")
                           ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                          : provenance === "synthetic_injected"
+                          ? "bg-gray-100/10 text-gray-400 border-gray-400/30"
                           : "bg-indigo-500/10 text-indigo-500 border-indigo-500/30"
                       }`}>
                         {provenance.startsWith("live")
                           ? provenance.replace("_", " ").toUpperCase()
+                          : provenance === "synthetic_injected"
+                          ? "SIMULATED"
                           : "SYNTHETIC"}
                       </span>
                     )}

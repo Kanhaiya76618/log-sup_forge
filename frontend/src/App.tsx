@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useApp } from "./context/AppContext";
 import { useEngine } from "./hooks/useEngine";
 import DisruptionFeed from "./components/DisruptionFeed";
+import PortStatusStrip from "./components/PortStatusStrip";
 import ReasoningTrace from "./components/ReasoningTrace";
 import PlanCard from "./components/PlanCard";
 import ApprovalGate from "./components/ApprovalGate";
@@ -69,6 +70,8 @@ function CommandCenterView({ onScan }: { onScan: () => Promise<void> }) {
           Scan Signals Now
         </button>
       </div>
+
+      <PortStatusStrip />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">

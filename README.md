@@ -76,6 +76,7 @@ curl http://localhost:8000/metrics                 # honest session metrics
 | `DEMO_SENSITIVITY` | scales weather thresholds (0.3 = demo-friendly, 1.0 = honest) |
 | `FLOWFORGE_FORCE_DEMO=1` | inject one clearly-labeled synthetic disruption when seas are calm |
 | `FLOWFORGE_NEWS=1` | add Google News RSS port watcher (keyless, silent degradation) |
+| `FLOWFORGE_BRIGHTDATA=1` | add Bright Data SERP port watcher (needs `BRIGHT_DATA_API_KEY` + `BRIGHT_DATA_ZONE`; silent degradation) |
 | `AUTO_APPROVE_CONFIDENCE` / `MAX_AUTO_COST` | HITL gate thresholds |
 
 Frontend: `VITE_API` (backend URL); `USE_MOCK` in `src/api/client.ts` builds the UI fully offline against the same contract.

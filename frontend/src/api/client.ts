@@ -13,9 +13,14 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
   return r.json() as Promise<T>;
 }
 
-export async function tick(): Promise<ResolutionRecord[]> {
+export async function tick(country = "japan"): Promise<ResolutionRecord[]> {
   if (USE_MOCK) return (await import("./mock")).mockTick();
-  return http("/tick", { method: "POST" });
+  return http(`/tick?country=${encodeURIComponent(country)}`, { method: "POST" });
+}
+
+export async function countries(): Promise<string[]> {
+  if (USE_MOCK) return ["japan"];
+  return http("/countries");
 }
 
 export async function records(): Promise<ResolutionRecord[]> {
@@ -38,9 +43,9 @@ export async function reject(planId: string): Promise<ResolutionRecord> {
   return http(`/reject/${planId}`, { method: "POST" });
 }
 
-export async function signals(): Promise<RawSignal[]> {
+export async function signals(country = "japan"): Promise<RawSignal[]> {
   if (USE_MOCK) return [];
-  return http("/signals");
+  return http(`/signals?country=${encodeURIComponent(country)}`);
 }
 
 export async function audit(): Promise<AuditEntry[]> {

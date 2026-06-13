@@ -23,16 +23,12 @@ import urllib.request
 from ...core.config import env_flag
 from ...interfaces import BaseConnector
 from ...contracts import RawSignal, ActionRequest, ExecutionResult, Domain
+from .countries import COUNTRIES, DEFAULT_COUNTRY, ports_for
 from .generator import generate_signals
 
-# Ports we monitor -> (lat, lon). Names MUST match network.py via-nodes so the
-# solver can route around a blocked one.
-PORTS: dict[str, tuple[float, float]] = {
-    "Yokohama": (35.45, 139.65),
-    "Kobe":     (34.69, 135.20),
-    "Shanghai": (31.23, 121.47),
-    "Busan":    (35.10, 129.04),
-}
+# Default monitored ports = Japan (names match network.py via-nodes so the solver
+# can route around a blocked one). Other countries are selected per-request.
+PORTS: dict[str, tuple[float, float]] = COUNTRIES[DEFAULT_COUNTRY]
 
 # Disruption thresholds (km/h gusts, mm/h precipitation)
 GUST_HIGH, GUST_CRITICAL = 60.0, 90.0
@@ -54,12 +50,13 @@ def _ssl_context() -> ssl.SSLContext:
         return ssl.create_default_context()
 
 
-def fetch_weather(timeout: float = 8.0) -> list[dict]:
+def fetch_weather(timeout: float = 8.0, ports: dict | None = None) -> list[dict]:
     """One batched call for all ports. Returns Open-Meteo 'current' blocks in
     PORTS order. Raises on network failure (caller decides the fallback)."""
-    names = list(PORTS)
-    url = _API.format(lats=",".join(str(PORTS[n][0]) for n in names),
-                      lons=",".join(str(PORTS[n][1]) for n in names))
+    ports = ports or PORTS
+    names = list(ports)
+    url = _API.format(lats=",".join(str(ports[n][0]) for n in names),
+                      lons=",".join(str(ports[n][1]) for n in names))
     with urllib.request.urlopen(url, timeout=timeout, context=_ssl_context()) as r:
         data = json.loads(r.read().decode())
     blocks = data if isinstance(data, list) else [data]
@@ -72,12 +69,13 @@ _FORECAST_API = ("https://api.open-meteo.com/v1/forecast"
                  "&forecast_days=3&wind_speed_unit=kmh")
 
 
-def fetch_forecast(timeout: float = 8.0) -> list[dict]:
+def fetch_forecast(timeout: float = 8.0, ports: dict | None = None) -> list[dict]:
     """3-day hourly forecast for all ports, one batched call. Returns 'hourly'
     blocks in PORTS order. Raises on failure (caller skips silently)."""
-    names = list(PORTS)
-    url = _FORECAST_API.format(lats=",".join(str(PORTS[n][0]) for n in names),
-                               lons=",".join(str(PORTS[n][1]) for n in names))
+    ports = ports or PORTS
+    names = list(ports)
+    url = _FORECAST_API.format(lats=",".join(str(ports[n][0]) for n in names),
+                               lons=",".join(str(ports[n][1]) for n in names))
     with urllib.request.urlopen(url, timeout=timeout, context=_ssl_context()) as r:
         data = json.loads(r.read().decode())
     blocks = data if isinstance(data, list) else [data]
@@ -156,17 +154,30 @@ def weather_to_signals(current: list[dict], sensitivity: float = 1.0) -> list[Ra
 
 class LiveLogisticsConnector(BaseConnector):
     """Live weather (+ optional news) signals; synthetic fallback so the demo
-    can never die."""
+    can never die. Monitors the active country's ports (default Japan)."""
     domain = Domain.LOGISTICS
+
+    def __init__(self, country: str = DEFAULT_COUNTRY) -> None:
+        self.country = (country or DEFAULT_COUNTRY).lower()
+        self.ports = ports_for(self.country)
+
+    def use_country(self, country: str) -> None:
+        self.country = (country or DEFAULT_COUNTRY).lower()
+        self.ports = ports_for(self.country)
 
     def fetch_signals(self) -> list[RawSignal]:
         sensitivity = float(os.environ.get("DEMO_SENSITIVITY", "1.0"))
+        # Call with no ports arg for the default country so unit tests that patch
+        # fetch_weather(timeout=...) keep working; pass ports only when switched.
+        _weather = (fetch_weather if self.ports is PORTS
+                    else lambda: fetch_weather(ports=self.ports))
         try:
-            signals = weather_to_signals(fetch_weather(), sensitivity)
+            signals = weather_to_signals(_weather(), sensitivity)
         except Exception as exc:                      # offline / API hiccup
             fallback = generate_signals(inject_disruption=True)
             for s in fallback:
                 s.payload["provenance"] = f"synthetic_fallback ({type(exc).__name__})"
+                s.payload["country"] = self.country
             return fallback
         # Extra live sources (each degrades silently to []), folded into ONE
         # blocked-port union with the weather anomalies so the solver never
@@ -184,10 +195,12 @@ class LiveLogisticsConnector(BaseConnector):
         # disables). Skips ports already flagged now; fails silently.
         if env_flag("FLOWFORGE_FORECAST") or "FLOWFORGE_FORECAST" not in os.environ:
             try:
+                _forecast = (fetch_forecast if self.ports is PORTS
+                             else lambda: fetch_forecast(ports=self.ports))
                 flagged = ({s.payload.get("port") for s in extra}
                            | {s.payload.get("port") for s in signals
                               if s.payload.get("anomaly")})
-                extra.extend(f for f in forecast_to_signals(fetch_forecast(), sensitivity)
+                extra.extend(f for f in forecast_to_signals(_forecast(), sensitivity)
                              if f.payload.get("port") not in flagged)
             except Exception:
                 pass
@@ -205,6 +218,8 @@ class LiveLogisticsConnector(BaseConnector):
             inject = generate_signals(inject_disruption=True)[-1]
             inject.payload["provenance"] = "synthetic_injected"
             signals.append(inject)
+        for s in signals:
+            s.payload.setdefault("country", self.country)
         return signals
 
     def apply_action(self, request: ActionRequest) -> ExecutionResult:

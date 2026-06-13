@@ -12,8 +12,9 @@ import {
 // ============================================================================
 const TAGLINE = "When the supply chain breaks, the fix is already in motion.";
 const SUBLINE = "FlowForge watches the world's ports in real time, reasons through every disruption with a team of autonomous agents, computes the optimal reroute or reschedule with OR-Tools, stress-tests it across a thousand futures — and acts. A human is asked only when confidence runs thin.";
-const DECK_URL = "{{DECK_URL}}";
-const ARCH_URL = "{{ARCH_URL}}";
+// Served from frontend/public/. Replace DECK_URL with a hosted deck link if you prefer.
+const DECK_URL = "/flowforge-deck.pdf";
+const ARCH_IMG = "/architecture.svg";
 
 const METRICS = [
   "{{HUMAN_LOAD}}% human load",
@@ -235,25 +236,35 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
         </section>
 
         {/* resources */}
-        <section className="grid md:grid-cols-2 gap-5 py-2">
+        <section className="space-y-5 py-2">
           <a href={DECK_URL} target="_blank" rel="noreferrer"
-             className="reveal lift glass rounded-2xl p-6 group">
+             className="reveal lift glass rounded-2xl p-6 group block">
             <div className="flex items-center justify-between">
               <div className="inline-flex p-2.5 rounded-xl bg-gold/10 text-gold"><Presentation className="w-5 h-5" /></div>
               <ArrowRight className="w-4 h-4 text-ink-soft transition-transform group-hover:translate-x-1" />
             </div>
             <h4 className="mt-3 font-serif text-lg font-bold text-ink">View Presentation</h4>
-            <p className="mt-1 text-sm text-ink-soft">The pitch deck and demo walkthrough.</p>
+            <p className="mt-1 text-sm text-ink-soft">The pitch deck and demo walkthrough (opens the PDF).</p>
           </a>
-          <a href={ARCH_URL} target="_blank" rel="noreferrer"
-             className="reveal lift glass rounded-2xl p-6 group">
-            <div className="flex items-center justify-between">
+
+          {/* Architecture — full-width image, click to open full size in a new tab */}
+          <div id="architecture" className="anchor-target reveal">
+            <div className="flex items-center gap-2 mb-3">
               <div className="inline-flex p-2.5 rounded-xl bg-ink/10 text-ink"><Network className="w-5 h-5" /></div>
-              <ArrowRight className="w-4 h-4 text-ink-soft transition-transform group-hover:translate-x-1" />
+              <div>
+                <h4 className="font-serif text-lg font-bold text-ink leading-tight">Architecture</h4>
+                <p className="text-sm text-ink-soft">Typed contracts, agents, solver and connectors.</p>
+              </div>
             </div>
-            <h4 className="mt-3 font-serif text-lg font-bold text-ink">View Architecture</h4>
-            <p className="mt-1 text-sm text-ink-soft">Typed contracts, agents, solver and connectors.</p>
-          </a>
+            <a href={ARCH_IMG} target="_blank" rel="noreferrer"
+               className="lift glass rounded-2xl p-3 block group" title="Open full size">
+              <img src={ARCH_IMG} alt="FlowForge architecture diagram"
+                   className="w-full rounded-xl" loading="lazy" />
+              <span className="mt-2 flex items-center justify-end gap-1 font-mono text-[10px] uppercase tracking-wider text-ink-soft/70">
+                Open full size <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+              </span>
+            </a>
+          </div>
         </section>
 
         {/* 4. FOOTER — credits + anchor nav */}

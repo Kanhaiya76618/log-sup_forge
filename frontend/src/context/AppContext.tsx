@@ -9,6 +9,7 @@ export interface AppState {
   audit: AuditEntry[];
   metrics: Metrics | null;
   conn: ConnStatus;
+  country: string;             // active monitored country (logistics)
 }
 
 const initialState: AppState = {
@@ -17,6 +18,7 @@ const initialState: AppState = {
   audit: [],
   metrics: null,
   conn: "connecting",
+  country: "japan",
 };
 
 export type Action =
@@ -24,7 +26,8 @@ export type Action =
   | { type: "SELECT_PLAN"; payload: string | null }
   | { type: "SET_AUDIT"; payload: AuditEntry[] }
   | { type: "SET_METRICS"; payload: Metrics }
-  | { type: "SET_CONN"; payload: ConnStatus };
+  | { type: "SET_CONN"; payload: ConnStatus }
+  | { type: "SET_COUNTRY"; payload: string };
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -49,6 +52,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, metrics: action.payload };
     case "SET_CONN":
       return { ...state, conn: action.payload };
+    case "SET_COUNTRY":
+      return { ...state, country: action.payload };
     default:
       return state;
   }

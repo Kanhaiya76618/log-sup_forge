@@ -10,7 +10,8 @@ import { useApp } from "../context/AppContext";
 const POLL_MS = 20000;
 
 export function useEngine() {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
+  const country = state.country;
   const busy = useRef(false);
 
   const refresh = useCallback(async () => {
@@ -27,9 +28,9 @@ export function useEngine() {
     if (busy.current) return;
     busy.current = true;
     try {
-      const fresh = await api.tick();
+      const fresh = await api.tick(country);
       for (const r of fresh) {
-        toast(`Disruption: ${r.disruption.summary}`, { icon: "🚨" });
+        toast(`${r.disruption.domain.toUpperCase()}: ${r.disruption.summary}`, { icon: "🚨" });
       }
       await refresh();
     } catch {
@@ -37,10 +38,10 @@ export function useEngine() {
     } finally {
       busy.current = false;
     }
-  }, [refresh, dispatch]);
+  }, [refresh, dispatch, country]);
 
   useEffect(() => {
-    runTick(); // immediate first scan, then steady cadence
+    runTick(); // immediate scan (also fires on country change), then steady cadence
     const t = setInterval(runTick, POLL_MS);
     return () => clearInterval(t);
   }, [runTick]);

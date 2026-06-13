@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useApp } from "./context/AppContext";
 import { useEngine } from "./hooks/useEngine";
+import { countries as fetchCountries } from "./api/client";
 import DisruptionFeed from "./components/DisruptionFeed";
 import PortStatusStrip from "./components/PortStatusStrip";
 import ReasoningTrace from "./components/ReasoningTrace";
@@ -10,7 +11,31 @@ import ApprovalGate from "./components/ApprovalGate";
 import AuditTrail from "./components/AuditTrail";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import { Toaster } from "react-hot-toast";
-import { LayoutDashboard, FileSpreadsheet, BarChart3, AlertCircle, RadioTower } from "lucide-react";
+import { LayoutDashboard, FileSpreadsheet, BarChart3, AlertCircle, RadioTower, Globe } from "lucide-react";
+
+function CountrySelector() {
+  const { state, dispatch } = useApp();
+  const [options, setOptions] = useState<string[]>(["japan", "india", "us", "australia", "china"]);
+
+  useEffect(() => {
+    fetchCountries().then(setOptions).catch(() => {});
+  }, []);
+
+  return (
+    <label className="flex items-center gap-2 bg-white/60 px-3 py-2 rounded-xl border border-cream-deep/60 font-mono text-xs font-bold text-ink-soft">
+      <Globe className="w-4 h-4 text-red" />
+      <select
+        value={state.country}
+        onChange={(e) => dispatch({ type: "SET_COUNTRY", payload: e.target.value })}
+        className="bg-transparent focus:outline-none text-ink uppercase cursor-pointer"
+      >
+        {options.map((c) => (
+          <option key={c} value={c}>{c.toUpperCase()}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
 
 function Navigation() {
   const location = useLocation();
@@ -124,7 +149,10 @@ export default function App() {
               Autonomous Exception Handling · Society 5.0 Just-In-Time Spine
             </p>
           </div>
-          <Navigation />
+          <div className="flex items-center gap-3">
+            <CountrySelector />
+            <Navigation />
+          </div>
         </header>
 
         {state.conn === "offline" && (

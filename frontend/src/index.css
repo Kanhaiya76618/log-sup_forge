@@ -10,12 +10,23 @@
   }
 }
 
-/* Glassmorphism custom classes */
+/* Glassmorphism custom classes — every card on the page uses .glass for a
+   consistent translucency / blur / 1px border / soft shadow. */
 .glass {
   background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(227, 214, 196, 0.5);
+  box-shadow: 0 10px 30px -18px rgba(22, 34, 74, 0.35);
+}
+
+/* Darker glass for the "Problem" section so it stands apart from the rest. */
+.glass-ink {
+  background: rgba(22, 34, 74, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(22, 34, 74, 0.12);
+  box-shadow: 0 10px 30px -18px rgba(22, 34, 74, 0.35);
 }
 
 .glass-dark {
@@ -57,6 +68,58 @@
   will-change: transform;
 }
 
+/* Smooth in-page anchor nav */
+html { scroll-behavior: smooth; }
+.anchor-target { scroll-margin-top: 84px; }
+
+/* Hero FLIP card (hover on desktop, tap on touch via .is-flipped) */
+.flip-card { perspective: 1300px; }
+.flip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.flip-card:hover .flip-inner,
+.flip-inner.is-flipped { transform: rotateY(180deg); }
+.flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+/* Soft animated brand glow behind the hero glass */
+.card-glow { position: relative; }
+.card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  z-index: -1;
+  border-radius: 2.5rem;
+  background:
+    radial-gradient(40% 50% at 25% 30%, rgba(239, 176, 188, 0.55), transparent 70%),
+    radial-gradient(45% 45% at 80% 70%, rgba(214, 40, 40, 0.30), transparent 70%),
+    radial-gradient(40% 40% at 60% 20%, rgba(200, 153, 63, 0.28), transparent 70%);
+  filter: blur(38px);
+  opacity: 0.75;
+  animation: glowPulse 9s ease-in-out infinite alternate;
+}
+@keyframes glowPulse {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.6; }
+  100% { transform: translate3d(1.5%, -1.5%, 0) scale(1.07); opacity: 0.85; }
+}
+
+/* Hover lift for cards */
+.lift { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+.lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 44px -22px rgba(22, 34, 74, 0.5);
+}
+
 /* Scroll reveal */
 .reveal {
   opacity: 0;
@@ -80,8 +143,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   .mesh-bg { animation: none; }
   .marquee-track { animation: none; }
   .tilt-card { transition: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
+  .flip-inner { transition: none; }
+  .flip-card:hover .flip-inner { transform: none; }   /* keep hover from flipping; tap still works */
+  .card-glow::before { animation: none; }
+  .lift { transition: none; }
+  .lift:hover { transform: none; }
 }

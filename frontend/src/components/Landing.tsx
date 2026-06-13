@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 
 // ---- PLACEHOLDERS — replace the {{...}} tokens with real copy/links ----
-const TAGLINE = "{{TAGLINE}}";
-const SUBLINE = "{{SUBLINE}}";
+const TAGLINE = "When the supply chain breaks, the fix is already in motion.";
+const SUBLINE = "FlowForge watches the world's ports in real time, reasons through every disruption with a team of autonomous agents, computes the optimal reroute or reschedule with OR-Tools, stress-tests it across a thousand futures — and acts. A human is asked only when confidence runs thin.";
 const DECK_URL = "{{DECK_URL}}";
 const ARCH_URL = "{{ARCH_URL}}";
 const METRICS = [

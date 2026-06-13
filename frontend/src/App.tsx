@@ -12,7 +12,7 @@ import ApprovalGate from "./components/ApprovalGate";
 import AuditTrail from "./components/AuditTrail";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import { Toaster } from "react-hot-toast";
-import { LayoutDashboard, FileSpreadsheet, BarChart3, AlertCircle, RadioTower, Globe } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, FileSpreadsheet, BarChart3, AlertCircle, RadioTower, Globe } from "lucide-react";
 
 function CountrySelector() {
   const { state, dispatch } = useApp();
@@ -129,11 +129,17 @@ export default function App() {
     sessionStorage.setItem("ff_entered", "1");
     setEntered(true);
   };
+
+  const exit = () => {
+    sessionStorage.removeItem("ff_entered");
+    setEntered(false);
+  };
+
   if (!entered) return <Landing onEnter={enter} />;
-  return <Dashboard />;
+  return <Dashboard onExit={exit} />;
 }
 
-function Dashboard() {
+function Dashboard({ onExit }: { onExit: () => void }) {
   const { state } = useApp();
   const { runTick } = useEngine();
 
@@ -165,7 +171,14 @@ function Dashboard() {
               Autonomous Exception Handling · Society 5.0 Just-In-Time Spine
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={onExit}
+              className="inline-flex items-center gap-2 rounded-xl border border-ink/10 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-ink transition hover:bg-cream shadow-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Landing
+            </button>
             <CountrySelector />
             <Navigation />
           </div>

@@ -11,6 +11,13 @@ class StubDiagnoser(Diagnoser):
         context = {"blocked": d.get("blocked", [])}
         if d.get("provenance"):
             context["provenance"] = d["provenance"]   # live / live_news / synthetic_*
+        if d.get("country"):
+            context["country"] = d["country"]
+        # pass-through of domain-specific structured state (manufacturing job-shop,
+        # etc.) so the matching Planner/Scheduler can act on it.
+        for k in ("line", "machines", "down_machine", "jobs", "material"):
+            if k in d:
+                context[k] = d[k]
         return Disruption(
             domain=event.domain,
             type=DisruptionType(d.get("type", "shipment_delay")),

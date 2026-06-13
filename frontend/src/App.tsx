@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useApp } from "./context/AppContext";
 import { useEngine } from "./hooks/useEngine";
 import { countries as fetchCountries } from "./api/client";
+import Landing from "./components/Landing";
 import DisruptionFeed from "./components/DisruptionFeed";
 import PortStatusStrip from "./components/PortStatusStrip";
 import ReasoningTrace from "./components/ReasoningTrace";
@@ -118,6 +119,21 @@ function CommandCenterView({ onScan }: { onScan: () => Promise<void> }) {
 }
 
 export default function App() {
+  // Landing renders before the dashboard; entering mounts <Dashboard/> (and only
+  // then does useEngine start polling). Persisted for the session so a refresh
+  // inside the app doesn't bounce back to the landing page.
+  const [entered, setEntered] = useState(
+    () => typeof sessionStorage !== "undefined" && sessionStorage.getItem("ff_entered") === "1",
+  );
+  const enter = () => {
+    sessionStorage.setItem("ff_entered", "1");
+    setEntered(true);
+  };
+  if (!entered) return <Landing onEnter={enter} />;
+  return <Dashboard />;
+}
+
+function Dashboard() {
   const { state } = useApp();
   const { runTick } = useEngine();
 

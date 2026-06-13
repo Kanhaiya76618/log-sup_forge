@@ -7,13 +7,15 @@ from .gate import Gate
 from .orchestrator import Orchestrator
 from ..agents.watcher import StubWatcher          # P2 replaces
 from ..agents.diagnosis import StubDiagnoser       # P2 replaces
-from ..agents.planner import StubPlanner           # P3 replaces
+from ..agents.planner import StubPlanner           # P3 — logistics routing planner
+from ..agents.scheduler import SchedulerPlanner    # P3 — manufacturing scheduler
 from ..agents.verifier import StubVerifier         # P4 replaces
 from ..execution.executor import StubExecutor      # P4 replaces
 from ..execution.audit import InMemoryAuditSink    # P4 replaces (DB-backed)
 from ..connectors.logistics.connector import LogisticsConnector  # P2
 from ..connectors.logistics.live import LiveLogisticsConnector    # P2 — live weather
-import os
+from ..connectors.manufacturing.connector import ManufacturingConnector  # P3
+from ..contracts import Domain
 
 
 def build_engine(settings: Settings | None = None) -> Orchestrator:
@@ -23,7 +25,10 @@ def build_engine(settings: Settings | None = None) -> Orchestrator:
         registry.register_connector(LiveLogisticsConnector())
     else:
         registry.register_connector(LogisticsConnector())
-    # registry.register_connector(ManufacturingConnector())  # P4/P3 enable on Day 6
+    registry.register_connector(ManufacturingConnector())
+    # Per-domain planners: logistics routes, manufacturing schedules.
+    registry.register_planner(Domain.LOGISTICS, StubPlanner())
+    registry.register_planner(Domain.MANUFACTURING, SchedulerPlanner())
     return Orchestrator(
         registry=registry,
         watcher=StubWatcher(),

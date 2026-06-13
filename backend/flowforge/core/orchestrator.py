@@ -22,12 +22,21 @@ class Orchestrator:
         self.audit.write(e)
         return e
 
-    def tick(self, domain: Domain = Domain.LOGISTICS) -> list[ResolutionRecord]:
+    def tick(self, domain: Domain = Domain.LOGISTICS,
+             country: str | None = None) -> list[ResolutionRecord]:
         connector = self.registry.connector(domain)
+        if country is not None and hasattr(connector, "use_country"):
+            connector.use_country(country)
         events = self.watcher.scan(connector.fetch_signals())
-        out: list[ResolutionRecord] = []
-        for ev in (e for e in events if e.is_anomaly):
-            out.append(self._resolve(ev, domain))
+        out = [self._resolve(ev, domain) for ev in events if ev.is_anomaly]
+        # Domain switch: when logistics is calm (no live disruption), fall through
+        # to the manufacturing line so the agents are always doing real work.
+        if not out and domain == Domain.LOGISTICS \
+                and Domain.MANUFACTURING in self.registry.domains():
+            mfg = self.registry.connector(Domain.MANUFACTURING)
+            mevents = self.watcher.scan(mfg.fetch_signals())
+            out = [self._resolve(ev, Domain.MANUFACTURING)
+                   for ev in mevents if ev.is_anomaly]
         return out
 
     def _resolve(self, ev: Event, domain: Domain) -> ResolutionRecord:
@@ -35,7 +44,8 @@ class Orchestrator:
         disruption = self.diagnoser.diagnose(ev)
         trail.append(self._log("diagnosis", disruption.id, disruption.summary,
                                severity=disruption.severity))
-        plan = self.planner.plan(disruption)
+        planner = self.registry.planner_for(domain) or self.planner
+        plan = planner.plan(disruption)
         opt = plan.recommended() or (plan.options[0] if plan.options else None)
         trail.append(self._log("planner", plan.id,
                                f"{len(plan.options)} option(s)",

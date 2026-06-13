@@ -23,10 +23,12 @@ def health():
 
 
 @app.post("/tick")
-def tick(domain: Domain = Domain.LOGISTICS):
-    """Run one detect->diagnose->plan->verify->gate->execute cycle."""
+def tick(domain: Domain = Domain.LOGISTICS, country: str = "japan"):
+    """Run one detect->diagnose->plan->verify->gate->execute cycle for the given
+    country. Falls through to manufacturing when logistics is calm; each record's
+    `disruption.domain` tells the frontend which domain produced it."""
     t0 = time.perf_counter()
-    records = engine.tick(domain)
+    records = engine.tick(domain, country=country)
     _tick_ms.append(1000 * (time.perf_counter() - t0))
     for r in records:
         _records[r.plan.id] = r
@@ -100,6 +102,16 @@ def metrics():
 
 
 @app.get("/signals")
-def signals(domain: Domain = Domain.LOGISTICS):
+def signals(domain: Domain = Domain.LOGISTICS, country: str = "japan"):
     """Latest raw signals — includes calm LIVE port readings, not just anomalies."""
-    return [s.model_dump() for s in engine.registry.connector(domain).fetch_signals()]
+    conn = engine.registry.connector(domain)
+    if hasattr(conn, "use_country"):
+        conn.use_country(country)
+    return [s.model_dump() for s in conn.fetch_signals()]
+
+
+@app.get("/countries")
+def countries():
+    """Monitored countries for the dashboard selector (default japan)."""
+    from ..connectors.logistics.countries import COUNTRIES
+    return list(COUNTRIES)

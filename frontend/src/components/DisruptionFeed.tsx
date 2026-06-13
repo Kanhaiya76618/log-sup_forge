@@ -69,7 +69,16 @@ export default function DisruptionFeed() {
                 }`}
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className="font-mono text-xs font-bold text-ink-soft">{d.id}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                      d.domain === "manufacturing"
+                        ? "bg-purple-500/10 text-purple-500 border-purple-500/30"
+                        : "bg-sky-500/10 text-sky-600 border-sky-500/30"
+                    }`}>
+                      {d.domain.toUpperCase()}
+                    </span>
+                    <span className="font-mono text-xs font-bold text-ink-soft">{d.id}</span>
+                  </div>
                   <div className="flex items-center gap-1.5 flex-wrap justify-end">
                     <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${status.bg}`}>
                       {status.label}

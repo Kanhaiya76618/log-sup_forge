@@ -1,36 +1,40 @@
-// Live Port Status strip — polls GET /signals every 60s and shows the raw
-// per-port weather readings (including calm ones), with their provenance.
+// Live Port Status strip — polls GET /signals for the active country every 60s
+// and shows the raw per-port weather readings (including calm ones), provenance.
 import { useEffect, useState } from "react";
 import { signals } from "../api/client";
+import { useApp } from "../context/AppContext";
 import type { RawSignal } from "../types";
 
 const POLL_MS = 60000;
 
 export default function PortStatusStrip() {
+  const { state } = useApp();
+  const country = state.country;
   const [ports, setPorts] = useState<RawSignal[]>([]);
 
   useEffect(() => {
     let active = true;
     const load = () =>
-      signals()
+      signals(country)
         .then((s) => {
           if (active) setPorts(s.filter((x) => x.payload.kind === "port_weather"));
         })
         .catch(() => {});
+    setPorts([]); // clear stale country's ports on switch
     load();
     const t = setInterval(load, POLL_MS);
     return () => {
       active = false;
       clearInterval(t);
     };
-  }, []);
+  }, [country]);
 
   if (ports.length === 0) return null;
 
   return (
     <div className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center gap-3">
       <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft/75 font-bold">
-        Live Port Status
+        Live Port Status · {country.toUpperCase()}
       </span>
       {ports.map((s) => {
         const p = s.payload;

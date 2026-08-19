@@ -1,0 +1,1941 @@
+{
+  "/": {
+    "status_code": 200,
+    "data": {
+      "system": "FlowForge Backend API",
+      "status": "OPERATIONAL",
+      "version": "1.0.0",
+      "endpoints": [
+        "/api/v1/health",
+        "/api/v1/network",
+        "/api/v1/vessels",
+        "/api/v1/ports/india",
+        "/api/v1/ports/japan",
+        "/api/v1/risks",
+        "/api/v1/simulate",
+        "/api/v1/agents",
+        "/api/v1/live-feed"
+      ]
+    }
+  },
+  "/api/v1/health": {
+    "status_code": 200,
+    "data": {
+      "status": "HEALTHY",
+      "system": "FlowForge Intelligence Layer",
+      "timestamp": "2026-08-17T11:25:00Z"
+    }
+  },
+  "/api/v1/network": {
+    "status_code": 200,
+    "data": {
+      "network_health": "94.7%",
+      "active_vessels": 1842,
+      "active_routes": 247,
+      "facilities": 12430,
+      "system_status": "SYSTEM \u00b7 OPERATIONAL"
+    }
+  },
+  "/api/v1/vessels": {
+    "status_code": 200,
+    "data": {
+      "count": 0,
+      "vessels": []
+    }
+  },
+  "/api/v1/ports/india": {
+    "status_code": 200,
+    "data": {
+      "country": "India",
+      "count": 5,
+      "ports": [
+        {
+          "id": "IN-JNPT",
+          "name": "Jawaharlal Nehru Port Trust (JNPT)",
+          "city": "Mumbai",
+          "country": "India",
+          "coordinates": {
+            "lat": 18.95,
+            "lon": 72.95
+          },
+          "capacity_utilization": "74.2%",
+          "congestion_index": 0.42,
+          "disruption_probability": 0.18,
+          "status": "OPERATIONAL",
+          "berths_occupied": 14,
+          "total_berths": 18,
+          "waiting_vessels": 4,
+          "avg_turnaround_hours": 24.5,
+          "key_commodities": [
+            "Containers",
+            "Chemicals",
+            "Automotive"
+          ]
+        },
+        {
+          "id": "IN-MUN",
+          "name": "Mundra Port",
+          "city": "Kutch, Gujarat",
+          "country": "India",
+          "coordinates": {
+            "lat": 22.74,
+            "lon": 69.7
+          },
+          "capacity_utilization": "81.0%",
+          "congestion_index": 0.55,
+          "disruption_probability": 0.22,
+          "status": "OPERATIONAL",
+          "berths_occupied": 21,
+          "total_berths": 24,
+          "waiting_vessels": 6,
+          "avg_turnaround_hours": 21.0,
+          "key_commodities": [
+            "Containers",
+            "Crude Oil",
+            "Coal"
+          ]
+        },
+        {
+          "id": "IN-MAA",
+          "name": "Chennai Port",
+          "city": "Chennai",
+          "country": "India",
+          "coordinates": {
+            "lat": 13.0827,
+            "lon": 80.2707
+          },
+          "capacity_utilization": "68.5%",
+          "congestion_index": 0.35,
+          "disruption_probability": 0.12,
+          "status": "OPERATIONAL",
+          "berths_occupied": 12,
+          "total_berths": 16,
+          "waiting_vessels": 2,
+          "avg_turnaround_hours": 28.0,
+          "key_commodities": [
+            "Automobiles",
+            "Iron Ore",
+            "Containers"
+          ]
+        },
+        {
+          "id": "IN-COK",
+          "name": "Cochin Port (Vallarpadam)",
+          "city": "Kochi",
+          "country": "India",
+          "coordinates": {
+            "lat": 9.9667,
+            "lon": 76.2667
+          },
+          "capacity_utilization": "58.0%",
+          "congestion_index": 0.28,
+          "disruption_probability": 0.08,
+          "status": "OPERATIONAL",
+          "berths_occupied": 8,
+          "total_berths": 12,
+          "waiting_vessels": 1,
+          "avg_turnaround_hours": 18.2,
+          "key_commodities": [
+            "Transshipment Containers",
+            "LNG",
+            "Oil"
+          ]
+        },
+        {
+          "id": "IN-VTZ",
+          "name": "Visakhapatnam Port",
+          "city": "Visakhapatnam",
+          "country": "India",
+          "coordinates": {
+            "lat": 17.6868,
+            "lon": 83.2185
+          },
+          "capacity_utilization": "79.4%",
+          "congestion_index": 0.48,
+          "disruption_probability": 0.25,
+          "status": "MONITORING_MONSOON",
+          "berths_occupied": 15,
+          "total_berths": 18,
+          "waiting_vessels": 5,
+          "avg_turnaround_hours": 31.0,
+          "key_commodities": [
+            "Iron Ore",
+            "Fertilizers",
+            "Coal"
+          ]
+        }
+      ]
+    }
+  },
+  "/api/v1/ports/japan": {
+    "status_code": 200,
+    "data": {
+      "country": "Japan",
+      "count": 5,
+      "ports": [
+        {
+          "id": "JP-YOK",
+          "name": "Port of Yokohama",
+          "city": "Yokohama",
+          "country": "Japan",
+          "coordinates": {
+            "lat": 35.4437,
+            "lon": 139.638
+          },
+          "capacity_utilization": "63.0%",
+          "congestion_index": 0.82,
+          "disruption_probability": 0.82,
+          "status": "AT_RISK_TYPHOON",
+          "berths_occupied": 28,
+          "total_berths": 32,
+          "waiting_vessels": 14,
+          "expected_delay_days": 7.2,
+          "key_commodities": [
+            "Containers",
+            "Electronics",
+            "Automotive Parts"
+          ]
+        },
+        {
+          "id": "JP-UKB",
+          "name": "Port of Kobe",
+          "city": "Kobe",
+          "country": "Japan",
+          "coordinates": {
+            "lat": 34.6901,
+            "lon": 135.1955
+          },
+          "capacity_utilization": "45.0%",
+          "congestion_index": 0.3,
+          "disruption_probability": 0.15,
+          "status": "RECOVERY_TARGET",
+          "berths_occupied": 16,
+          "total_berths": 28,
+          "waiting_vessels": 2,
+          "expected_delay_days": 1.1,
+          "key_commodities": [
+            "Containers",
+            "Machinery",
+            "Precision Metals"
+          ]
+        },
+        {
+          "id": "JP-TYO",
+          "name": "Port of Tokyo",
+          "city": "Tokyo",
+          "country": "Japan",
+          "coordinates": {
+            "lat": 35.6191,
+            "lon": 139.7753
+          },
+          "capacity_utilization": "88.0%",
+          "congestion_index": 0.71,
+          "disruption_probability": 0.65,
+          "status": "HIGH_TRAFFIC",
+          "berths_occupied": 22,
+          "total_berths": 25,
+          "waiting_vessels": 9,
+          "expected_delay_days": 4.5,
+          "key_commodities": [
+            "Consumer Goods",
+            "Foodstuff",
+            "Electronics"
+          ]
+        },
+        {
+          "id": "JP-NGO",
+          "name": "Port of Nagoya",
+          "city": "Nagoya",
+          "country": "Japan",
+          "coordinates": {
+            "lat": 35.0833,
+            "lon": 136.8833
+          },
+          "capacity_utilization": "72.0%",
+          "congestion_index": 0.45,
+          "disruption_probability": 0.28,
+          "status": "OPERATIONAL",
+          "berths_occupied": 20,
+          "total_berths": 26,
+          "waiting_vessels": 4,
+          "expected_delay_days": 2.0,
+          "key_commodities": [
+            "Automobiles",
+            "Industrial Equipment"
+          ]
+        },
+        {
+          "id": "JP-OSA",
+          "name": "Port of Osaka",
+          "city": "Osaka",
+          "country": "Japan",
+          "coordinates": {
+            "lat": 34.65,
+            "lon": 135.4333
+          },
+          "capacity_utilization": "54.0%",
+          "congestion_index": 0.32,
+          "disruption_probability": 0.2,
+          "status": "OPERATIONAL",
+          "berths_occupied": 13,
+          "total_berths": 22,
+          "waiting_vessels": 3,
+          "expected_delay_days": 1.5,
+          "key_commodities": [
+            "Chemicals",
+            "Steel",
+            "Processed Goods"
+          ]
+        }
+      ]
+    }
+  },
+  "/api/v1/risks": {
+    "status_code": 200,
+    "data": {
+      "risk_summary": {
+        "master_agent": "MASTER_RISK_AGENT",
+        "overall_network_health": "94.7%",
+        "yokohama_disruption_probability": 0.82,
+        "composite_risk_score": 0.54,
+        "risk_level": "MODERATE",
+        "agent_findings": {
+          "weather": {
+            "agent": "WEATHER_AGENT",
+            "origin": "SHANGHAI",
+            "destination": "YOKOHAMA",
+            "wind_speed_knots": 15.0,
+            "risk_score": 0.12,
+            "status": "CLEAR_NAVIGATION",
+            "recommendation": "Maintain scheduled transit speed."
+          },
+          "vessels": {
+            "agent": "VESSEL_AGENT",
+            "monitored_vessels_count": 0,
+            "high_risk_vessels": [],
+            "cargo_at_risk_usd": 0.0,
+            "status": "ACTIVE_MONITORING"
+          },
+          "ports": {
+            "agent": "PORT_AGENT",
+            "critical_ports": [
+              {
+                "port": "Port of Yokohama",
+                "disruption_probability": 0.82,
+                "expected_delay": 7.2
+              },
+              {
+                "port": "Port of Tokyo",
+                "disruption_probability": 0.65,
+                "expected_delay": 4.5
+              }
+            ],
+            "diversion_suggestions": {
+              "Port of Yokohama": {
+                "alternative_port": "Port of Kobe",
+                "available_capacity": "55%",
+                "estimated_delay": "1.1 DAYS",
+                "estimated_savings_usd": 1420000
+              }
+            },
+            "status": "CONGESTION_EVALUATED"
+          },
+          "news": {
+            "agent": "NEWS_AGENT",
+            "processed_articles_count": 20,
+            "high_impact_alerts": 0,
+            "sentiment_index": 0.0,
+            "status": "FEEDS_ANALYZED"
+          },
+          "disasters": {
+            "agent": "DISASTER_AGENT",
+            "active_disasters_count": 103,
+            "typhoon_warning_level": "GREEN",
+            "active_typhoons": [],
+            "status": "DISASTER_ASSESSED"
+          }
+        },
+        "recommended_recovery_plan": {
+          "recovery_time": "18H",
+          "risk_reduction": "64%",
+          "estimated_savings_usd": 1420000,
+          "steps": [
+            {
+              "step": 1,
+              "title": "DIVERT 4 VESSELS \u2192 KOBE",
+              "status": "PENDING"
+            },
+            {
+              "step": 2,
+              "title": "INCREASE OSAKA INVENTORY \u2192 +18%",
+              "status": "PENDING"
+            },
+            {
+              "step": 3,
+              "title": "SWITCH SUPPLIER ROUTE \u2192 NAGOYA",
+              "status": "PENDING"
+            },
+            {
+              "step": 4,
+              "title": "PRIORITIZE HIGH-VALUE CARGO",
+              "status": "PENDING"
+            },
+            {
+              "step": 5,
+              "title": "REBALANCE WAREHOUSE CAPACITY",
+              "status": "PENDING"
+            }
+          ]
+        }
+      },
+      "anomalies": {
+        "vessels": [],
+        "ports": [
+          {
+            "port_id": "JP-YOK",
+            "port_name": "Port of Yokohama",
+            "type": "CRITICAL_PORT_CONGESTION",
+            "severity": "CRITICAL",
+            "congestion_index": 0.82,
+            "disruption_probability": 0.82,
+            "description": "Port Port of Yokohama experiencing severe operational congestion (82% disruption prob)."
+          },
+          {
+            "port_id": "JP-TYO",
+            "port_name": "Port of Tokyo",
+            "type": "CRITICAL_PORT_CONGESTION",
+            "severity": "HIGH",
+            "congestion_index": 0.71,
+            "disruption_probability": 0.65,
+            "description": "Port Port of Tokyo experiencing severe operational congestion (65% disruption prob)."
+          }
+        ]
+      },
+      "synthesized_events": [
+        {
+          "event_id": "EVT-PORT-JP-YOK",
+          "title": "Port Congestion Alert: Port of Yokohama",
+          "category": "PORT_DISRUPTION",
+          "severity": "CRITICAL",
+          "affected_regions": [
+            "Port of Yokohama"
+          ],
+          "description": "Port Port of Yokohama experiencing severe operational congestion (82% disruption prob)."
+        },
+        {
+          "event_id": "EVT-PORT-JP-TYO",
+          "title": "Port Congestion Alert: Port of Tokyo",
+          "category": "PORT_DISRUPTION",
+          "severity": "HIGH",
+          "affected_regions": [
+            "Port of Tokyo"
+          ],
+          "description": "Port Port of Tokyo experiencing severe operational congestion (65% disruption prob)."
+        }
+      ]
+    }
+  },
+  "/api/v1/simulate": {
+    "status_code": 200,
+    "data": {
+      "scenario": "TYPHOON",
+      "baseline_health": "94.7%",
+      "disruption_exposure": "82%",
+      "projected_recovery_health": "91.6%",
+      "delay_forecast": {
+        "nominal_transit_hours": 84.5,
+        "predicted_total_hours": 170.8,
+        "estimated_delay_hours": 86.2,
+        "estimated_delay_days": 3.6,
+        "confidence_score": 0.91
+      },
+      "congestion_forecast": {
+        "predicted_congestion_index": 0.43,
+        "disruption_probability": 0.49,
+        "threat_classification": "ELEVATED"
+      }
+    }
+  },
+  "/api/v1/agents": {
+    "status_code": 200,
+    "data": {
+      "count": 7,
+      "agents": [
+        {
+          "name": "SIGNAL",
+          "status": "ACTIVE",
+          "description": "Processing AIS & Satellite Data"
+        },
+        {
+          "name": "IMPACT",
+          "status": "ACTIVE",
+          "description": "Yokohama Disruption Probability: 82%"
+        },
+        {
+          "name": "ROUTING",
+          "status": "READY",
+          "description": "4 Alternative Sea Lanes Calculated"
+        },
+        {
+          "name": "INVENTORY",
+          "status": "READY",
+          "description": "Osaka & Kobe Warehouse Rebalance"
+        },
+        {
+          "name": "FINANCE",
+          "status": "READY",
+          "description": "Est. Savings: $1.42M"
+        },
+        {
+          "name": "RECOVERY",
+          "status": "READY",
+          "description": "Coordinated Response Ready"
+        },
+        {
+          "name": "EXECUTION",
+          "status": "READY",
+          "description": "Automated Logistics Triggers"
+        }
+      ]
+    }
+  },
+  "/api/v1/live-feed": {
+    "status_code": 200,
+    "data": {
+      "weather": {
+        "source": "open_meteo",
+        "timestamp": "2026-08-19T20:12:27.112260+00:00",
+        "latitude": 35.4437,
+        "longitude": 139.638,
+        "temperature": 24.7,
+        "wind_speed": 4.3,
+        "wind_direction": 180,
+        "precipitation": 0.0,
+        "pressure": 1015.4,
+        "weather_code": 1,
+        "visibility": 20060.0,
+        "wave_height": 0.3,
+        "sea_temperature": 27.7,
+        "current_speed": 0.5,
+        "cyclone_warning": true,
+        "cyclone_name": "Earthquake in Japan",
+        "hazard": "CRITICAL"
+      },
+      "marine": {
+        "latitude": 35.4437,
+        "longitude": 139.638,
+        "time": [
+          "2026-08-20T00:00",
+          "2026-08-20T01:00",
+          "2026-08-20T02:00",
+          "2026-08-20T03:00",
+          "2026-08-20T04:00",
+          "2026-08-20T05:00",
+          "2026-08-20T06:00",
+          "2026-08-20T07:00",
+          "2026-08-20T08:00",
+          "2026-08-20T09:00",
+          "2026-08-20T10:00",
+          "2026-08-20T11:00",
+          "2026-08-20T12:00",
+          "2026-08-20T13:00",
+          "2026-08-20T14:00",
+          "2026-08-20T15:00",
+          "2026-08-20T16:00",
+          "2026-08-20T17:00",
+          "2026-08-20T18:00",
+          "2026-08-20T19:00",
+          "2026-08-20T20:00",
+          "2026-08-20T21:00",
+          "2026-08-20T22:00",
+          "2026-08-20T23:00"
+        ],
+        "wave_height": [
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.32,
+          0.32,
+          0.34,
+          0.34,
+          0.34,
+          0.34,
+          0.34,
+          0.34
+        ],
+        "wave_direction": [
+          165,
+          165,
+          166,
+          166,
+          166,
+          167,
+          167,
+          167,
+          167,
+          167,
+          167,
+          168,
+          168,
+          168,
+          169,
+          169,
+          170,
+          170,
+          171,
+          171,
+          171,
+          171,
+          172,
+          172
+        ],
+        "wave_period": [
+          6.85,
+          6.85,
+          6.85,
+          6.85,
+          6.85,
+          6.9,
+          6.9,
+          6.9,
+          6.9,
+          6.9,
+          6.95,
+          7.0,
+          7.0,
+          7.0,
+          6.95,
+          6.9,
+          6.75,
+          6.5,
+          6.4,
+          6.5,
+          6.7,
+          6.85,
+          6.85,
+          6.85
+        ],
+        "sea_temperature": [
+          27.7,
+          27.6,
+          27.5,
+          27.5,
+          27.5,
+          27.5,
+          27.5,
+          27.5,
+          27.5,
+          27.6,
+          27.8,
+          27.9,
+          28.1,
+          28.3,
+          28.5,
+          28.6,
+          28.6,
+          28.5,
+          28.4,
+          28.2,
+          28.1,
+          28.0,
+          27.9,
+          27.8
+        ],
+        "current_speed": [
+          0.5,
+          0.4,
+          0.3,
+          0.3,
+          0.2,
+          0.2,
+          0.2,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.2,
+          0.2,
+          0.0,
+          0.2,
+          0.4,
+          0.6,
+          0.9,
+          0.8,
+          0.6,
+          0.5,
+          0.5,
+          0.4,
+          0.4
+        ],
+        "current_direction": [
+          135,
+          153,
+          135,
+          135,
+          90,
+          90,
+          90,
+          90,
+          90,
+          90,
+          90,
+          270,
+          270,
+          90,
+          0,
+          27,
+          34,
+          53,
+          63,
+          72,
+          90,
+          90,
+          117,
+          117
+        ]
+      },
+      "news": [
+        {
+          "title": "Tamil Nadu govt unveils Chennai to Puducherry sea-link corridor, boating plans",
+          "description": "CHENNAI: The state highways and small ports department has announced ambitious plans to construct a sea-link corridor from Ennore via Mamallapuram to .",
+          "source": "The Times of India",
+          "url": "https://timesofindia.indiatimes.com/city/chennai/tamil-nadu-govt-unveils-chennai-to-puducherry-sea-link-corridor-boating-plans/articleshow/133328875.cms",
+          "published_at": "2026-08-18T17:31:01Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "Top Business & Market Headlines Today \u2014 BL Morning Report, August 19, 2026",
+          "description": "BL Morning Report, August 19, 2026: Get today\u2019s top business news, market headlines about key market insights, economic highlights, and the latest updates from India and global markets.",
+          "source": "BusinessLine",
+          "url": "https://www.thehindubusinessline.com/multimedia/audio/top-business-amp-market-headlines-today-bl-morning-report-august-19-2026/article71361632.ece",
+          "published_at": "2026-08-18T17:01:58Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "Tata Sons' capital call: Listed giants find their own growth fuel",
+          "description": "In the concluding part, Business Standard examines how listed Tata companies will fund expansion",
+          "source": "Business Standard",
+          "url": "https://www.business-standard.com/specials/news/tata-sons-capital-call-listed-giants-find-their-own-growth-fuel-126081801526_1.html",
+          "published_at": "2026-08-18T16:57:20Z",
+          "category": "shipping",
+          "severity": "low"
+        },
+        {
+          "title": "India offers over Rs 1 lakh cr digital connectivity opportunity: BIF President",
+          "description": "Satellite communication services present a Rs 1 lakh crore digital connectivity opportunity in India.  Many rural Indians remain unconnected to broadband, which satcom can address.  Modernizing agricu",
+          "source": "The Times of India",
+          "url": "https://economictimes.indiatimes.com/industry/telecom/telecom-news/india-offers-over-rs-1-lakh-cr-digital-connectivity-opportunity-bif-president/articleshow/133325290.cms",
+          "published_at": "2026-08-18T14:29:16Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "Abundance Has a Landlord: AI Is Shifting Scarcity From Software to Substance",
+          "description": "In 2026, a company whose entire business was knowing things lost roughly 60% of its value over the past year. Gartner sells research. For decades, executives paid subscription fees for access to analy",
+          "source": "Fair Observer",
+          "url": "https://www.fairobserver.com/more/science/abundance-has-a-landlord-ai-is-shifting-scarcity-from-software-to-substance/",
+          "published_at": "2026-08-18T14:26:23Z",
+          "category": "shipping",
+          "severity": "low"
+        },
+        {
+          "title": "India offers over \u20b91 trn digital connectivity opportunity: BIF President",
+          "description": "India has a digital connectivity opportunity worth Rs 1 lakh crore at a conservative estimate, which can be largely achieved through satellite communication services, a senior official of industry bod",
+          "source": "Business Standard",
+          "url": "https://www.business-standard.com/industry/news/india-offers-over-1-trn-digital-connectivity-opportunity-bif-president-126081801180_1.html",
+          "published_at": "2026-08-18T14:17:37Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "In 1927, Japan imported about 100 Louisiana crayfish to feed farmed bullfrogs, only 20 survived and their descendants later spread to every prefecture except Hokkaido",
+          "description": "In the warm summer afternoons, Japanese children enjoy catching red swamp crayfish, a species introduced in 1927 for feeding American bullfrogs. After the closure of frog farms, these crayfish escaped",
+          "source": "The Times of India",
+          "url": "https://timesofindia.indiatimes.com/world/us/in-1927-japan-imported-100-louisiana-crayfish-to-feed-farmed-bullfrogsonly-20-survived-but-their-descendants-invaded-rice-fields-and-waterways-across-nearly-the-entire-country/articleshow/133315073.cms",
+          "published_at": "2026-08-18T13:53:35Z",
+          "category": "port",
+          "severity": "critical"
+        },
+        {
+          "title": "In 1981, Japan imported golden apple snails as a new food business, but the market failed, and abandoned farms helped the snails spread into rice fields",
+          "description": "In 1981, Japan welcomed golden apple snails as a potential food delicacy, but the venture flopped due to lack of consumer interest. Left unchecked, these snails thrived, spreading through irrigation c",
+          "source": "The Times of India",
+          "url": "https://timesofindia.indiatimes.com/world/rest-of-world/in-1981-japan-imported-golden-apple-snails-as-a-new-food-businessthe-market-collapsed-farms-abandoned-them-and-they-invaded-rice-fields/articleshow/133314850.cms",
+          "published_at": "2026-08-18T13:52:51Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "One dead, over 200 ill in UK Salmonella outbreak: Symptoms, cause and all you need to know",
+          "description": "UK News: A deadly Salmonella outbreak in the UK has impacted over 200 people, with health officials investigating links to imported eggs. Symptoms include diarrhea, cramps, and fever. Find out how to ",
+          "source": "The Times of India",
+          "url": "https://timesofindia.indiatimes.com/world/uk/one-dead-over-200-ill-in-uk-salmonella-outbreak-symptoms-cause-and-all-you-need-to-know/articleshow/133323942.cms",
+          "published_at": "2026-08-18T13:30:43Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "Singer to attempt 25-hour Dasarapada marathon",
+          "description": "Renowned Tulu singer Sangeetha Balachandra to attempt a 25-hour Dasarapada singing marathon in Udupi on Aug 23\u201324, 2026, for a world record.",
+          "source": "The Times of India",
+          "url": "https://timesofindia.indiatimes.com/city/bengaluru/singer-to-attempt-25-hour-dasarapada-marathon/articleshow/133324057.cms",
+          "published_at": "2026-08-18T13:26:56Z",
+          "category": "shipping",
+          "severity": "low"
+        },
+        {
+          "title": "Crunchyroll Store Removes Physical Manga, Light Novels",
+          "description": "Crunchyroll Store updated to become exclusive to Mega/Ultimate Fan tiers",
+          "source": "Anime News Network",
+          "url": "https://www.animenewsnetwork.com/news/2026-08-18/crunchyroll-store-removes-physical-manga-light-novels/.240698",
+          "published_at": "2026-08-18T19:15:36Z",
+          "category": "shipping",
+          "severity": "low"
+        },
+        {
+          "title": "Asian Games Plans Evacuation Measures",
+          "description": "Organizers of the Asian Games and Asian Para Games are preparing evacuation plans for athletes and officials staying in temporary container houses and a cruise ship at Nagoya Port, with around 20,000 ",
+          "source": "Newsonjapan.com",
+          "url": "https://newsonjapan.com/article/150420.php",
+          "published_at": "2026-08-18T17:55:10Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "Nvidia's AI moat is shifting from chips to capital",
+          "description": "Nvidia still has dominant market share in AI chips, but with competition picking up steam, the company is taking greater advantage of another key asset.",
+          "source": "CNBC",
+          "url": "https://www.cnbc.com/2026/08/18/nvidias-ai-moat-is-shifting-from-chips-to-capital.html",
+          "published_at": "2026-08-18T11:00:01Z",
+          "category": "shipping",
+          "severity": "low"
+        },
+        {
+          "title": "Iran War: Trump Threatens to Bomb Oman as Iran Attacks on Shipping Notch Up, WSJ Reports Planning for Bigger Escalation; Debate Over Covert Transits;",
+          "description": "Today's Iran war news: Trump vocalizes aggressively, including threatening nukes, as Iran and Ansar Allah dig in and energy supplies tighten",
+          "source": "Nakedcapitalism.com",
+          "url": "https://www.nakedcapitalism.com/2026/08/iran-war-trump-threatens-to-bomb-oman-as-iran-attacks-on-shipping-notch-up-wsj-reports-planning-for-bigger-escalation-debate-over-covert-transits.html",
+          "published_at": "2026-08-18T10:58:59Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "Idemitsu starts sourcing Saudi crude via Suez route, sees no risk to stable supplies -president",
+          "description": "TOKYO, Aug 18 : Idemitsu Kosan, Japan's second-largest oil refiner, has begun sourcing Saudi crude from Yanbu via the Suez route and the Cape of Good Hope and sees no near-term threat to stable suppli",
+          "source": "CNA",
+          "url": "https://www.channelnewsasia.com/business/idemitsu-starts-sourcing-saudi-crude-suez-route-sees-no-risk-stable-supplies-president-6325736",
+          "published_at": "2026-08-18T10:05:14Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "Nikkei Recovers 69,000 as AI Shares Defy Weak GDP",
+          "description": "Tokyo stocks rose on August 17, with the Nikkei 225 closing at 69,220.25, up 506.45 points, as buying in artificial intelligence and semiconductor-related shares outweighed weaker-than-expected econom",
+          "source": "Newsonjapan.com",
+          "url": "https://newsonjapan.com/article/150406.php",
+          "published_at": "2026-08-18T07:50:04Z",
+          "category": "port",
+          "severity": "low"
+        },
+        {
+          "title": "All aboard as Asian Games preparations enter 'final stages'; young athletes like Vaibhav Sooryavanshi to take the stage",
+          "description": "Next month, Nagoya will host the Asian Games, welcoming approximately fifteen thousand competitors ready to showcase their skills. Among them, promising young athletes like Alexandra Eala and Vaibhav ",
+          "source": "The Times of India",
+          "url": "https://economictimes.indiatimes.com/news/sports/other-sports/all-aboard-as-asian-games-preparations-enter-final-stages-young-athletes-like-vaibhav-sooryavanshi-to-take-the-stage/articleshow/133310759.cms",
+          "published_at": "2026-08-18T05:03:38Z",
+          "category": "shipping",
+          "severity": "low"
+        },
+        {
+          "title": "All aboard as Asian Games preparations in Japan enter 'final stages'",
+          "description": "The Asian Games are set to begin in Japan next month with many competitors.  Teenage stars like Alexandra Eala and Vaibhav Sooryavanshi will compete.  Athletes will stay in diverse accommodations incl",
+          "source": "The Times of India",
+          "url": "https://economictimes.indiatimes.com/news/sports/other-sports/all-aboard-as-asian-games-preparations-in-japan-enter-final-stages/articleshow/133311592.cms",
+          "published_at": "2026-08-18T04:57:22Z",
+          "category": "shipping",
+          "severity": "low"
+        },
+        {
+          "title": "Global Market: Japan stocks slide as oil spike and rising bond yields weigh on sentiment",
+          "description": "Japan\u2019s Nikkei fell 1.1%, ending its five-session rally as Middle East tensions disrupted oil supplies and revived inflation concerns. Rising crude prices and bond yields pressured equities, while shi",
+          "source": "The Times of India",
+          "url": "https://economictimes.indiatimes.com/markets/us-stocks/news/global-market-japan-stocks-slide-as-oil-spike-and-rising-bond-yields-weigh-on-sentiment/articleshow/133310581.cms",
+          "published_at": "2026-08-18T03:34:57Z",
+          "category": "shipping",
+          "severity": "low"
+        },
+        {
+          "title": "I've traveled beyond Japan's popular Tokyo-Kyoto-Osaka route. There are 4 cool day trips I'd actually recommend.",
+          "description": "I live in Japan and have traveled beyond the popular tourist destinations like Tokyo and Osaka. Some of my favorite day trips are Saitama and Nara.",
+          "source": "Business Insider",
+          "url": "https://www.businessinsider.com/best-japan-day-trips-near-major-cities-kobe-saitama-nara-2026-8#article",
+          "published_at": "2026-08-17T20:45:24Z",
+          "category": "port",
+          "severity": "low"
+        }
+      ],
+      "disasters": [
+        {
+          "event_type": "drought",
+          "location": "Europe-2026",
+          "latitude": 47.752,
+          "longitude": 11.878,
+          "severity": "MODERATE",
+          "start_time": "2025-12-11T00:00:00",
+          "end_time": "2026-08-17T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "drought",
+          "location": "Madagascar-2026",
+          "latitude": -17.932,
+          "longitude": 47.606,
+          "severity": "MODERATE",
+          "start_time": "2025-11-21T00:00:00",
+          "end_time": "2026-08-17T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "drought",
+          "location": "Central America-2026",
+          "latitude": 15.049,
+          "longitude": -88.943,
+          "severity": "MODERATE",
+          "start_time": "2026-05-11T00:00:00",
+          "end_time": "2026-08-17T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "drought",
+          "location": "East Africa-2026",
+          "latitude": 9.46,
+          "longitude": 42.131,
+          "severity": "MODERATE",
+          "start_time": "2026-04-21T00:00:00",
+          "end_time": "2026-08-17T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "drought",
+          "location": "Uganda, Kenya-2026",
+          "latitude": 1.115,
+          "longitude": 33.577,
+          "severity": "MODERATE",
+          "start_time": "2026-05-21T00:00:00",
+          "end_time": "2026-08-17T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in China",
+          "latitude": 30.8308,
+          "longitude": 119.9017,
+          "severity": "MODERATE",
+          "start_time": "2026-07-31T01:00:00",
+          "end_time": "2026-08-16T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Indonesia",
+          "latitude": -8.3101,
+          "longitude": 121.3517,
+          "severity": "HIGH",
+          "start_time": "2026-08-14T21:58:21",
+          "end_time": "2026-08-14T21:58:21",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Colombia",
+          "latitude": 4.8436,
+          "longitude": -76.2422,
+          "severity": "HIGH",
+          "start_time": "2026-08-10T12:34:28",
+          "end_time": "2026-08-10T12:34:28",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "DOLPHIN-26",
+          "latitude": 27.9,
+          "longitude": 120.6,
+          "severity": "MODERATE",
+          "start_time": "2026-07-27T00:00:00",
+          "end_time": "2026-08-09T12:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Philippines",
+          "latitude": 5.1812,
+          "longitude": 125.276,
+          "severity": "MODERATE",
+          "start_time": "2026-08-05T04:14:06",
+          "end_time": "2026-08-05T04:14:06",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Greece",
+          "latitude": 38.122,
+          "longitude": 23.2591,
+          "severity": "MODERATE",
+          "start_time": "2026-07-31T00:00:00",
+          "end_time": "2026-08-05T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Greece",
+          "latitude": 35.1684,
+          "longitude": 24.4625,
+          "severity": "MODERATE",
+          "start_time": "2026-07-30T00:00:00",
+          "end_time": "2026-08-01T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in France",
+          "latitude": 44.8463,
+          "longitude": -1.0329,
+          "severity": "HIGH",
+          "start_time": "2026-07-22T00:00:00",
+          "end_time": "2026-08-01T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in China",
+          "latitude": 30.8276,
+          "longitude": 110.9725,
+          "severity": "HIGH",
+          "start_time": "2026-07-25T01:00:00",
+          "end_time": "2026-07-31T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Spain",
+          "latitude": 40.3594,
+          "longitude": -4.5405,
+          "severity": "MODERATE",
+          "start_time": "2026-07-22T00:00:00",
+          "end_time": "2026-07-30T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Spain",
+          "latitude": 39.8863,
+          "longitude": -0.2541,
+          "severity": "MODERATE",
+          "start_time": "2026-07-25T00:00:00",
+          "end_time": "2026-07-30T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Tunisia",
+          "latitude": 36.261,
+          "longitude": 8.5428,
+          "severity": "MODERATE",
+          "start_time": "2026-07-21T00:00:00",
+          "end_time": "2026-07-29T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Japan",
+          "latitude": 32.6817,
+          "longitude": 130.7217,
+          "severity": "MODERATE",
+          "start_time": "2026-07-28T07:27:15",
+          "end_time": "2026-07-28T07:27:15",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in China",
+          "latitude": 35.3685,
+          "longitude": 99.5198,
+          "severity": "MODERATE",
+          "start_time": "2026-07-28T03:16:08",
+          "end_time": "2026-07-28T03:16:08",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "NOUL-26",
+          "latitude": 22.9,
+          "longitude": 114.5,
+          "severity": "MODERATE",
+          "start_time": "2026-07-23T06:00:00",
+          "end_time": "2026-07-26T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Spain",
+          "latitude": 41.1147,
+          "longitude": -3.0589,
+          "severity": "MODERATE",
+          "start_time": "2026-07-18T00:00:00",
+          "end_time": "2026-07-25T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Peru",
+          "latitude": -12.1036,
+          "longitude": -75.3034,
+          "severity": "MODERATE",
+          "start_time": "2026-07-19T02:24:35",
+          "end_time": "2026-07-19T02:24:35",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "volcano",
+          "location": "Mayon",
+          "latitude": 13.257,
+          "longitude": 123.685,
+          "severity": "MODERATE",
+          "start_time": "2026-07-16T01:59:00",
+          "end_time": "2026-07-16T01:59:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in China",
+          "latitude": 35.7003,
+          "longitude": 103.2791,
+          "severity": "MODERATE",
+          "start_time": "2026-06-06T01:00:00",
+          "end_time": "2026-07-14T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in France",
+          "latitude": 48.375,
+          "longitude": 2.5494,
+          "severity": "MODERATE",
+          "start_time": "2026-07-12T00:00:00",
+          "end_time": "2026-07-14T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "BAVI-26",
+          "latitude": 28.7,
+          "longitude": 120.4,
+          "severity": "HIGH",
+          "start_time": "2026-07-01T00:00:00",
+          "end_time": "2026-07-11T18:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Spain",
+          "latitude": 37.1805,
+          "longitude": -2.0012,
+          "severity": "MODERATE",
+          "start_time": "2026-07-09T00:00:00",
+          "end_time": "2026-07-11T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in France",
+          "latitude": 42.6724,
+          "longitude": 2.5677,
+          "severity": "MODERATE",
+          "start_time": "2026-07-04T00:00:00",
+          "end_time": "2026-07-08T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Portugal",
+          "latitude": 40.6204,
+          "longitude": -8.2824,
+          "severity": "MODERATE",
+          "start_time": "2026-07-02T00:00:00",
+          "end_time": "2026-07-08T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "MAYSAK-26",
+          "latitude": 21.6,
+          "longitude": 107.9,
+          "severity": "MODERATE",
+          "start_time": "2026-07-01T18:00:00",
+          "end_time": "2026-07-04T18:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Philippines",
+          "latitude": 5.2392,
+          "longitude": 125.1965,
+          "severity": "MODERATE",
+          "start_time": "2026-06-26T11:34:41",
+          "end_time": "2026-06-26T11:34:41",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Venezuela",
+          "latitude": 10.453,
+          "longitude": -68.5139,
+          "severity": "HIGH",
+          "start_time": "2026-06-24T22:05:12",
+          "end_time": "2026-06-24T22:05:12",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Venezuela",
+          "latitude": 10.436,
+          "longitude": -68.5277,
+          "severity": "HIGH",
+          "start_time": "2026-06-24T22:04:32",
+          "end_time": "2026-06-24T22:04:32",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in China",
+          "latitude": 37.8888,
+          "longitude": 95.4028,
+          "severity": "MODERATE",
+          "start_time": "2026-06-16T09:06:55",
+          "end_time": "2026-06-16T09:06:55",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Indonesia",
+          "latitude": -1.1312,
+          "longitude": 120.2301,
+          "severity": "MODERATE",
+          "start_time": "2026-06-16T03:27:44",
+          "end_time": "2026-06-16T03:27:44",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Philippines",
+          "latitude": 5.5918,
+          "longitude": 125.0469,
+          "severity": "MODERATE",
+          "start_time": "2026-06-07T23:37:40",
+          "end_time": "2026-06-07T23:37:40",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in China",
+          "latitude": 24.4799,
+          "longitude": 109.2073,
+          "severity": "MODERATE",
+          "start_time": "2026-05-18T13:44:26",
+          "end_time": "2026-05-18T13:44:26",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "volcano",
+          "location": "Dukono",
+          "latitude": 1.6992,
+          "longitude": 127.8783,
+          "severity": "MODERATE",
+          "start_time": "2026-05-08T09:10:00",
+          "end_time": "2026-05-08T09:10:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Japan",
+          "latitude": 39.9532,
+          "longitude": 143.0462,
+          "severity": "MODERATE",
+          "start_time": "2026-04-20T07:53:00",
+          "end_time": "2026-04-20T07:53:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "drought",
+          "location": "Argentina-Uruguay-2025",
+          "latitude": -34.19,
+          "longitude": -60.785,
+          "severity": "MODERATE",
+          "start_time": "2025-11-21T00:00:00",
+          "end_time": "2026-04-20T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "SINLAKU-26",
+          "latitude": 28.7,
+          "longitude": 156.1,
+          "severity": "HIGH",
+          "start_time": "2026-04-09T00:00:00",
+          "end_time": "2026-04-19T18:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Afghanistan",
+          "latitude": 32.1032,
+          "longitude": 63.9466,
+          "severity": "MODERATE",
+          "start_time": "2026-03-25T01:00:00",
+          "end_time": "2026-04-14T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Brazil",
+          "latitude": -9.0479,
+          "longitude": -70.5265,
+          "severity": "MODERATE",
+          "start_time": "2026-02-03T01:00:00",
+          "end_time": "2026-03-31T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "drought",
+          "location": "East Africa-2025",
+          "latitude": 2.053,
+          "longitude": 43.899,
+          "severity": "MODERATE",
+          "start_time": "2025-05-21T00:00:00",
+          "end_time": "2026-03-30T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "volcano",
+          "location": "Kanlaon",
+          "latitude": 10.412,
+          "longitude": 123.132,
+          "severity": "MODERATE",
+          "start_time": "2026-03-15T10:54:00",
+          "end_time": "2026-03-15T10:54:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Ethiopia",
+          "latitude": 6.1701,
+          "longitude": 37.2621,
+          "severity": "MODERATE",
+          "start_time": "2026-03-09T01:00:00",
+          "end_time": "2026-03-11T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Democratic Republic of Congo",
+          "latitude": -0.5646,
+          "longitude": 28.7062,
+          "severity": "MODERATE",
+          "start_time": "2026-02-11T01:00:00",
+          "end_time": "2026-03-05T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Bangladesh",
+          "latitude": 22.4513,
+          "longitude": 89.1394,
+          "severity": "MODERATE",
+          "start_time": "2026-02-27T07:52:24",
+          "end_time": "2026-02-27T07:52:24",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "GEZANI-26",
+          "latitude": -35.63,
+          "longitude": 41.6,
+          "severity": "HIGH",
+          "start_time": "2026-02-06T00:00:00",
+          "end_time": "2026-02-18T12:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "FYTIA-26",
+          "latitude": -23.41,
+          "longitude": 54.85,
+          "severity": "MODERATE",
+          "start_time": "2026-01-29T12:00:00",
+          "end_time": "2026-02-04T06:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Mozambique",
+          "latitude": -20.1562,
+          "longitude": 34.7383,
+          "severity": "MODERATE",
+          "start_time": "2025-12-22T01:00:00",
+          "end_time": "2026-01-26T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Chile",
+          "latitude": -36.7946,
+          "longitude": -72.9302,
+          "severity": "MODERATE",
+          "start_time": "2026-01-17T00:00:00",
+          "end_time": "2026-01-25T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Mozambique, South Africa, Zimbabwe",
+          "latitude": -23.4735,
+          "longitude": 29.3959,
+          "severity": "MODERATE",
+          "start_time": "2026-01-19T12:00:00",
+          "end_time": "2026-01-19T12:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Indonesia",
+          "latitude": -8.7893,
+          "longitude": 117.1462,
+          "severity": "MODERATE",
+          "start_time": "2025-11-17T01:00:00",
+          "end_time": "2026-01-03T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Malaysia, Thailand",
+          "latitude": 13.8284,
+          "longitude": 100.5684,
+          "severity": "MODERATE",
+          "start_time": "2025-12-12T13:00:00",
+          "end_time": "2025-12-12T13:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Indonesia, Malaysia, Thailand",
+          "latitude": 13.8284,
+          "longitude": 100.5684,
+          "severity": "HIGH",
+          "start_time": "2025-12-03T01:00:00",
+          "end_time": "2025-12-06T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Sri Lanka",
+          "latitude": 7.2143,
+          "longitude": 80.6401,
+          "severity": "MODERATE",
+          "start_time": "2025-11-28T01:00:00",
+          "end_time": "2025-12-05T13:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Thailand",
+          "latitude": 6.3345,
+          "longitude": 101.141,
+          "severity": "MODERATE",
+          "start_time": "2025-11-17T01:00:00",
+          "end_time": "2025-12-01T14:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "DITWAH-25",
+          "latitude": 10.5,
+          "longitude": 80.8,
+          "severity": "MODERATE",
+          "start_time": "2025-11-27T00:00:00",
+          "end_time": "2025-11-29T18:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "volcano",
+          "location": "Semeru",
+          "latitude": -8.108,
+          "longitude": 112.922,
+          "severity": "HIGH",
+          "start_time": "2025-11-19T12:00:00",
+          "end_time": "2025-11-24T23:20:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Bangladesh",
+          "latitude": 23.8079,
+          "longitude": 90.6489,
+          "severity": "MODERATE",
+          "start_time": "2025-11-21T04:38:28",
+          "end_time": "2025-11-21T04:38:28",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "FUNG-WONG-25",
+          "latitude": 26.3,
+          "longitude": 128.3,
+          "severity": "HIGH",
+          "start_time": "2025-11-04T06:00:00",
+          "end_time": "2025-11-13T12:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "KALMAEGI-25",
+          "latitude": 13.6,
+          "longitude": 109.1,
+          "severity": "HIGH",
+          "start_time": "2025-11-01T06:00:00",
+          "end_time": "2025-11-06T12:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Afghanistan",
+          "latitude": 36.5894,
+          "longitude": 67.4843,
+          "severity": "HIGH",
+          "start_time": "2025-11-02T20:29:02",
+          "end_time": "2025-11-02T20:29:02",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "MELISSA-25",
+          "latitude": 39.0,
+          "longitude": -60.5,
+          "severity": "HIGH",
+          "start_time": "2025-10-21T15:00:00",
+          "end_time": "2025-10-31T15:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Cuba",
+          "latitude": 20.3701,
+          "longitude": -76.4272,
+          "severity": "MODERATE",
+          "start_time": "2025-10-28T01:00:00",
+          "end_time": "2025-10-30T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "MONTHA-25",
+          "latitude": 16.9,
+          "longitude": 81.4,
+          "severity": "MODERATE",
+          "start_time": "2025-10-26T12:00:00",
+          "end_time": "2025-10-29T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in T\u00fcrkiye",
+          "latitude": 39.1921,
+          "longitude": 28.2462,
+          "severity": "MODERATE",
+          "start_time": "2025-10-27T19:48:29",
+          "end_time": "2025-10-27T19:48:29",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "FENGSHEN-25",
+          "latitude": 16.0,
+          "longitude": 108.6,
+          "severity": "MODERATE",
+          "start_time": "2025-10-18T00:00:00",
+          "end_time": "2025-10-23T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "volcano",
+          "location": "Lewotobi",
+          "latitude": -8.542,
+          "longitude": 122.775,
+          "severity": "MODERATE",
+          "start_time": "2025-10-14T22:00:00",
+          "end_time": "2025-10-14T22:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Philippines",
+          "latitude": 10.9457,
+          "longitude": 123.9375,
+          "severity": "MODERATE",
+          "start_time": "2025-10-12T17:05:59",
+          "end_time": "2025-10-12T17:05:59",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Ethiopia",
+          "latitude": 13.7902,
+          "longitude": 39.8663,
+          "severity": "MODERATE",
+          "start_time": "2025-10-11T16:18:25",
+          "end_time": "2025-10-11T16:18:25",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Philippines",
+          "latitude": 7.2649,
+          "longitude": 126.7545,
+          "severity": "MODERATE",
+          "start_time": "2025-10-10T01:43:59",
+          "end_time": "2025-10-10T01:43:59",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Nigeria",
+          "latitude": 13.7542,
+          "longitude": 5.6575,
+          "severity": "MODERATE",
+          "start_time": "2025-08-31T01:00:00",
+          "end_time": "2025-10-10T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in China",
+          "latitude": 30.9113,
+          "longitude": 99.92,
+          "severity": "MODERATE",
+          "start_time": "2025-10-09T05:17:40",
+          "end_time": "2025-10-09T05:17:40",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in India",
+          "latitude": 31.3678,
+          "longitude": 76.6203,
+          "severity": "MODERATE",
+          "start_time": "2025-08-16T01:00:00",
+          "end_time": "2025-10-09T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Nepal",
+          "latitude": 26.94,
+          "longitude": 87.9248,
+          "severity": "MODERATE",
+          "start_time": "2025-10-03T00:00:00",
+          "end_time": "2025-10-06T14:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "MATMO-25",
+          "latitude": 21.9,
+          "longitude": 108.5,
+          "severity": "HIGH",
+          "start_time": "2025-10-01T06:00:00",
+          "end_time": "2025-10-05T18:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "ONE-25",
+          "latitude": 19.5,
+          "longitude": 84.7,
+          "severity": "MODERATE",
+          "start_time": "2025-10-01T06:00:00",
+          "end_time": "2025-10-02T12:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Philippines",
+          "latitude": 11.1514,
+          "longitude": 124.1376,
+          "severity": "MODERATE",
+          "start_time": "2025-09-30T13:59:43",
+          "end_time": "2025-09-30T13:59:43",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "BUALOI-25",
+          "latitude": 18.2,
+          "longitude": 106.2,
+          "severity": "HIGH",
+          "start_time": "2025-09-23T12:00:00",
+          "end_time": "2025-09-28T18:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Yemen",
+          "latitude": 12.8333,
+          "longitude": 44.9167,
+          "severity": "MODERATE",
+          "start_time": "2025-09-16T01:00:00",
+          "end_time": "2025-09-25T14:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Venezuela",
+          "latitude": 9.9272,
+          "longitude": -70.6916,
+          "severity": "MODERATE",
+          "start_time": "2025-09-25T03:51:39",
+          "end_time": "2025-09-25T03:51:39",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in China",
+          "latitude": 22.3506,
+          "longitude": 114.1849,
+          "severity": "HIGH",
+          "start_time": "2025-09-23T01:00:00",
+          "end_time": "2025-09-25T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Venezuela",
+          "latitude": 9.9222,
+          "longitude": -70.7174,
+          "severity": "MODERATE",
+          "start_time": "2025-09-24T22:21:55",
+          "end_time": "2025-09-24T22:21:55",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "RAGASA-25",
+          "latitude": 21.8,
+          "longitude": 111.1,
+          "severity": "HIGH",
+          "start_time": "2025-09-18T12:00:00",
+          "end_time": "2025-09-24T12:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in United States",
+          "latitude": 34.8986,
+          "longitude": -117.0244,
+          "severity": "MODERATE",
+          "start_time": "2025-06-15T01:00:00",
+          "end_time": "2025-09-21T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in South Sudan",
+          "latitude": 9.0,
+          "longitude": 33.0,
+          "severity": "MODERATE",
+          "start_time": "2025-07-15T01:00:00",
+          "end_time": "2025-09-19T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Russia",
+          "latitude": 53.1928,
+          "longitude": 160.5129,
+          "severity": "MODERATE",
+          "start_time": "2025-09-18T18:58:12",
+          "end_time": "2025-09-18T18:58:12",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in India",
+          "latitude": 26.6066,
+          "longitude": 92.1963,
+          "severity": "MODERATE",
+          "start_time": "2025-09-14T11:11:51",
+          "end_time": "2025-09-14T11:11:51",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "TAPAH-25",
+          "latitude": 21.8,
+          "longitude": 112.6,
+          "severity": "MODERATE",
+          "start_time": "2025-09-06T06:00:00",
+          "end_time": "2025-09-08T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Afghanistan",
+          "latitude": 34.549,
+          "longitude": 70.6696,
+          "severity": "MODERATE",
+          "start_time": "2025-09-05T17:25:50",
+          "end_time": "2025-09-05T17:25:50",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Afghanistan",
+          "latitude": 34.719,
+          "longitude": 70.7909,
+          "severity": "HIGH",
+          "start_time": "2025-09-04T16:56:24",
+          "end_time": "2025-09-04T16:56:24",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "Earthquake in Afghanistan",
+          "latitude": 34.7061,
+          "longitude": 70.7934,
+          "severity": "HIGH",
+          "start_time": "2025-08-31T19:17:34",
+          "end_time": "2025-08-31T19:17:34",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "flood",
+          "location": "Flood in Pakistan",
+          "latitude": 34.002,
+          "longitude": 71.4805,
+          "severity": "MODERATE",
+          "start_time": "2025-08-14T01:00:00",
+          "end_time": "2025-08-26T01:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "typhoon",
+          "location": "KAJIKI-25",
+          "latitude": 18.6,
+          "longitude": 105.7,
+          "severity": "HIGH",
+          "start_time": "2025-08-22T12:00:00",
+          "end_time": "2025-08-25T12:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Spain",
+          "latitude": 42.4521,
+          "longitude": -7.0644,
+          "severity": "MODERATE",
+          "start_time": "2025-08-14T00:00:00",
+          "end_time": "2025-08-21T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "wildfire",
+          "location": "Forest fires in Spain",
+          "latitude": 41.9649,
+          "longitude": -7.5414,
+          "severity": "MODERATE",
+          "start_time": "2025-08-13T00:00:00",
+          "end_time": "2025-08-20T00:00:00",
+          "source": "GDACS"
+        },
+        {
+          "event_type": "earthquake",
+          "location": "M 5.4 - 215 km E of Levuka, Fiji",
+          "latitude": -17.8049,
+          "longitude": -178.6638,
+          "severity": "LOW",
+          "start_time": "2026-08-19T18:45:29.754000+00:00",
+          "end_time": null,
+          "source": "USGS",
+          "magnitude": 5.4,
+          "depth_km": 556.753,
+          "tsunami_threat": false
+        },
+        {
+          "event_type": "earthquake",
+          "location": "M 5.4 - 134 km S of Severo-Kuril\u2019sk, Russia",
+          "latitude": 49.4799,
+          "longitude": 155.8633,
+          "severity": "LOW",
+          "start_time": "2026-08-19T18:07:17.251000+00:00",
+          "end_time": null,
+          "source": "USGS",
+          "magnitude": 5.4,
+          "depth_km": 41.176,
+          "tsunami_threat": false
+        },
+        {
+          "event_type": "earthquake",
+          "location": "M 5.5 - 52 km NNE of Ruteng, Indonesia",
+          "latitude": -8.1769,
+          "longitude": 120.6643,
+          "severity": "LOW",
+          "start_time": "2026-08-19T16:17:38.400000+00:00",
+          "end_time": null,
+          "source": "USGS",
+          "magnitude": 5.5,
+          "depth_km": 10,
+          "tsunami_threat": false
+        },
+        {
+          "event_type": "earthquake",
+          "location": "M 5.2 - 66 km NNW of Ende, Indonesia",
+          "latitude": -8.2837,
+          "longitude": 121.4389,
+          "severity": "LOW",
+          "start_time": "2026-08-19T03:13:29.805000+00:00",
+          "end_time": null,
+          "source": "USGS",
+          "magnitude": 5.2,
+          "depth_km": 30.365,
+          "tsunami_threat": false
+        },
+        {
+          "event_type": "earthquake",
+          "location": "M 5.9 - 270 km WSW of Yanglong, China",
+          "latitude": 37.8208,
+          "longitude": 95.6095,
+          "severity": "LOW",
+          "start_time": "2026-08-18T21:36:28.032000+00:00",
+          "end_time": null,
+          "source": "USGS",
+          "magnitude": 5.9,
+          "depth_km": 6,
+          "tsunami_threat": false
+        }
+      ]
+    }
+  }
+}

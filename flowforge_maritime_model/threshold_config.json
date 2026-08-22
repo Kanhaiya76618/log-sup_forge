@@ -1,0 +1,6 @@
+{
+    "default_threshold": 0.53,
+    "high_sensitivity_threshold": 0.41,
+    "balanced_threshold": 0.53,
+    "description": "Threshold used to classify a shipment as high-risk."
+}

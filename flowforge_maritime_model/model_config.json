@@ -1,0 +1,72 @@
+{
+    "model_name": "FlowForge Maritime Disruption Model",
+    "model_version": "1.0.0",
+    "model_type": "LogisticRegression",
+    "transport_domain": "Maritime",
+    "threshold": 0.53,
+    "features": [
+        "Origin_Port",
+        "Destination_Port",
+        "Transport_Mode",
+        "Product_Category",
+        "Distance_km",
+        "Weight_MT",
+        "Fuel_Price_Index",
+        "Geopolitical_Risk_Score",
+        "Weather_Condition",
+        "Carrier_Reliability_Score",
+        "Lead_Time_Days",
+        "Weather_N",
+        "Geo_N",
+        "Carrier_Risk_N",
+        "Distance_N",
+        "Fuel_N",
+        "Lead_N",
+        "Weather_Distance",
+        "Weather_Carrier",
+        "Weather_Geo",
+        "Geo_Carrier",
+        "Geo_Distance",
+        "Operational_Stress"
+    ],
+    "categorical_features": [
+        "Origin_Port",
+        "Destination_Port",
+        "Transport_Mode",
+        "Product_Category",
+        "Weather_Condition"
+    ],
+    "numeric_features": [
+        "Distance_km",
+        "Weight_MT",
+        "Fuel_Price_Index",
+        "Geopolitical_Risk_Score",
+        "Carrier_Reliability_Score",
+        "Lead_Time_Days",
+        "Weather_N",
+        "Geo_N",
+        "Carrier_Risk_N",
+        "Distance_N",
+        "Fuel_N",
+        "Lead_N",
+        "Weather_Distance",
+        "Weather_Carrier",
+        "Weather_Geo",
+        "Geo_Carrier",
+        "Geo_Distance",
+        "Operational_Stress"
+    ],
+    "metrics": {
+        "accuracy": 0.6875,
+        "precision": 0.565359477124183,
+        "recall": 0.6966442953020134,
+        "f1": 0.6241731809981961,
+        "roc_auc": 0.7568405572341507,
+        "pr_auc": 0.6438210207596304
+    },
+    "cross_validation": {
+        "folds": 5,
+        "mean_roc_auc": 0.7717597324646511,
+        "std_roc_auc": 0.00889445032968116
+    }
+}

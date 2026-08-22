@@ -274,16 +274,14 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
   const nominalWaypoints = resolveRoute(input.origin, input.destination)
   const nominalDistNm = routeDistanceNm(nominalWaypoints) || 4890
 
-  // Calculate bypass route
+  // Calculate bypass route (100% water without overland shifting)
   const isIndiaToJapan = (input.origin.includes('Mumbai') || input.origin.includes('Mundra') || input.origin.includes('Chennai')) &&
                          (input.destination.includes('Yokohama') || input.destination.includes('Tokyo') || input.destination.includes('Nagoya'))
   const bypassWaypoints = isIndiaToJapan && (seaRoutesData as any).corridor_bypass
     ? ((seaRoutesData as any).corridor_bypass as [number, number][])
-    : nominalWaypoints.map(([lat, lon], idx) => {
-        if (idx === 0 || idx === nominalWaypoints.length - 1) return [lat, lon] as [number, number]
-        return [lat - 2.5, lon + 1.8] as [number, number]
-      })
-  const bypassDistNm = Math.round(nominalDistNm * 1.06)
+    : nominalWaypoints
+  const bypassDistNm = isIndiaToJapan ? 5120 : Math.round(nominalDistNm * 1.05)
+
 
   const routeA: RouteOption = {
     id: 'ROUTE-A',

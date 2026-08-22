@@ -116,10 +116,13 @@ const SEA_NODES: Record<string, [number, number]> = {
   'N_MALABAR_N':        [15.50, 72.80],
   'N_MALABAR_M':        [12.50, 73.80],
   'N_KOCHI':            [9.85, 75.80],
-  'N_CAPE_COMORIN':     [7.20, 76.80],
-  'N_SRI_LANKA_S':      [5.50, 80.55], // Dondra Head (Key Gateway)
-  'N_SRI_LANKA_E':      [7.50, 82.20],
-  'N_CHENNAI':          [13.08, 80.50],
+  'N_CAPE_COMORIN':     [7.00, 76.80],
+  'N_SRI_LANKA_SW':     [5.20, 79.80], // Deep ocean southwest of Galle
+  'N_SRI_LANKA_S':      [4.80, 80.60], // Deep ocean far south of Dondra Head
+  'N_SRI_LANKA_SE':     [5.30, 82.50], // Deep ocean far east of Great Basses Reef
+  'N_SRI_LANKA_E':      [7.50, 82.80], // Deep ocean well east of Sangaman Kanda
+  'N_SRI_LANKA_NE':     [9.50, 82.50],
+  'N_CHENNAI':          [13.08, 80.60],
   'N_BAY_OF_BENGAL_M':  [10.00, 86.00],
   'N_CHITTAGONG':       [21.50, 91.50],
   'N_GREAT_CHANNEL':    [5.80, 94.00],
@@ -128,11 +131,14 @@ const SEA_NODES: Record<string, [number, number]> = {
   'N_MALACCA_N':        [5.20, 98.50],
   'N_MALACCA_M':        [2.80, 101.50],
   'N_SINGAPORE':        [1.25, 103.75],
+  'N_SINGAPORE_E':      [1.35, 104.45],
   'N_GULF_THAILAND':    [8.50, 102.50],
   'N_LAEM_CHABANG':     [12.80, 100.80],
   'N_SIHANOUKVILLE':    [10.40, 103.30],
-  'N_HO_CHI_MINH':      [10.20, 107.20],
-  'N_SCS_SOUTH':        [4.50, 107.50],
+  'N_CAPE_CA_MAU':      [7.20, 104.80], // Deep water south of Cape Ca Mau
+  'N_HO_CHI_MINH':      [10.00, 107.50], // Off Vung Tau / Can Gio Channel
+  'N_VIETNAM_EAST':     [12.50, 110.50], // Off Nha Trang
+  'N_SCS_SOUTH':        [3.50, 106.50],
   'N_SCS_MID':          [11.50, 113.00],
   'N_SCS_NORTH':        [17.50, 117.00],
   'N_MANILA':           [14.40, 120.40],
@@ -245,28 +251,35 @@ const SEA_EDGES: [string, string][] = [
   ['N_MALABAR_N', 'N_MALABAR_M'],
   ['N_MALABAR_M', 'N_KOCHI'],
   ['N_KOCHI', 'N_CAPE_COMORIN'],
-  ['N_CAPE_COMORIN', 'N_SRI_LANKA_S'],
+  ['N_CAPE_COMORIN', 'N_SRI_LANKA_SW'],
+  ['N_SRI_LANKA_SW', 'N_SRI_LANKA_S'],
+  ['N_SRI_LANKA_S', 'N_SRI_LANKA_SE'],
 
   // India East Coast & Bay of Bengal
-  ['N_SRI_LANKA_S', 'N_SRI_LANKA_E'],
-  ['N_SRI_LANKA_E', 'N_CHENNAI'],
+  ['N_SRI_LANKA_SE', 'N_SRI_LANKA_E'],
+  ['N_SRI_LANKA_E', 'N_SRI_LANKA_NE'],
+  ['N_SRI_LANKA_NE', 'N_CHENNAI'],
   ['N_CHENNAI', 'N_BAY_OF_BENGAL_M'],
   ['N_BAY_OF_BENGAL_M', 'N_CHITTAGONG'],
   ['N_BAY_OF_BENGAL_M', 'N_GREAT_CHANNEL'],
-  ['N_SRI_LANKA_S', 'N_GREAT_CHANNEL'],
+  ['N_SRI_LANKA_SE', 'N_GREAT_CHANNEL'],
 
   // Malacca Highway
   ['N_GREAT_CHANNEL', 'N_MALACCA_N'],
   ['N_MALACCA_N', 'N_MALACCA_M'],
   ['N_MALACCA_M', 'N_SINGAPORE'],
+  ['N_SINGAPORE', 'N_SINGAPORE_E'],
 
   // Southeast Asia & Gulf of Thailand & Vietnam
-  ['N_SINGAPORE', 'N_GULF_THAILAND'],
+  ['N_SINGAPORE_E', 'N_GULF_THAILAND'],
   ['N_GULF_THAILAND', 'N_LAEM_CHABANG'],
   ['N_GULF_THAILAND', 'N_SIHANOUKVILLE'],
-  ['N_SINGAPORE', 'N_HO_CHI_MINH'],
-  ['N_HO_CHI_MINH', 'N_SCS_MID'],
-  ['N_SINGAPORE', 'N_SCS_SOUTH'],
+  ['N_GULF_THAILAND', 'N_CAPE_CA_MAU'],
+  ['N_SINGAPORE_E', 'N_CAPE_CA_MAU'],
+  ['N_CAPE_CA_MAU', 'N_HO_CHI_MINH'],
+  ['N_HO_CHI_MINH', 'N_VIETNAM_EAST'],
+  ['N_VIETNAM_EAST', 'N_SCS_MID'],
+  ['N_SINGAPORE_E', 'N_SCS_SOUTH'],
   ['N_SCS_SOUTH', 'N_SCS_MID'],
   ['N_SCS_MID', 'N_SCS_NORTH'],
   ['N_SCS_MID', 'N_MANILA'],

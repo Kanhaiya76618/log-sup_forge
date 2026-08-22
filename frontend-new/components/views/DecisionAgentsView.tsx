@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { 
-  Sparkles, Zap, ShieldCheck, CheckCircle2, Play, Terminal, 
+import {
+  Sparkles, Zap, ShieldCheck, CheckCircle2, Play, Terminal,
   Layers, RefreshCw, Cpu, Sliders, ArrowRight, TrendingDown,
   Waves, Wind, Navigation, AlertTriangle, Send, Check
 } from 'lucide-react'
-import { 
-  runAgentPipeline, 
-  diagnoseDisruption, 
-  PipelineExecutionResult, 
+import {
+  runAgentPipeline,
+  diagnoseDisruption,
+  PipelineExecutionResult,
   AgentStep,
   ParetoRoute,
   SimulationResult,
@@ -104,7 +104,7 @@ export default function DecisionAgentsView() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      
+
       {/* Top Header Card */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -122,41 +122,43 @@ export default function DecisionAgentsView() {
               {pipelineData.execution_time_ms}ms Execution Latency
             </span>
           )}
-          <button 
+          <button
             onClick={() => handleRunPipeline(true)}
             disabled={running}
             className="flex items-center gap-2 rounded-xl bg-[#087ef5] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#076ecf] active:scale-[0.98] transition disabled:opacity-50"
           >
-            <Play className={`size-3.5 ${running ? 'animate-spin' : ''}`} /> 
+            <Play className={`size-3.5 ${running ? 'animate-spin' : ''}`} />
             {running ? 'Executing 9-Agent Pipeline...' : 'Run End-to-End Pipeline'}
           </button>
         </div>
       </div>
 
-      {/* Real-Time ML Parameter Calibration Controls Bar */}
-      <div className="rounded-[24px] border border-[#d2d2d7] bg-white/90 p-5 shadow-sm backdrop-blur-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e5e5e7] pb-3 mb-4">
-          <div className="flex items-center gap-2">
-            <Sliders className="size-4 text-[#087ef5]" />
-            <h3 className="text-xs font-semibold uppercase tracking-[.14em] text-[#1d1d1f]">
+      {/* Real-Time ML Parameter Calibration Controls Bar — Clay-Glass Master Card */}
+      <div className="rounded-[32px] border border-white/90 bg-white/85 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.06),inset_0_2px_4px_rgba(255,255,255,0.95)] backdrop-blur-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e5e5e7]/80 pb-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-7 items-center justify-center rounded-xl bg-[#087ef5]/15 text-[#087ef5]">
+              <Sliders className="size-4" />
+            </div>
+            <h3 className="text-xs font-bold uppercase tracking-[.14em] text-[#1d1d1f]">
               Interactive Machine Learning Parameter Tuning (Live ExtraTrees Re-scoring)
             </h3>
           </div>
           <div className="flex items-center gap-3">
             {liveMlResult && (
-              <span className={`rounded-full px-3 py-1 text-[10px] font-bold tracking-[.1em] uppercase ${
-                liveMlResult.risk_level === 'CRITICAL' 
-                  ? 'bg-[#ffebe8] text-[#ff3b30] border border-[#ff3b30]/30' 
+              <span className={`rounded-full px-3.5 py-1.5 text-[10px] font-black tracking-[.1em] uppercase shadow-sm ${
+                liveMlResult.risk_level === 'CRITICAL'
+                  ? 'bg-[#ffebe8] text-[#ff3b30] border border-[#ff3b30]/30 shadow-[0_0_8px_rgba(255,59,48,0.15)]'
                   : liveMlResult.risk_level === 'HIGH'
-                  ? 'bg-[#fff4e5] text-[#ff9f0a] border border-[#ff9f0a]/30'
-                  : 'bg-[#e8f8ed] text-[#34c759] border border-[#34c759]/30'
+                  ? 'bg-[#fff4e5] text-[#ff9f0a] border border-[#ff9f0a]/30 shadow-[0_0_8px_rgba(255,159,10,0.15)]'
+                  : 'bg-[#e8f8ed] text-[#34c759] border border-[#34c759]/30 shadow-[0_0_8px_rgba(52,199,89,0.15)]'
               }`}>
                 Live ML Disruption: {liveMlResult.disruption_probability_percent}% ({liveMlResult.risk_level})
               </span>
             )}
-            <button 
+            <button
               onClick={() => handleRunPipeline(false)}
-              className="text-[10px] font-semibold text-[#087ef5] hover:underline flex items-center gap-1"
+              className="text-[10px] font-bold text-[#087ef5] hover:underline flex items-center gap-1"
             >
               <RefreshCw className="size-3" /> Re-solve Routes
             </button>
@@ -165,81 +167,81 @@ export default function DecisionAgentsView() {
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5 text-xs">
           {/* Slider 1: Operational Stress */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 rounded-2xl bg-white/70 p-3 border border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_2px_rgba(255,255,255,0.9)]">
             <div className="flex justify-between text-[11px]">
-              <span className="text-[#6e6e73] font-medium">Operational Stress</span>
-              <strong className="text-[#1d1d1f] font-mono">{opStress}%</strong>
+              <span className="text-[#6e6e73] font-bold">Operational Stress</span>
+              <strong className="text-[#1d1d1f] font-mono font-black">{opStress}%</strong>
             </div>
-            <input 
-              type="range" 
-              min="10" 
-              max="100" 
-              value={opStress} 
+            <input
+              type="range"
+              min="10"
+              max="100"
+              value={opStress}
               onChange={e => setOpStress(Number(e.target.value))}
               className="w-full accent-[#087ef5] cursor-pointer"
             />
           </div>
 
           {/* Slider 2: Geo-Port Risk */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 rounded-2xl bg-white/70 p-3 border border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_2px_rgba(255,255,255,0.9)]">
             <div className="flex justify-between text-[11px]">
-              <span className="text-[#6e6e73] font-medium">Geo-Port Risk</span>
-              <strong className="text-[#1d1d1f] font-mono">{geoRisk}%</strong>
+              <span className="text-[#6e6e73] font-bold">Geo-Port Risk</span>
+              <strong className="text-[#1d1d1f] font-mono font-black">{geoRisk}%</strong>
             </div>
-            <input 
-              type="range" 
-              min="10" 
-              max="100" 
-              value={geoRisk} 
+            <input
+              type="range"
+              min="10"
+              max="100"
+              value={geoRisk}
               onChange={e => setGeoRisk(Number(e.target.value))}
               className="w-full accent-[#087ef5] cursor-pointer"
             />
           </div>
 
           {/* Slider 3: Port Congestion */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 rounded-2xl bg-white/70 p-3 border border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_2px_rgba(255,255,255,0.9)]">
             <div className="flex justify-between text-[11px]">
-              <span className="text-[#6e6e73] font-medium">Port Congestion</span>
-              <strong className="text-[#1d1d1f] font-mono">{congestion}%</strong>
+              <span className="text-[#6e6e73] font-bold">Port Congestion</span>
+              <strong className="text-[#1d1d1f] font-mono font-black">{congestion}%</strong>
             </div>
-            <input 
-              type="range" 
-              min="10" 
-              max="100" 
-              value={congestion} 
+            <input
+              type="range"
+              min="10"
+              max="100"
+              value={congestion}
               onChange={e => setCongestion(Number(e.target.value))}
               className="w-full accent-[#087ef5] cursor-pointer"
             />
           </div>
 
           {/* Slider 4: Wave Height */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 rounded-2xl bg-white/70 p-3 border border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_2px_rgba(255,255,255,0.9)]">
             <div className="flex justify-between text-[11px]">
-              <span className="text-[#6e6e73] font-medium">Wave Swell Height</span>
-              <strong className="text-[#1d1d1f] font-mono">{waveHeight}m</strong>
+              <span className="text-[#6e6e73] font-bold">Wave Swell Height</span>
+              <strong className="text-[#1d1d1f] font-mono font-black">{waveHeight}m</strong>
             </div>
-            <input 
-              type="range" 
-              min="0.5" 
-              max="6.0" 
-              step="0.1" 
-              value={waveHeight} 
+            <input
+              type="range"
+              min="0.5"
+              max="6.0"
+              step="0.1"
+              value={waveHeight}
               onChange={e => setWaveHeight(Number(e.target.value))}
               className="w-full accent-[#087ef5] cursor-pointer"
             />
           </div>
 
           {/* Slider 5: Wind Speed */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 rounded-2xl bg-white/70 p-3 border border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_2px_rgba(255,255,255,0.9)]">
             <div className="flex justify-between text-[11px]">
-              <span className="text-[#6e6e73] font-medium">Wind Gust Speed</span>
-              <strong className="text-[#1d1d1f] font-mono">{windSpeed} km/h</strong>
+              <span className="text-[#6e6e73] font-bold">Wind Gust Speed</span>
+              <strong className="text-[#1d1d1f] font-mono font-black">{windSpeed} km/h</strong>
             </div>
-            <input 
-              type="range" 
-              min="10" 
-              max="90" 
-              value={windSpeed} 
+            <input
+              type="range"
+              min="10"
+              max="90"
+              value={windSpeed}
               onChange={e => setWindSpeed(Number(e.target.value))}
               className="w-full accent-[#087ef5] cursor-pointer"
             />
@@ -249,32 +251,32 @@ export default function DecisionAgentsView() {
 
       {/* Agents 9-Grid & Inspector Section */}
       <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
-        
-        {/* Left: 9 Agent Cards Grid */}
+
+        {/* Left: 9 Agent Cards Grid in Clay-Glass Style */}
         <div className="grid gap-3 sm:grid-cols-3">
           {agents.map((agent, index) => {
             const isSelected = selectedAgent === index
             const isActiveStep = activeStepIndex === index
             return (
-              <div 
+              <div
                 key={agent.step}
                 onClick={() => setSelectedAgent(index)}
-                className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 overflow-hidden min-w-0 flex flex-col justify-between ${
+                className={`cursor-pointer rounded-[24px] border p-4 transition-all duration-200 overflow-hidden min-w-0 flex flex-col justify-between ${
                   isActiveStep
-                    ? 'border-[#087ef5] bg-[#eef7ff] shadow-lg ring-2 ring-[#087ef5] scale-[1.02]'
-                    : isSelected 
-                    ? 'border-[#087ef5] bg-white shadow-md ring-2 ring-[#087ef5]/15' 
-                    : 'border-[#e5e5e7] bg-[#fafaf9] hover:bg-white hover:border-[#d2d2d7]'
+                    ? 'border-[#087ef5] bg-[#eef7ff] shadow-[0_12px_28px_rgba(8,126,245,0.25)] ring-2 ring-[#087ef5] scale-[1.02]'
+                    : isSelected
+                    ? 'border-[#087ef5] bg-white shadow-[0_12px_28px_rgba(8,126,245,0.15),inset_0_2px_4px_rgba(255,255,255,0.95)] ring-2 ring-[#087ef5]/20'
+                    : 'border-white/90 bg-white/80 shadow-[0_4px_14px_rgba(0,0,0,0.03),inset_0_1.5px_3px_rgba(255,255,255,0.95)] hover:bg-white hover:shadow-[0_10px_24px_rgba(0,0,0,0.06)]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-1.5 min-w-0">
-                  <span className="font-mono text-xs font-bold text-[#087ef5] flex items-center gap-1.5 shrink-0">
+                  <span className="font-mono text-xs font-black text-[#087ef5] flex items-center gap-1.5 shrink-0">
                     {agent.step}
                     {isActiveStep && <span className="size-1.5 rounded-full bg-[#087ef5] animate-ping" />}
                   </span>
-                  <span className={`flow-badge max-w-[70%] truncate shrink min-w-0 ${
-                    agent.status === 'CRITICAL' || agent.status === 'CRITICAL STOCKOUT' 
-                      ? 'bg-[#ffebe8] text-[#ff3b30]' 
+                  <span className={`flow-badge max-w-[70%] truncate shrink min-w-0 font-bold ${
+                    agent.status === 'CRITICAL' || agent.status === 'CRITICAL STOCKOUT'
+                      ? 'bg-[#ffebe8] text-[#ff3b30]'
                       : agent.status === 'AT RISK' || agent.status === 'EXPOSURE'
                       ? 'bg-[#fff4e5] text-[#ff9f0a]'
                       : 'bg-[#e8f8ed] text-[#34c759]'
@@ -284,37 +286,37 @@ export default function DecisionAgentsView() {
                 </div>
 
                 <div className="min-w-0">
-                  <h3 className="mt-2 text-xs font-semibold text-[#1d1d1f] leading-snug truncate">{agent.name}</h3>
-                  <p className="text-[10px] text-[#86868b] mt-0.5 leading-snug truncate">{agent.category}</p>
+                  <h3 className="mt-2 text-xs font-bold text-[#1d1d1f] leading-snug truncate">{agent.name}</h3>
+                  <p className="text-[10px] text-[#86868b] mt-0.5 leading-snug truncate font-medium">{agent.category}</p>
                 </div>
               </div>
             )
           })}
         </div>
 
-        {/* Right: Selected Agent Inspector Drawer */}
-        <div className="rounded-[28px] border border-[#d2d2d7] bg-white p-6 shadow-sm flex flex-col justify-between">
+        {/* Right: Selected Agent Inspector Drawer in Clay-Glass Style */}
+        <div className="rounded-[32px] border border-white/90 bg-white/85 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.06),inset_0_2px_4px_rgba(255,255,255,0.95)] backdrop-blur-2xl flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-[#e5e5e7] pb-3">
+            <div className="flex items-center justify-between border-b border-[#e5e5e7]/80 pb-3">
               <div>
-                <p className="text-[10px] font-bold tracking-[.18em] text-[#087ef5] uppercase">AGENT INSPECTOR</p>
-                <h3 className="mt-1 text-base font-semibold text-[#1d1d1f]">{agents[selectedAgent]?.name}</h3>
+                <p className="text-[10px] font-black tracking-[.18em] text-[#087ef5] uppercase">AGENT INSPECTOR</p>
+                <h3 className="mt-1 text-base font-bold text-[#1d1d1f]">{agents[selectedAgent]?.name}</h3>
               </div>
-              <span className="font-mono text-xs font-bold text-[#86868b] bg-[#f5f5f7] px-2.5 py-1 rounded-lg">
+              <span className="font-mono text-xs font-bold text-[#86868b] bg-[#f5f5f7] px-3 py-1 rounded-full border border-white/80">
                 STAGE {agents[selectedAgent]?.step}
               </span>
             </div>
 
             <div className="mt-4 space-y-3.5 text-xs">
               <div>
-                <span className="text-[9px] font-semibold text-[#86868b] uppercase tracking-wider">Engine / Architecture:</span>
-                <p className="font-medium text-[#1d1d1f] mt-0.5">{agents[selectedAgent]?.model}</p>
+                <span className="text-[9px] font-bold text-[#86868b] uppercase tracking-wider">Engine / Architecture:</span>
+                <p className="font-bold text-[#1d1d1f] mt-0.5">{agents[selectedAgent]?.model}</p>
               </div>
 
               <div>
-                <span className="text-[9px] font-semibold text-[#86868b] uppercase tracking-wider">Pipeline Output Log:</span>
-                <div className="mt-1.5 rounded-xl bg-[#1d1d1f] p-3 text-white font-mono text-[11px] border border-[#333]">
-                  <div className="flex items-center gap-1.5 text-[#34c759] text-[9px] mb-1 font-sans font-semibold uppercase tracking-wider">
+                <span className="text-[9px] font-bold text-[#86868b] uppercase tracking-wider">Pipeline Output Log:</span>
+                <div className="mt-1.5 rounded-2xl bg-[#1d1d1f] p-4 text-white font-mono text-[11px] border border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.25)]">
+                  <div className="flex items-center gap-1.5 text-[#34c759] text-[9px] mb-1 font-sans font-bold uppercase tracking-wider">
                     <Terminal className="size-3" /> Live Event Bus Telemetry
                   </div>
                   <p className="leading-5 text-[#f1f1f3]">{agents[selectedAgent]?.output}</p>
@@ -324,8 +326,8 @@ export default function DecisionAgentsView() {
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#f0f0f2] flex items-center justify-between text-[11px] text-[#86868b]">
-            <span>Deterministic ML Inference</span>
-            <span className="font-semibold text-[#34c759] flex items-center gap-1">
+            <span className="font-medium">Deterministic ML Inference</span>
+            <span className="font-bold text-[#34c759] flex items-center gap-1">
               <CheckCircle2 className="size-3.5" /> Verified Nominal
             </span>
           </div>
@@ -336,7 +338,7 @@ export default function DecisionAgentsView() {
       {/* POST-AGENT RUN: DIGITAL TWIN SIMULATION & GOOGLE OR-TOOLS REROUTING SECTION */}
       {showSimulation && (
         <div className="space-y-6 pt-4 border-t border-[#d2d2d7]">
-          
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
               <p className="text-[10px] font-bold tracking-[.18em] text-[#087ef5] uppercase">POST-AGENT SIMULATION & OPTIMIZATION</p>
@@ -352,7 +354,7 @@ export default function DecisionAgentsView() {
 
           {/* Top Row: Monte Carlo Probabilistic Graph + SLA Risk Summary */}
           <div className="grid gap-5 lg:grid-cols-[1.3fr_0.7fr]">
-            
+
             {/* 500-Sample Monte Carlo Probability Density Curve */}
             <div className="rounded-[28px] border border-[#d2d2d7] bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
@@ -377,12 +379,12 @@ export default function DecisionAgentsView() {
                       {bin.bin_label}: {bin.probability_pct}% ({bin.frequency} runs)
                     </div>
                     {/* Bar */}
-                    <div 
+                    <div
                       className={`w-full rounded-t-md transition-all duration-500 ${
-                        i < 4 
-                          ? 'bg-[#087ef5]' 
-                          : i < 7 
-                          ? 'bg-[#34c759]' 
+                        i < 4
+                          ? 'bg-[#087ef5]'
+                          : i < 7
+                          ? 'bg-[#34c759]'
                           : 'bg-[#ff9f0a]'
                       } group-hover:opacity-80`}
                       style={{ height: `${Math.max(8, bin.probability_pct * 3.2)}%` }}
@@ -409,7 +411,7 @@ export default function DecisionAgentsView() {
               <div>
                 <p className="text-[10px] font-bold tracking-[.16em] text-[#86868b] uppercase">FINANCIAL LOSS MITIGATION</p>
                 <h3 className="mt-1 text-lg font-semibold text-[#1d1d1f]">Net Risk Reduction</h3>
-                
+
                 <div className="mt-4 rounded-2xl bg-[#f5f5f7] p-4 border border-[#e5e5e7]">
                   <div className="flex justify-between items-baseline">
                     <span className="text-xs text-[#6e6e73]">Unmitigated Risk</span>
@@ -464,12 +466,12 @@ export default function DecisionAgentsView() {
               {paretoRoutes.map((route) => {
                 const isSelected = selectedScenario === route.scenario_id
                 return (
-                  <div 
+                  <div
                     key={route.scenario_id}
                     onClick={() => setSelectedScenario(route.scenario_id)}
                     className={`cursor-pointer rounded-[24px] border p-5 transition-all duration-200 flex flex-col justify-between ${
-                      route.recommended 
-                        ? 'border-[#087ef5] bg-white shadow-md ring-2 ring-[#087ef5]/20' 
+                      route.recommended
+                        ? 'border-[#087ef5] bg-white shadow-md ring-2 ring-[#087ef5]/20'
                         : isSelected
                         ? 'border-[#1d1d1f] bg-white shadow-sm ring-1 ring-[#1d1d1f]'
                         : 'border-[#e5e5e7] bg-[#fafaf9] hover:bg-white hover:border-[#d2d2d7]'
@@ -553,11 +555,11 @@ export default function DecisionAgentsView() {
                 </div>
               </div>
 
-              <button 
+              <button
                 onClick={() => setEdiSent(true)}
                 className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition ${
-                  ediSent 
-                    ? 'bg-[#34c759] text-white' 
+                  ediSent
+                    ? 'bg-[#34c759] text-white'
                     : 'bg-[#1d1d1f] text-white hover:bg-black'
                 }`}
               >

@@ -145,45 +145,45 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5] text-[#1d1d1f] selection:bg-[#087ef5] selection:text-white">
+    <main className="min-h-screen bg-[#f7f8fa] text-[#1d1d1f] selection:bg-[#087ef5] selection:text-white">
       {/* Top Floating Glass Navigation Header */}
-      <header className="fixed inset-x-4 top-4 z-50 mx-auto flex h-14 max-w-[1600px] items-center justify-between rounded-2xl border border-[#d2d2d7]/70 bg-white/80 px-4 shadow-[0_12px_40px_rgba(0,0,0,.08)] backdrop-blur-2xl md:inset-x-8 md:px-5">
-        <a href="/" className="flex items-center gap-2 text-xs font-semibold tracking-[-.02em] shrink-0">
-          <span className="flex size-6 items-center justify-center rounded-full bg-[#1d1d1f]">
-            <span className="size-1.5 rounded-full bg-white" />
+      <header className="fixed inset-x-4 top-4 z-50 mx-auto flex h-14 max-w-[1600px] items-center justify-between rounded-[24px] border border-white/90 bg-white/80 px-4 shadow-[0_16px_36px_rgba(0,0,0,0.06),inset_0_2px_4px_rgba(255,255,255,0.95)] backdrop-blur-2xl md:inset-x-8 md:px-5">
+        <a href="/" className="flex items-center gap-2.5 text-xs font-bold tracking-[-.02em] shrink-0 group">
+          <span className="flex size-6 items-center justify-center rounded-full bg-[#1d1d1f] shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
+            <span className="size-1.5 rounded-full bg-white shadow-[0_0_4px_#ffffff]" />
           </span>
-          <span className="whitespace-nowrap">FLOWFORGE</span>
-          <span className="hidden xl:inline text-[#86868b] font-normal whitespace-nowrap">/ MARITIME DISRUPTION OS</span>
+          <span className="whitespace-nowrap font-black text-[#1d1d1f]">FLOWFORGE</span>
+          <span className="hidden xl:inline text-[#86868b] font-medium whitespace-nowrap">/ MARITIME DISRUPTION OS</span>
         </a>
 
-        <div className="hidden items-center gap-2 lg:gap-4 xl:gap-6 text-[9px] xl:text-[10px] font-semibold tracking-[.10em] xl:tracking-[.14em] text-[#6e6e73] md:flex whitespace-nowrap">
+        <div className="hidden items-center gap-2 lg:gap-4 xl:gap-6 text-[9px] xl:text-[10px] font-bold tracking-[.10em] xl:tracking-[.14em] text-[#6e6e73] md:flex whitespace-nowrap">
           <button 
             onClick={() => setActiveTab('dashboard')} 
-            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'dashboard' ? 'text-[#087ef5] font-bold border-b border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
+            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'dashboard' ? 'text-[#087ef5] font-black border-b-2 border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
           >
             GLOBAL NETWORK
           </button>
           <button 
             onClick={() => setActiveTab('live-operations')} 
-            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'live-operations' ? 'text-[#087ef5] font-bold border-b border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
+            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'live-operations' ? 'text-[#087ef5] font-black border-b-2 border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
           >
             LIVE OPERATIONS
           </button>
           <button 
             onClick={() => setActiveTab('reports')} 
-            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'reports' ? 'text-[#087ef5] font-bold border-b border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
+            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'reports' ? 'text-[#087ef5] font-black border-b-2 border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
           >
             REPORTS
           </button>
           <button 
             onClick={() => setActiveTab('decision-agents')} 
-            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'decision-agents' ? 'text-[#087ef5] font-bold border-b border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
+            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'decision-agents' ? 'text-[#087ef5] font-black border-b-2 border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
           >
             DECISION AGENTS
           </button>
           <button 
             onClick={() => setActiveTab('cargo-journey')} 
-            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'cargo-journey' ? 'text-[#087ef5] font-bold border-b border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
+            className={`pb-0.5 whitespace-nowrap shrink-0 transition ${activeTab === 'cargo-journey' ? 'text-[#087ef5] font-black border-b-2 border-[#087ef5]' : 'hover:text-[#1d1d1f]'}`}
           >
             CARGO JOURNEY RISK
           </button>
@@ -192,13 +192,13 @@ export default function Dashboard() {
         <div className="flex items-center gap-2.5 shrink-0">
           <button 
             onClick={() => setCommand(true)} 
-            className="hidden items-center gap-1.5 rounded-lg border border-[#e5e5e7] bg-[#f5f5f7] px-2.5 py-1.5 text-[10px] text-[#86868b] hover:border-[#d2d2d7] sm:flex transition whitespace-nowrap shrink-0"
+            className="hidden items-center gap-1.5 rounded-full border border-white/90 bg-white/80 px-3 py-1.5 text-[10px] font-bold text-[#86868b] shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_2px_rgba(255,255,255,0.9)] hover:text-[#1d1d1f] sm:flex transition whitespace-nowrap shrink-0"
           >
             <Command className="size-3" />⌘K
           </button>
           
-          <span className="flow-badge bg-[#e8f8ed] text-[#34c759]">
-            <span className="size-1.5 rounded-full bg-[#34c759] animate-pulse" />
+          <span className="flow-badge bg-[#e8f8ed] text-[#34c759] border border-[#34c759]/20 shadow-[0_2px_8px_rgba(52,199,89,0.15)]">
+            <span className="size-1.5 rounded-full bg-[#34c759] animate-pulse shadow-[0_0_6px_#34c759]" />
             LIVE AIS ACTIVE
           </span>
 
@@ -215,68 +215,68 @@ export default function Dashboard() {
       {/* Main Workspace Container */}
       <div className="mx-auto flex min-h-screen max-w-[1600px] gap-4 px-4 pb-8 pt-24 md:px-8">
         
-        {/* Left Collapsible Navigation Sidebar */}
-        <aside className={`${sidebar ? 'w-60' : 'w-14'} hidden shrink-0 flex-col rounded-[28px] border border-[#d2d2d7] bg-white/75 p-3.5 shadow-[0_12px_40px_rgba(0,0,0,.04)] backdrop-blur-xl transition-all duration-500 md:flex`}>
+        {/* Left Collapsible Navigation Sidebar with Clay-Glass styling */}
+        <aside className={`${sidebar ? 'w-60' : 'w-14'} hidden shrink-0 flex-col rounded-[32px] border border-white/90 bg-white/80 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.05),inset_0_2px_4px_rgba(255,255,255,0.95)] backdrop-blur-2xl transition-all duration-500 md:flex`}>
           <button 
             onClick={() => setSidebar(v => !v)} 
             aria-label="Toggle sidebar" 
-            className="mb-6 flex items-center gap-3 rounded-xl p-2 text-[#6e6e73] hover:bg-[#f5f5f7] transition"
+            className="mb-6 flex items-center gap-3 rounded-2xl p-2 text-[#6e6e73] hover:bg-[#f5f5f7] transition"
           >
             {sidebar ? <ChevronLeft className="size-4" /> : <Menu className="size-4" />}
-            {sidebar && <span className="text-[10px] font-semibold tracking-[.14em]">COLLAPSE (⌘B)</span>}
+            {sidebar && <span className="text-[10px] font-bold tracking-[.14em]">COLLAPSE (⌘B)</span>}
           </button>
 
           {sidebar && (
             <>
-              <p className="px-2.5 text-[9px] font-semibold tracking-[.18em] text-[#86868b] uppercase">Workspace</p>
-              <nav className="mt-2.5 space-y-1">
+              <p className="px-2.5 text-[9px] font-bold tracking-[.18em] text-[#86868b] uppercase">Workspace</p>
+              <nav className="mt-2.5 space-y-1.5">
                 <button 
                   onClick={() => setActiveTab('dashboard')}
-                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition ${
-                    activeTab === 'dashboard' ? 'bg-[#f0f0f2] text-[#1d1d1f] shadow-sm' : 'text-[#6e6e73] hover:bg-[#f5f5f7]'
+                  className={`w-full flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition ${
+                    activeTab === 'dashboard' ? 'bg-[#087ef5] text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.4)]' : 'text-[#6e6e73] hover:bg-white/70'
                   }`}
                 >
-                  <Compass className={`size-4 ${activeTab === 'dashboard' ? 'text-[#087ef5]' : ''}`} />
+                  <Compass className={`size-4 ${activeTab === 'dashboard' ? 'text-white' : ''}`} />
                   Dashboard
                 </button>
 
                 <button 
                   onClick={() => setActiveTab('logistics')}
-                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition ${
-                    activeTab === 'logistics' ? 'bg-[#f0f0f2] text-[#1d1d1f] font-semibold shadow-sm' : 'text-[#6e6e73] hover:bg-[#f5f5f7]'
+                  className={`w-full flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition ${
+                    activeTab === 'logistics' ? 'bg-[#087ef5] text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.4)]' : 'text-[#6e6e73] hover:bg-white/70'
                   }`}
                 >
-                  <Ship className={`size-4 ${activeTab === 'logistics' ? 'text-[#087ef5]' : ''}`} />
-                  Logistics & Fleet <span className="ml-auto rounded-full bg-[#f0f0f2] px-2 py-0.5 text-[9px] font-semibold">{shipments.length}</span>
+                  <Ship className={`size-4 ${activeTab === 'logistics' ? 'text-white' : ''}`} />
+                  Logistics & Fleet <span className={`ml-auto rounded-full px-2 py-0.5 text-[9px] font-bold ${activeTab === 'logistics' ? 'bg-white/20 text-white' : 'bg-[#f0f0f2]'}`}>{shipments.length}</span>
                 </button>
 
                 <button 
                   onClick={() => setActiveTab('suppliers')}
-                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition ${
-                    activeTab === 'suppliers' ? 'bg-[#f0f0f2] text-[#1d1d1f] font-semibold shadow-sm' : 'text-[#6e6e73] hover:bg-[#f5f5f7]'
+                  className={`w-full flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition ${
+                    activeTab === 'suppliers' ? 'bg-[#087ef5] text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.4)]' : 'text-[#6e6e73] hover:bg-white/70'
                   }`}
                 >
-                  <Building2 className={`size-4 ${activeTab === 'suppliers' ? 'text-[#087ef5]' : ''}`} />
+                  <Building2 className={`size-4 ${activeTab === 'suppliers' ? 'text-white' : ''}`} />
                   Suppliers
                 </button>
 
                 <button 
                   onClick={() => setActiveTab('automation')}
-                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition ${
-                    activeTab === 'automation' ? 'bg-[#f0f0f2] text-[#1d1d1f] font-semibold shadow-sm' : 'text-[#6e6e73] hover:bg-[#f5f5f7]'
+                  className={`w-full flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition ${
+                    activeTab === 'automation' ? 'bg-[#087ef5] text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.4)]' : 'text-[#6e6e73] hover:bg-white/70'
                   }`}
                 >
-                  <Sliders className={`size-4 ${activeTab === 'automation' ? 'text-[#087ef5]' : ''}`} />
+                  <Sliders className={`size-4 ${activeTab === 'automation' ? 'text-white' : ''}`} />
                   Automation
                 </button>
 
                 <button 
                   onClick={() => setActiveTab('integrations')}
-                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition ${
-                    activeTab === 'integrations' ? 'bg-[#f0f0f2] text-[#1d1d1f] font-semibold shadow-sm' : 'text-[#6e6e73] hover:bg-[#f5f5f7]'
+                  className={`w-full flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition ${
+                    activeTab === 'integrations' ? 'bg-[#087ef5] text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_1.5px_2px_rgba(255,255,255,0.4)]' : 'text-[#6e6e73] hover:bg-white/70'
                   }`}
                 >
-                  <Cpu className={`size-4 ${activeTab === 'integrations' ? 'text-[#087ef5]' : ''}`} />
+                  <Cpu className={`size-4 ${activeTab === 'integrations' ? 'text-white' : ''}`} />
                   Integrations
                 </button>
               </nav>
@@ -343,79 +343,78 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Autonomous Multi-Agent Operational Command Section */}
-              <div className="relative rounded-[28px] border border-[#d2d2d7] bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,.08)]">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6 border-b border-[#e5e5e7] pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex size-7 items-center justify-center rounded-lg bg-[#1d1d1f] text-white">
+              {/* Autonomous Multi-Agent Operational Command Section — Clay-Glass Master Card */}
+              <div className="relative rounded-[32px] border border-white/90 bg-white/85 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08),inset_0_3px_6px_rgba(255,255,255,0.95),inset_0_-3px_6px_rgba(0,0,0,0.02)] backdrop-blur-2xl">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6 border-b border-[#e5e5e7]/80 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-8 items-center justify-center rounded-2xl bg-[#1d1d1f] text-white shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.3)]">
                       <Sparkles className="size-4 text-[#087ef5]" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold tracking-tight text-[#1d1d1f]">Autonomous Decision Agents Command Grid</h3>
-                      <p className="text-[10px] text-[#86868b]">Real-time cooperative AI agent loop evaluating maritime routes and inventory impact</p>
+                      <h3 className="text-sm font-bold tracking-tight text-[#1d1d1f]">Autonomous Decision Agents Command Grid</h3>
+                      <p className="text-[10px] text-[#86868b] font-medium">Real-time cooperative AI agent loop evaluating maritime routes and inventory impact</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-[#e8f8ed] px-2.5 py-1 text-[9px] font-semibold text-[#34c759] flex items-center gap-1.5">
+                    <span className="rounded-full bg-[#e8f8ed] px-3 py-1.5 text-[9px] font-bold text-[#34c759] border border-[#34c759]/20 flex items-center gap-1.5 shadow-sm">
                       <span className="size-1.5 rounded-full bg-[#34c759] animate-ping" />
                       9 AGENTS ACTIVE & SYNCED
                     </span>
                   </div>
                 </div>
 
-                {/* Main Content Area with Absolute Top-Right Floating 3D Globe */}
-                <div className="relative min-h-[300px]">
-                  
+                {/* Main Content Area */}
+                <div className="relative min-h-[280px]">
                   {/* Left: Active Agent Traces & Pipeline Flow */}
                   <div className="space-y-3 lg:pr-52">
-                    <p className="text-[10px] font-bold tracking-[.16em] text-[#86868b] uppercase">LIVE AGENT INFERENCE & EVENT BUS</p>
+                    <p className="text-[10px] font-black tracking-[.16em] text-[#86868b] uppercase">LIVE AGENT INFERENCE & EVENT BUS</p>
                     
                     <div className="space-y-2.5">
-                      <div className="flex items-start gap-3 rounded-2xl bg-[#fafaf9] p-3.5 border border-[#e5e5e7] hover:border-[#087ef5] transition overflow-hidden min-w-0">
-                        <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#087ef5]/10 text-[#087ef5] font-mono text-[10px] font-bold">
+                      <div className="flex items-start gap-3 rounded-2xl bg-white/80 p-4 border border-white/90 shadow-[0_4px_14px_rgba(0,0,0,0.03),inset_0_1.5px_3px_rgba(255,255,255,0.95)] hover:border-[#087ef5] transition overflow-hidden min-w-0">
+                        <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#087ef5]/15 text-[#087ef5] font-mono text-[10px] font-black shadow-sm">
                           01
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2 min-w-0">
-                            <h4 className="text-xs font-semibold text-[#1d1d1f] truncate">Risk Detection Agent</h4>
-                            <span className="text-[8px] font-semibold bg-[#e8f8ed] text-[#34c759] px-2 py-0.5 rounded shrink-0">INGESTING AIS</span>
+                            <h4 className="text-xs font-bold text-[#1d1d1f] truncate">Risk Detection Agent</h4>
+                            <span className="text-[8px] font-bold bg-[#e8f8ed] text-[#34c759] px-2 py-0.5 rounded-full shrink-0 border border-[#34c759]/20">INGESTING AIS</span>
                           </div>
-                          <p className="text-[11px] text-[#6e6e73] mt-0.5">Satellite AIS telemetry stream ingested. 2.8m swell anomaly detected along Mumbai-Yokohama corridor.</p>
+                          <p className="text-[11px] text-[#6e6e73] mt-0.5 font-medium">Satellite AIS telemetry stream ingested. 2.8m swell anomaly detected along Mumbai-Yokohama corridor.</p>
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-3 rounded-2xl bg-[#fafaf9] p-3.5 border border-[#e5e5e7] hover:border-[#087ef5] transition overflow-hidden min-w-0">
-                        <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#ff9f0a]/10 text-[#ff9f0a] font-mono text-[10px] font-bold">
+                      <div className="flex items-start gap-3 rounded-2xl bg-white/80 p-4 border border-white/90 shadow-[0_4px_14px_rgba(0,0,0,0.03),inset_0_1.5px_3px_rgba(255,255,255,0.95)] hover:border-[#ff9f0a] transition overflow-hidden min-w-0">
+                        <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#ff9f0a]/15 text-[#ff9f0a] font-mono text-[10px] font-black shadow-sm">
                           02
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2 min-w-0">
-                            <h4 className="text-xs font-semibold text-[#1d1d1f] truncate">Shipment Disruption Predictor (XGBoost)</h4>
-                            <span className="text-[8px] font-semibold bg-[#ffebe8] text-[#ff3b30] px-2 py-0.5 rounded shrink-0">82% DISRUPTED</span>
+                            <h4 className="text-xs font-bold text-[#1d1d1f] truncate">Shipment Disruption Predictor (XGBoost)</h4>
+                            <span className="text-[8px] font-bold bg-[#ffebe8] text-[#ff3b30] px-2 py-0.5 rounded-full shrink-0 border border-[#ff3b30]/20">82% DISRUPTED</span>
                           </div>
-                          <p className="text-[11px] text-[#6e6e73] mt-0.5">ML model inference finished in 18ms. High probability of vessel speed degradation and severe schedule slip.</p>
+                          <p className="text-[11px] text-[#6e6e73] mt-0.5 font-medium">ML model inference finished in 18ms. High probability of vessel speed degradation and severe schedule slip.</p>
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-3 rounded-2xl bg-[#fafaf9] p-3.5 border border-[#e5e5e7] hover:border-[#087ef5] transition overflow-hidden min-w-0">
-                        <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#087ef5]/10 text-[#087ef5] font-mono text-[10px] font-bold">
+                      <div className="flex items-start gap-3 rounded-2xl bg-white/80 p-4 border border-white/90 shadow-[0_4px_14px_rgba(0,0,0,0.03),inset_0_1.5px_3px_rgba(255,255,255,0.95)] hover:border-[#087ef5] transition overflow-hidden min-w-0">
+                        <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#087ef5]/15 text-[#087ef5] font-mono text-[10px] font-black shadow-sm">
                           07
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2 min-w-0">
-                            <h4 className="text-xs font-semibold text-[#1d1d1f] truncate">Route Optimization Agent (OR-Tools CP-SAT)</h4>
-                            <span className="text-[8px] font-semibold bg-[#f0f0f2] text-[#087ef5] px-2 py-0.5 rounded shrink-0">3 SOLVED ROUTES</span>
+                            <h4 className="text-xs font-bold text-[#1d1d1f] truncate">Route Optimization Agent (OR-Tools CP-SAT)</h4>
+                            <span className="text-[8px] font-bold bg-[#eef7ff] text-[#087ef5] px-2 py-0.5 rounded-full shrink-0 border border-[#087ef5]/20">3 SOLVED ROUTES</span>
                           </div>
-                          <p className="text-[11px] text-[#6e6e73] mt-0.5">Mathematical solver evaluated 5,000 nautical miles. Scenario B (South bypass) optimal with $42K net savings.</p>
+                          <p className="text-[11px] text-[#6e6e73] mt-0.5 font-medium">Mathematical solver evaluated 5,000 nautical miles. Scenario B (South bypass) optimal with $42K net savings.</p>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-[10px] text-[#86868b]">Supervisor Loop Latency: <strong>42ms</strong></span>
+                      <span className="text-[10px] text-[#86868b] font-medium">Supervisor Loop Latency: <strong className="text-[#1d1d1f]">42ms</strong></span>
                       <button 
                         onClick={() => setActiveTab('decision-agents')}
-                        className="text-xs font-semibold text-[#087ef5] hover:underline flex items-center gap-1"
+                        className="text-xs font-bold text-[#087ef5] hover:underline flex items-center gap-1"
                       >
                         Open Full 9-Agent Studio <ArrowRight className="size-3" />
                       </button>
@@ -425,48 +424,48 @@ export default function Dashboard() {
 
                 {/* Bottom Floating Telemetry Pills */}
                 <div className="mt-5 flex flex-wrap gap-2 text-[9px] tracking-[.1em] border-t border-[#f0f0f2] pt-4">
-                  <span className="flex items-center gap-1.5 rounded-full border border-[#d2d2d7] bg-[#f5f5f7] px-3.5 py-1.5 font-medium text-[#466274]">
-                    <span className="size-1.5 rounded-full bg-[#34c759]" /> AIS LIVE · 18.2 KNOTS · HEADING 065°
+                  <span className="flex items-center gap-1.5 rounded-full border border-white/90 bg-white/80 px-3.5 py-1.5 font-bold text-[#466274] shadow-sm">
+                    <span className="size-1.5 rounded-full bg-[#34c759] shadow-[0_0_6px_#34c759]" /> AIS LIVE · 18.2 KNOTS · HEADING 065°
                   </span>
-                  <span className="flex items-center gap-1.5 rounded-full border border-[#d2d2d7] bg-[#f5f5f7] px-3.5 py-1.5 font-medium text-[#466274]">
+                  <span className="flex items-center gap-1.5 rounded-full border border-white/90 bg-white/80 px-3.5 py-1.5 font-bold text-[#466274] shadow-sm">
                     <Waves className="size-3 text-[#087ef5]" /> WAVE 2.1M
                   </span>
-                  <span className="flex items-center gap-1.5 rounded-full border border-[#d2d2d7] bg-[#f5f5f7] px-3.5 py-1.5 font-medium text-[#466274]">
+                  <span className="flex items-center gap-1.5 rounded-full border border-white/90 bg-white/80 px-3.5 py-1.5 font-bold text-[#466274] shadow-sm">
                     <Wind className="size-3 text-[#087ef5]" /> WIND GUSTS 32 KM/H
                   </span>
-                  <span className="flex items-center gap-1.5 rounded-full border border-[#d2d2d7] bg-[#f5f5f7] px-3.5 py-1.5 font-medium text-[#466274]">
+                  <span className="flex items-center gap-1.5 rounded-full border border-white/90 bg-white/80 px-3.5 py-1.5 font-bold text-[#466274] shadow-sm">
                     <ShieldCheck className="size-3 text-[#34c759]" /> SUPERVISOR AUTO-DISPATCH ACTIVE
                   </span>
                 </div>
               </div>
 
-              {/* Key Metric Telemetry Cards */}
+              {/* Key Metric Telemetry Cards — Claymorphic 3D */}
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl border border-[#d2d2d7] bg-white p-4 shadow-sm">
-                  <p className="text-[10px] font-semibold tracking-[.13em] text-[#86868b] uppercase">LIVE FLEET VESSEL</p>
-                  <p className="mt-2.5 text-3xl font-medium tracking-[-.06em] text-[#1d1d1f]">18.2 kn</p>
-                  <p className="mt-1.5 text-xs text-[#34c759] font-medium">065° heading · AIS live Open-Meteo sync</p>
+                <div className="rounded-[24px] border border-white/90 bg-white/80 p-5 shadow-[0_12px_28px_rgba(0,0,0,0.05),inset_0_2px_4px_rgba(255,255,255,0.95)] backdrop-blur-md transition hover:translate-y-[-2px]">
+                  <p className="text-[10px] font-bold tracking-[.13em] text-[#86868b] uppercase">LIVE FLEET VESSEL</p>
+                  <p className="mt-2 text-3xl font-black tracking-[-.06em] text-[#1d1d1f]">18.2 kn</p>
+                  <p className="mt-1 text-xs text-[#34c759] font-bold">065° heading · AIS live Open-Meteo sync</p>
                 </div>
 
-                <div className="rounded-2xl border border-[#d2d2d7] bg-white p-4 shadow-sm">
-                  <p className="text-[10px] font-semibold tracking-[.13em] text-[#86868b] uppercase">YOKOHAMA PORT RISK</p>
-                  <p className="mt-2.5 text-3xl font-medium tracking-[-.06em] text-[#ff9f0a]">82%</p>
-                  <p className="mt-1.5 text-xs text-[#ff9f0a] font-medium">ML Model 3 · 74% congestion · 31h dwell</p>
+                <div className="rounded-[24px] border border-white/90 bg-white/80 p-5 shadow-[0_12px_28px_rgba(0,0,0,0.05),inset_0_2px_4px_rgba(255,255,255,0.95)] backdrop-blur-md transition hover:translate-y-[-2px]">
+                  <p className="text-[10px] font-bold tracking-[.13em] text-[#86868b] uppercase">YOKOHAMA PORT RISK</p>
+                  <p className="mt-2 text-3xl font-black tracking-[-.06em] text-[#ff9f0a]">82%</p>
+                  <p className="mt-1 text-xs text-[#ff9f0a] font-bold">ML Model 3 · 74% congestion · 31h dwell</p>
                 </div>
 
-                <div className="rounded-2xl border border-[#d2d2d7] bg-white p-4 shadow-sm">
-                  <p className="text-[10px] font-semibold tracking-[.13em] text-[#86868b] uppercase">CORRIDOR ETA SLIP</p>
-                  <p className="mt-2.5 text-3xl font-medium tracking-[-.06em] text-[#ff3b30]">+4.2d</p>
-                  <p className="mt-1.5 text-xs text-[#ff3b30] font-medium">ML Model 2 (LightGBM) schedule slip</p>
+                <div className="rounded-[24px] border border-white/90 bg-white/80 p-5 shadow-[0_12px_28px_rgba(0,0,0,0.05),inset_0_2px_4px_rgba(255,255,255,0.95)] backdrop-blur-md transition hover:translate-y-[-2px]">
+                  <p className="text-[10px] font-bold tracking-[.13em] text-[#86868b] uppercase">CORRIDOR ETA SLIP</p>
+                  <p className="mt-2 text-3xl font-black tracking-[-.06em] text-[#ff3b30]">+4.2d</p>
+                  <p className="mt-1 text-xs text-[#ff3b30] font-bold">ML Model 2 (LightGBM) schedule slip</p>
                 </div>
               </div>
 
               {/* The FlowForge 9-Agent Decision Intelligence Pipeline Card */}
-              <div className="grid gap-5 rounded-[28px] border border-[#d2d2d7] bg-white/85 p-6 shadow-[0_12px_40px_rgba(0,0,0,.04)] backdrop-blur-xl">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[#e5e5e7] pb-4">
+              <div className="grid gap-5 rounded-[32px] border border-white/90 bg-white/85 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.06),inset_0_3px_6px_rgba(255,255,255,0.95)] backdrop-blur-2xl">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[#e5e5e7]/80 pb-4">
                   <div>
-                    <p className="text-[10px] font-bold tracking-[.18em] text-[#087ef5] uppercase">AUTONOMOUS MULTI-AGENT SYSTEM</p>
-                    <h2 className="mt-1 text-2xl font-semibold tracking-[-.05em] text-[#1d1d1f]">9-Agent Decision Pipeline</h2>
+                    <p className="text-[10px] font-black tracking-[.18em] text-[#087ef5] uppercase">AUTONOMOUS MULTI-AGENT SYSTEM</p>
+                    <h2 className="mt-1 text-2xl font-black tracking-[-.05em] text-[#1d1d1f]">9-Agent Decision Pipeline</h2>
                   </div>
                   <Status text={simulation ? 'DIGITAL TWIN SIMULATION ACTIVE' : 'LIVE PIPELINE OPERATIONAL'} />
                 </div>
@@ -475,25 +474,25 @@ export default function Dashboard() {
                   {pipelineAgents.map((agent) => (
                     <div 
                       key={agent.step} 
-                      className="rounded-2xl border border-[#e5e5e7] bg-[#fafaf9] p-3.5 sm:p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[#d2d2d7] overflow-hidden min-w-0 flex flex-col justify-between"
+                      className="rounded-[22px] border border-white/90 bg-white/80 p-4 transition duration-200 hover:-translate-y-1 hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)] shadow-[0_4px_14px_rgba(0,0,0,0.03),inset_0_1.5px_3px_rgba(255,255,255,0.95)] overflow-hidden min-w-0 flex flex-col justify-between"
                     >
                       <div className="flex items-center justify-between gap-2 min-w-0">
-                        <span className="font-mono text-[10px] font-bold text-[#087ef5] shrink-0">{agent.step}</span>
-                        <span className="flow-badge bg-[#e5e5e7] text-[#425466] max-w-[75%] truncate shrink min-w-0">
+                        <span className="font-mono text-[10px] font-black text-[#087ef5] shrink-0">{agent.step}</span>
+                        <span className="flow-badge bg-[#f0f0f2] text-[#425466] max-w-[75%] truncate shrink min-w-0 font-bold">
                           {agent.type}
                         </span>
                       </div>
 
                       <div className="min-w-0">
-                        <p className="mt-2.5 text-xs font-semibold text-[#1d1d1f] truncate">{agent.name}</p>
-                        <p className="mt-1 text-[11px] leading-4 text-[#6e6e73] line-clamp-2">{agent.detail}</p>
+                        <p className="mt-2.5 text-xs font-bold text-[#1d1d1f] truncate">{agent.name}</p>
+                        <p className="mt-1 text-[11px] leading-4 text-[#6e6e73] line-clamp-2 font-medium">{agent.detail}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* Supervisor Executive Action Pill */}
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#1d1d1f] p-4 text-white shadow-lg">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#1d1d1f] p-4 text-white shadow-[0_12px_30px_rgba(0,0,0,0.25),inset_0_1px_2px_rgba(255,255,255,0.25)]">
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="size-5 text-[#34c759]" />
                     <span className="text-xs font-medium">
@@ -503,7 +502,7 @@ export default function Dashboard() {
 
                   <button 
                     onClick={() => setActiveTab('decision-agents')} 
-                    className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[10px] font-semibold tracking-[.1em] text-[#1d1d1f] hover:bg-[#f0f0f0] transition shadow-sm active:scale-95"
+                    className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[10px] font-bold tracking-[.1em] text-[#1d1d1f] hover:bg-[#f0f0f0] transition shadow-sm active:scale-95"
                   >
                     RUN DIGITAL TWIN <Zap className="size-3 text-[#087ef5]" />
                   </button>

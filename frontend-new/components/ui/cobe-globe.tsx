@@ -1,9 +1,7 @@
-"use client"
-
 import { useEffect, useRef, useCallback, useState } from "react"
 import createGlobe from "cobe"
 import { VesselDataSource, PositionReport, StubbedAISSource, AISStreamSource } from "@/lib/vesselDataSource"
-import { Radio, Wifi, WifiOff, Compass, Ship, Clock } from "lucide-react"
+import { Radio, Wifi, WifiOff, Compass, Ship, Clock, ChevronUp, ChevronDown, X, Info } from "lucide-react"
 
 export interface Marker {
   id: string
@@ -90,6 +88,7 @@ export function Globe({
 
   const [zoomScale, setZoomScale] = useState(1)
   const zoomRef = useRef(1)
+  const [isAisExpanded, setIsAisExpanded] = useState(false)
 
   // Initialize and subscribe to decoupled VesselDataSource
   useEffect(() => {
@@ -337,50 +336,85 @@ export function Globe({
         }}
       />
 
-      {/* Real-Time Live AIS Transponder Telemetry Overlay Panel */}
+      {/* Real-Time Live AIS Transponder Telemetry On-Demand Toggle */}
       {showLiveAisPanel && (
-        <div className="absolute bottom-2 inset-x-2 z-20 rounded-xl border border-[#e5e5e7] bg-white/95 p-2.5 shadow-md backdrop-blur-md text-[10px] space-y-1.5 pointer-events-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className={`size-2 rounded-full ${
+        <>
+          {/* Collapsed Pill Button: Does not obstruct the globe */}
+          {!isAisExpanded && (
+            <button
+              type="button"
+              onClick={() => setIsAisExpanded(true)}
+              className="absolute bottom-2 right-2 z-20 flex items-center gap-1.5 rounded-full border border-white/90 bg-white/85 px-2.5 py-1 text-[9px] font-bold text-[#1d1d1f] shadow-[0_4px_14px_rgba(0,0,0,0.1),inset_0_1px_2px_rgba(255,255,255,0.95)] backdrop-blur-md hover:bg-white hover:shadow-md transition active:scale-95 pointer-events-auto"
+              title="Click to check live vessel telemetry"
+            >
+              <span className={`size-1.5 rounded-full ${
                 connStatus === 'connected' 
-                  ? (isStale ? 'bg-[#ff9f0a]' : 'bg-[#34c759] animate-pulse') 
+                  ? (isStale ? 'bg-[#ff9f0a]' : 'bg-[#34c759] animate-pulse shadow-[0_0_4px_#34c759]') 
                   : connStatus === 'connecting'
                   ? 'bg-[#ff9f0a] animate-ping'
                   : 'bg-[#ff3b30]'
               }`} />
-              <span className="font-bold text-[#1d1d1f] tracking-tight">
-                {liveVesselReport?.vesselName || 'LIVE AIS VESSEL'}
-              </span>
-            </div>
+              <span className="tracking-tight font-black">AIS FIX</span>
+              <ChevronUp className="size-3 text-[#86868b]" />
+            </button>
+          )}
 
-            <span className={`px-1.5 py-0.5 rounded font-mono text-[8px] font-bold ${
-              isStale ? 'bg-[#fff4e5] text-[#ff9f0a]' : 'bg-[#e8f8ed] text-[#34c759]'
-            }`}>
-              {isStale ? 'STALE (>2m)' : 'LIVE FIX'}
-            </span>
-          </div>
+          {/* Expanded Full Telemetry HUD Card with Close Button */}
+          {isAisExpanded && (
+            <div className="absolute bottom-2 inset-x-2 z-20 rounded-2xl border border-white/90 bg-white/95 p-3 shadow-[0_16px_36px_rgba(0,0,0,0.14),inset_0_1.5px_2px_rgba(255,255,255,0.95)] backdrop-blur-2xl text-[10px] space-y-2 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className={`size-2 rounded-full ${
+                    connStatus === 'connected' 
+                      ? (isStale ? 'bg-[#ff9f0a]' : 'bg-[#34c759] animate-pulse shadow-[0_0_6px_#34c759]') 
+                      : connStatus === 'connecting'
+                      ? 'bg-[#ff9f0a] animate-ping'
+                      : 'bg-[#ff3b30]'
+                  }`} />
+                  <span className="font-black text-[#1d1d1f] tracking-tight text-[11px]">
+                    {liveVesselReport?.vesselName || 'LIVE AIS VESSEL'}
+                  </span>
+                </div>
 
-          <div className="grid grid-cols-3 gap-1 pt-1 border-t border-[#e5e5e7]/80 text-[#6e6e73] font-mono text-[9px]">
-            <div>
-              <span className="text-[7.5px] uppercase block text-[#86868b]">SOG</span>
-              <strong className="text-[#1d1d1f]">{liveVesselReport?.sog.toFixed(1)} kn</strong>
-            </div>
-            <div>
-              <span className="text-[7.5px] uppercase block text-[#86868b]">HEADING</span>
-              <strong className="text-[#1d1d1f]">{liveVesselReport?.heading}°</strong>
-            </div>
-            <div>
-              <span className="text-[7.5px] uppercase block text-[#86868b]">TIMESTAMP</span>
-              <strong className="text-[#1d1d1f]">{secondsAgo}s ago</strong>
-            </div>
-          </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`px-2 py-0.5 rounded-full font-mono text-[8px] font-black ${
+                    isStale ? 'bg-[#fff4e5] text-[#ff9f0a] border border-[#ff9f0a]/20' : 'bg-[#e8f8ed] text-[#34c759] border border-[#34c759]/20'
+                  }`}>
+                    {isStale ? 'STALE (>2m)' : 'LIVE FIX'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsAisExpanded(false)}
+                    aria-label="Hide Telemetry"
+                    className="rounded-full p-1 text-[#86868b] hover:bg-[#f0f0f2] hover:text-[#1d1d1f] transition"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+              </div>
 
-          <div className="flex items-center justify-between text-[8px] text-[#86868b] pt-1">
-            <span>MMSI: <strong className="font-mono text-[#1d1d1f]">{liveVesselReport?.mmsi}</strong></span>
-            <span>GPS: {liveVesselReport?.lat.toFixed(2)}°, {liveVesselReport?.lon.toFixed(2)}°</span>
-          </div>
-        </div>
+              <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-[#e5e5e7]/80 text-[#6e6e73] font-mono text-[9px]">
+                <div className="rounded-xl bg-[#fafaf9] p-1.5 border border-[#f0f0f2]">
+                  <span className="text-[7.5px] uppercase block text-[#86868b] font-sans font-bold">SOG</span>
+                  <strong className="text-[#1d1d1f] font-black">{liveVesselReport?.sog.toFixed(1)} kn</strong>
+                </div>
+                <div className="rounded-xl bg-[#fafaf9] p-1.5 border border-[#f0f0f2]">
+                  <span className="text-[7.5px] uppercase block text-[#86868b] font-sans font-bold">HEADING</span>
+                  <strong className="text-[#1d1d1f] font-black">{liveVesselReport?.heading}°</strong>
+                </div>
+                <div className="rounded-xl bg-[#fafaf9] p-1.5 border border-[#f0f0f2]">
+                  <span className="text-[7.5px] uppercase block text-[#86868b] font-sans font-bold">TIMESTAMP</span>
+                  <strong className="text-[#1d1d1f] font-black">{secondsAgo}s ago</strong>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-[8.5px] text-[#86868b] pt-0.5 font-medium">
+                <span>MMSI: <strong className="font-mono font-bold text-[#1d1d1f]">{liveVesselReport?.mmsi}</strong></span>
+                <span>GPS: {liveVesselReport?.lat.toFixed(2)}°, {liveVesselReport?.lon.toFixed(2)}°</span>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

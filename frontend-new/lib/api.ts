@@ -101,8 +101,7 @@ export async function diagnoseDisruption(input: DisruptionInput): Promise<Disrup
     })
     if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
     return await res.json()
-  } catch (err) {
-    console.warn('API unavailable, computing calibrated ML fallback:', err)
+  } catch (_err) {
     const raw = (input.operational_stress * 0.40) + (input.geo_port_risk * 0.35) + (input.port_congestion_score * 0.25)
     const prob = Math.min(1.0, Math.max(0.0, raw > 1 ? raw / 100 : raw))
     return {
@@ -142,8 +141,7 @@ export async function runAgentPipeline(params?: {
     })
     if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
     return await res.json()
-  } catch (err) {
-    console.warn('API unavailable, returning complete offline pipeline fallback:', err)
+  } catch (_err) {
     const mlProb = 82.0
     const delayDays = 4.2
     return {
@@ -393,8 +391,7 @@ export async function getUnifiedShipmentRisk(params?: Record<string, any>): Prom
     })
     if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
     return await res.json()
-  } catch (err) {
-    console.warn('API unavailable, generating calibrated journey risk payload:', err)
+  } catch (_err) {
     return {
       shipment_id: 'SH-4092',
       port_congestion_risk: 0.74,

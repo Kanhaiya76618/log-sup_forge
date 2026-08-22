@@ -174,10 +174,7 @@ export default function LandingPage() {
           className="absolute inset-0 size-full object-cover object-center pointer-events-none transform-gpu will-change-transform"
           onEnded={(e) => {
             e.currentTarget.currentTime = 0
-            e.currentTarget.play()
-          }}
-          onPause={(e) => {
-            e.currentTarget.play()
+            e.currentTarget.play().catch(() => {})
           }}
         >
           <source src="/0822.mp4" type="video/mp4" />

@@ -1,0 +1,18 @@
+[project]
+name = "flowforge"
+version = "0.1.0"
+description = "Autonomous exception-resolution layer (FAR AWAY 2026)"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "ortools>=9.6",
+    "numpy>=1.26",
+    # P4 adds: sqlalchemy / psycopg (DB audit sink)
+    # P1 adds: celery, redis (async workers) when scaling out
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["flowforge*"]

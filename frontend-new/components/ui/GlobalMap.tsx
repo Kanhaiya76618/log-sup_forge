@@ -7,7 +7,7 @@ import {
   Layers, ZoomIn, ZoomOut, RotateCcw, MapPin, Waves, Compass,
   ChevronDown, ChevronUp, X, Maximize2, Minimize2, Sparkles, Check
 } from 'lucide-react'
-import seaRoutesData from '@/lib/searoutes.json'
+import { resolveRoute, resolveBypassRoute } from '@/lib/routeEngine'
 
 export interface RouteDetail {
   id: string
@@ -30,6 +30,9 @@ export interface RouteDetail {
   color: string
 }
 
+const DEFAULT_NOMINAL_PATH = resolveRoute('Jawaharlal Nehru Port (Mumbai, IN)', 'Port of Yokohama (JP)')
+const DEFAULT_BYPASS_PATH = resolveBypassRoute('Jawaharlal Nehru Port (Mumbai, IN)', 'Port of Yokohama (JP)', 'South China Sea / Luzon Strait')
+
 // Commercial maritime corridor for tracked container #MSKU-9824-0
 const activeCorridor: RouteDetail = {
   id: 'COR-01',
@@ -41,8 +44,8 @@ const activeCorridor: RouteDetail = {
   originCoords: [18.95, 72.95],
   hubCoords: [1.29, 103.85],
   destCoords: [35.44, 139.64],
-  waypoints: (seaRoutesData as any).corridor_1 as [number, number][],
-  bypassWaypoints: (seaRoutesData as any).corridor_bypass as [number, number][],
+  waypoints: DEFAULT_NOMINAL_PATH,
+  bypassWaypoints: DEFAULT_BYPASS_PATH,
   status: 'critical',
   speed: '18.2 kn',
   heading: '065° ENE',

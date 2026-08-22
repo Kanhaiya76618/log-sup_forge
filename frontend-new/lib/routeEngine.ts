@@ -266,13 +266,17 @@ const SEA_NODES: Record<string, [number, number]> = {
   'N_NAGOYA_DEEP':        [34.00, 137.40],
   'N_TOKYO_BAY_ENTRY':    [34.20, 139.10],
 
-  // Indonesia / Sunda / Halmahera Deep Ocean Highway (Zero Philippine Land Crossing)
+  // Indonesia / Sunda / Halmahera Deep Ocean Highway (Zero Kalimantan, Sulawesi & Philippine Land Crossing)
   'N_SUNDA_STRAIT_DEEP':  [-6.20, 105.50],
   'N_JAKARTA_DEEP':       [-5.60, 107.20],
-  'N_JAVA_SEA_MID':       [-4.80, 112.50],
-  'N_MAKASSAR_MID':       [-1.00, 118.80],
-  'N_CELEBES_SEA':        [1.00, 123.50],
-  'N_HALMAHERA_SEA':      [2.50, 128.50],  // Open water east of Halmahera
+  'N_JAVA_SEA_MID':       [-5.50, 112.50],
+  'N_JAVA_SEA_E':         [-5.60, 115.50], // 60+ NM south of South Kalimantan / Tanjung Selatan
+  'N_MAKASSAR_ENTRANCE':  [-5.00, 117.50], // South of Pulau Laut in open deep water
+  'N_MAKASSAR_S':         [-2.50, 118.00], // South Makassar Strait (deep water between Borneo & Sulawesi)
+  'N_MAKASSAR_N':         [1.20, 119.50],  // North Makassar Strait
+  'N_CELEBES_SEA_W':      [2.50, 121.50],  // Open Celebes Sea (well north of Sulawesi)
+  'N_CELEBES_SEA_E':      [2.50, 125.50],  // Celebes Sea north of Manado
+  'N_HALMAHERA_SEA':      [3.00, 128.50],  // Open water north of Halmahera
   'N_EAST_MINDANAO_DEEP': [6.00, 130.50],  // 100+ NM East of Mindanao in open Pacific
   'N_PHILIPPINE_SEA_S':   [12.00, 131.00], // Deep Philippine Sea Basin
   'N_PHILIPPINE_SEA_N':   [18.00, 130.50],
@@ -432,13 +436,17 @@ const SEA_EDGES: [string, string][] = [
   ['N_JAPAN_PAC_S', 'N_TOKYO_BAY_ENTRY'],
   ['N_NAGOYA_DEEP', 'N_TOKYO_BAY_ENTRY'],
 
-  // Indonesia / Sunda / Halmahera Deep Ocean Highway (Passes East of Philippines)
+  // Indonesia / Sunda / Halmahera Deep Ocean Highway (Passes through Makassar Strait & Celebes Sea)
   ['N_SINGAPORE_MAIN', 'N_SUNDA_STRAIT_DEEP'],
   ['N_SUNDA_STRAIT_DEEP', 'N_JAKARTA_DEEP'],
   ['N_JAKARTA_DEEP', 'N_JAVA_SEA_MID'],
-  ['N_JAVA_SEA_MID', 'N_MAKASSAR_MID'],
-  ['N_MAKASSAR_MID', 'N_CELEBES_SEA'],
-  ['N_CELEBES_SEA', 'N_HALMAHERA_SEA'],
+  ['N_JAVA_SEA_MID', 'N_JAVA_SEA_E'],
+  ['N_JAVA_SEA_E', 'N_MAKASSAR_ENTRANCE'],
+  ['N_MAKASSAR_ENTRANCE', 'N_MAKASSAR_S'],
+  ['N_MAKASSAR_S', 'N_MAKASSAR_N'],
+  ['N_MAKASSAR_N', 'N_CELEBES_SEA_W'],
+  ['N_CELEBES_SEA_W', 'N_CELEBES_SEA_E'],
+  ['N_CELEBES_SEA_E', 'N_HALMAHERA_SEA'],
   ['N_HALMAHERA_SEA', 'N_EAST_MINDANAO_DEEP'],
   ['N_EAST_MINDANAO_DEEP', 'N_PHILIPPINE_SEA_S'],
   ['N_PHILIPPINE_SEA_S', 'N_PHILIPPINE_SEA_N'],

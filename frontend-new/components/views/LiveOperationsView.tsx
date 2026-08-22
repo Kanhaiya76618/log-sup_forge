@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Activity, Radio, AlertTriangle, ShieldCheck, Ship, Wind, Waves, ArrowRight, Gauge, Play, RefreshCw, Navigation } from 'lucide-react'
 import VoyageCheckpointsRibbon from '@/components/ui/VoyageCheckpointsRibbon'
+import NegotiationPanel from '@/components/ui/NegotiationPanel'
 import { VoyageCheckpoint } from '@/lib/api'
 
 export default function LiveOperationsView() {
@@ -119,6 +120,11 @@ export default function LiveOperationsView() {
             )
           })}
         </div>
+      </div>
+
+      {/* Negotiation Support — Abandonment Reason Ledger */}
+      <div className="rounded-[28px] border border-[#d2d2d7] bg-white p-6 shadow-sm">
+        <NegotiationPanel voyageId={selectedVoyageId} />
       </div>
     </div>
   )

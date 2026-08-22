@@ -7,7 +7,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api.routes import disruptions, agents, simulations, voyages, inventory, metrics, journey_risk
+from .api.routes import disruptions, agents, simulations, voyages, inventory, metrics, journey_risk, negotiations
 from .models_ml.inference_service import disruption_ml_service
 
 logging.basicConfig(
@@ -49,6 +49,7 @@ app.include_router(voyages.router, prefix="/api/v1")
 app.include_router(inventory.router, prefix="/api/v1")
 app.include_router(metrics.router, prefix="/api/v1")
 app.include_router(journey_risk.router, prefix="/api/v1")
+app.include_router(negotiations.router, prefix="/api/v1")
 # Also mount journey_risk routes at root for direct paths (/predict/delay, /shipment/risk)
 app.include_router(journey_risk.router)
 

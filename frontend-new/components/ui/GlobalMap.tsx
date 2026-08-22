@@ -277,8 +277,8 @@ export default function GlobalMap() {
       completedCoords = []
       forwardCoords = activeRouteWaypoints
     } else {
-      completedCoords = activeRouteWaypoints.slice(0, splitIdx + 1).concat([[currentPos.lat, currentPos.lng]])
-      forwardCoords = [[currentPos.lat, currentPos.lng]].concat(activeRouteWaypoints.slice(splitIdx + 1))
+      completedCoords = (activeRouteWaypoints.slice(0, splitIdx + 1).concat([[currentPos.lat, currentPos.lng]])) as [number, number][]
+      forwardCoords = ([[currentPos.lat, currentPos.lng]].concat(activeRouteWaypoints.slice(splitIdx + 1))) as [number, number][]
     }
 
     // 1. Completed Historical Sea Leg (Solid Vibrant Ocean Blue)

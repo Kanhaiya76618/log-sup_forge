@@ -91,19 +91,19 @@ export default function LandingPage() {
     <main className="min-h-screen bg-[#f7f8fa] text-[#1d1d1f] selection:bg-[#087ef5] selection:text-white font-sans antialiased">
 
       {/* 🔝 Section 1 — Clay-Glass Navigation Bar */}
-      <header className="fixed top-4 inset-x-0 z-50 px-4 md:px-8">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between rounded-[24px] border border-white/90 bg-white/80 px-6 shadow-[0_16px_36px_rgba(0,0,0,0.06),inset_0_2px_4px_rgba(255,255,255,0.95),inset_0_-2px_4px_rgba(0,0,0,0.02)] backdrop-blur-2xl">
+      <header className="fixed top-3 sm:top-4 inset-x-0 z-50 px-3 sm:px-6 md:px-8">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-[1440px] items-center justify-between rounded-[20px] sm:rounded-[24px] border border-white/90 bg-white/85 px-4 sm:px-6 shadow-[0_16px_36px_rgba(0,0,0,0.06),inset_0_2px_4px_rgba(255,255,255,0.95),inset_0_-2px_4px_rgba(0,0,0,0.02)] backdrop-blur-2xl">
           {/* Left — Logo */}
-          <Link href="/" className="flex items-center gap-3 text-xs font-bold tracking-[-0.02em] group">
-            <span className="flex size-7 items-center justify-center rounded-full bg-[#1d1d1f] shadow-[0_4px_10px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.3)] transition group-hover:scale-105">
-              <span className="size-2 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 text-xs font-bold tracking-[-0.02em] group shrink-0">
+            <span className="flex size-6 sm:size-7 items-center justify-center rounded-full bg-[#1d1d1f] shadow-[0_4px_10px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.3)] transition group-hover:scale-105">
+              <span className="size-1.5 sm:size-2 rounded-full bg-white shadow-[0_0_6px_#ffffff]" />
             </span>
-            <span className="font-extrabold text-[#1d1d1f] tracking-[-0.02em] text-sm">FLOWFORGE</span>
-            <span className="hidden font-medium text-[#86868b] sm:inline">/ MARITIME DISRUPTION OS</span>
+            <span className="font-extrabold text-[#1d1d1f] tracking-[-0.02em] text-xs sm:text-sm">FLOWFORGE</span>
+            <span className="hidden font-medium text-[#86868b] md:inline text-xs">/ MARITIME DISRUPTION OS</span>
           </Link>
 
           {/* Center — Nav Links */}
-          <nav className="hidden items-center gap-8 lg:flex">
+          <nav className="hidden items-center gap-6 lg:flex xl:gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
@@ -116,33 +116,33 @@ export default function LandingPage() {
           </nav>
 
           {/* Right — CTA */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 rounded-full bg-[#087ef5] px-5 py-2.5 text-xs font-bold text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_2px_3px_rgba(255,255,255,0.4)] hover:bg-[#076ecf] hover:shadow-[0_10px_24px_rgba(8,126,245,0.45)] transition active:scale-95"
+              className="hidden sm:flex items-center gap-2 rounded-full bg-[#087ef5] px-4 py-2 sm:px-5 sm:py-2.5 text-[11px] sm:text-xs font-bold text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_2px_3px_rgba(255,255,255,0.4)] hover:bg-[#076ecf] hover:shadow-[0_10px_24px_rgba(8,126,245,0.45)] transition active:scale-95 whitespace-nowrap"
             >
               LAUNCH APP <ArrowRight className="size-3.5" />
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle mobile menu"
-              className="p-2 text-[#6e6e73] hover:text-[#1d1d1f] lg:hidden"
+              className="flex size-9 items-center justify-center rounded-xl bg-black/5 text-[#1d1d1f] hover:bg-black/10 transition lg:hidden"
             >
-              {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+              {menuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
             </button>
           </div>
         </div>
 
         {/* Mobile Dropdown */}
         {menuOpen && (
-          <div className="mx-auto mt-2 max-w-[1440px] rounded-[28px] border border-white/90 bg-white/95 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.12)] backdrop-blur-2xl lg:hidden">
-            <div className="flex flex-col gap-4 text-xs font-bold">
+          <div className="mx-auto mt-2 max-w-[1440px] rounded-[24px] border border-white/90 bg-white/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.12)] backdrop-blur-2xl lg:hidden">
+            <div className="flex flex-col gap-3 text-xs font-bold">
               {navLinks.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="text-[#1d1d1f] hover:text-[#087ef5] transition"
+                  className="rounded-xl px-3 py-2 text-[#1d1d1f] hover:bg-black/5 hover:text-[#087ef5] transition"
                 >
                   {link.label}
                 </Link>
@@ -150,7 +150,7 @@ export default function LandingPage() {
               <Link
                 href="/dashboard"
                 onClick={() => setMenuOpen(false)}
-                className="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-[#087ef5] py-3.5 text-xs font-bold text-white shadow-lg"
+                className="mt-2 flex items-center justify-center gap-2 rounded-xl bg-[#087ef5] py-3 text-xs font-bold text-white shadow-lg shadow-[#087ef5]/30 active:scale-98"
               >
                 LAUNCH APP <ArrowRight className="size-3.5" />
               </Link>
@@ -160,7 +160,7 @@ export default function LandingPage() {
       </header>
 
       {/* 🚢 Section 2 — Hero with Continuous Looping 4K MP4 Video */}
-      <section className="relative min-h-[920px] flex items-end overflow-hidden pt-28">
+      <section className="relative min-h-[100dvh] sm:min-h-[850px] md:min-h-[920px] flex items-end overflow-hidden pt-24 pb-8 sm:pb-12 md:pb-16">
         {/* Full Seamless Looping 4K Video Background */}
         <video
           ref={videoRef}
@@ -182,38 +182,38 @@ export default function LandingPage() {
         </video>
 
         {/* Delicate Ambient Gradient for Soft Transition */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#f7f8fa]/80 via-transparent to-black/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#f7f8fa]/90 via-black/10 to-black/20 pointer-events-none" />
 
         {/* Hero Content — Perfectly Balanced Compact Glassmorphic Card */}
-        <div className="relative z-10 mx-auto w-full max-w-[1440px] px-5 pb-12 md:px-12 md:pb-16">
-          <div className="max-w-[560px] rounded-[30px] border border-white/55 bg-white/20 p-6 md:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.16),inset_0_1.5px_3px_rgba(255,255,255,0.7),inset_0_-1.5px_3px_rgba(0,0,0,0.04)] backdrop-blur-xl transition hover:bg-white/25">
+        <div className="relative z-10 mx-auto w-full max-w-[1440px] px-4 sm:px-8 md:px-12">
+          <div className="max-w-[560px] rounded-[24px] sm:rounded-[30px] border border-white/60 bg-white/25 p-5 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.2),inset_0_1.5px_3px_rgba(255,255,255,0.7),inset_0_-1.5px_3px_rgba(0,0,0,0.04)] backdrop-blur-2xl transition hover:bg-white/30">
 
             {/* Pill Header */}
-            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-white/60 bg-white/40 px-3.5 py-1 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8)] backdrop-blur-md">
-              <Sparkles className="size-3 text-[#087ef5]" />
-              <span className="text-[9px] font-black tracking-[0.18em] text-[#087ef5] uppercase drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
-                A LIVING INTELLIGENCE LAYER FOR GLOBAL SUPPLY CHAINS
+            <div className="mb-3 sm:mb-4 inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/50 px-3 py-1 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8)] backdrop-blur-md max-w-full">
+              <Sparkles className="size-3 text-[#087ef5] shrink-0" />
+              <span className="text-[8px] sm:text-[9px] font-black tracking-[0.10em] sm:tracking-[0.18em] text-[#087ef5] uppercase truncate">
+                LIVING INTELLIGENCE LAYER FOR SUPPLY CHAINS
               </span>
             </div>
 
-            <h1 className="text-4xl font-black leading-[.94] tracking-[-0.06em] text-[#1d1d1f] sm:text-5xl md:text-6xl drop-shadow-[0_2px_10px_rgba(255,255,255,0.8)]">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black leading-[0.96] tracking-[-0.05em] sm:tracking-[-0.06em] text-[#1d1d1f] drop-shadow-[0_2px_8px_rgba(255,255,255,0.8)]">
               COMMAND<br />THE FLOW.
             </h1>
 
-            <p className="mt-3.5 max-w-md text-xs sm:text-sm font-bold leading-relaxed text-[#1d1d1f] drop-shadow-[0_1px_4px_rgba(255,255,255,0.9)]">
+            <p className="mt-2.5 sm:mt-3.5 max-w-md text-xs sm:text-sm font-semibold leading-relaxed text-[#1d1d1f]/90 drop-shadow-[0_1px_3px_rgba(255,255,255,0.9)]">
               See the whole system. Predict maritime disruptions before they cascade. Solve multi-objective route and cost alternatives with 9 collaborative AI decision agents.
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="mt-5 sm:mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
               <Link
                 href="/dashboard"
-                className="group flex items-center gap-2 rounded-full bg-[#087ef5] px-5 py-3 text-[11px] font-black text-white shadow-[0_10px_24px_rgba(8,126,245,0.4),inset_0_1.5px_2px_rgba(255,255,255,0.45)] hover:bg-[#076ecf] hover:shadow-[0_14px_30px_rgba(8,126,245,0.5)] transition active:scale-95"
+                className="group flex items-center justify-center gap-2 rounded-full bg-[#087ef5] px-5 py-3 text-xs font-black text-white shadow-[0_10px_24px_rgba(8,126,245,0.4),inset_0_1.5px_2px_rgba(255,255,255,0.45)] hover:bg-[#076ecf] hover:shadow-[0_14px_30px_rgba(8,126,245,0.5)] transition active:scale-95 text-center"
               >
                 ENTER COMMAND CENTER <ArrowRight className="size-3.5 transition group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/network"
-                className="flex items-center gap-2 rounded-full border border-white/80 bg-white/75 px-5 py-3 text-[11px] font-bold text-[#1d1d1f] shadow-[0_6px_16px_rgba(0,0,0,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] backdrop-blur-md hover:bg-white transition active:scale-95"
+                className="flex items-center justify-center gap-2 rounded-full border border-white/90 bg-white/80 px-5 py-3 text-xs font-bold text-[#1d1d1f] shadow-[0_6px_16px_rgba(0,0,0,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] backdrop-blur-md hover:bg-white transition active:scale-95 text-center"
               >
                 <Globe2 className="size-3.5 text-[#087ef5]" /> GLOBAL NETWORK
               </Link>

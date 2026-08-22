@@ -222,8 +222,12 @@ export function getSavedScenarios(): AnalysisResult[] {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultPreloadedScenarios))
       return defaultPreloadedScenarios
     }
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultPreloadedScenarios
+    let parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) {
+      parsed = parsed.filter(s => s && s.id && s.scenarioInput?.title && s.recommendedRoute)
+      if (parsed.length > 0) return parsed
+    }
+    return defaultPreloadedScenarios
   } catch {
     return defaultPreloadedScenarios
   }

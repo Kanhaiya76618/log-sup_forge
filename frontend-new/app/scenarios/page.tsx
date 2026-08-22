@@ -15,9 +15,9 @@ export default function ScenariosPage() {
   }, [])
 
   const filtered = scenarios.filter(s => 
-    s.scenarioInput.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.affectedCorridor.toLowerCase().includes(searchTerm.toLowerCase())
+    s?.scenarioInput?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s?.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s?.affectedCorridor?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (

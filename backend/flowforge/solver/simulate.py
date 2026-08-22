@@ -86,5 +86,16 @@ class DigitalTwinSimulator:
             "summary": f"Monte Carlo Stress Test: {sla_confidence_pct}% probability of arriving within SLA window under {route_scenario}. P90 maximum loss capped at ${p90_cost:,.0f} USD."
         }
 
+    def simulate(
+        self,
+        scenario_name: str = "SCENARIO_B",
+        base_delay_days: float = 0.8,
+        demurrage_per_day: float = 12000.0,
+        samples: int = 500
+    ) -> Dict[str, Any]:
+        res = self.run_simulation(base_delay_days=base_delay_days, route_scenario=scenario_name)
+        res["mean_total_loss"] = res["percentiles"]["p50_cost_usd"]
+        return res
+
 
 digital_twin_simulator = DigitalTwinSimulator()

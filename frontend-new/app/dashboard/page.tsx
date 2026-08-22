@@ -37,17 +37,7 @@ import {
   AutomationRule,
   IntegrationItem
 } from '@/lib/mockData'
-
-const globeMarkers: Marker[] = [
-  { id: 'mumbai', location: [18.95, 72.95], label: 'Mumbai JNPT (BOM)' },
-  { id: 'singapore', location: [1.29, 103.85], label: 'Singapore Tuas (SIN)' },
-  { id: 'yokohama', location: [35.44, 139.64], label: 'Port of Yokohama (YOK)' },
-]
-
-const globeArcs: Arc[] = [
-  { id: 'mumbai-singapore', from: [18.95, 72.95], to: [1.29, 103.85], label: 'Mumbai → Singapore' },
-  { id: 'singapore-yokohama', from: [1.29, 103.85], to: [35.44, 139.64], label: 'Singapore → Yokohama' },
-]
+import { GLOBE_MARKERS as globeMarkers, GLOBE_ARCS as globeArcs } from '@/lib/config'
 
 const pipelineAgents = [
   { step: '01', name: 'AIS Radar Sentinel', detail: 'Ingesting Open-Meteo & AIS GPS · Storm anomaly flagged', status: 'ACTIVE', type: 'RADAR SCOUT' },
@@ -101,6 +91,7 @@ export default function Dashboard() {
   const [users, setUsers] = useState<UserAccessItem[]>(initialUsers)
   const [automations, setAutomations] = useState<AutomationRule[]>(initialAutomations)
   const [integrations, setIntegrations] = useState<IntegrationItem[]>(initialIntegrations)
+  const [cmdSearch, setCmdSearch] = useState('')
 
   const toggleLayer = (layer: string) => {
     setLayers(current => current.includes(layer) ? current.filter(item => item !== layer) : [...current, layer])
@@ -728,29 +719,35 @@ export default function Dashboard() {
               <Search className="size-4" />
               <input 
                 autoFocus 
+                value={cmdSearch}
+                onChange={e => setCmdSearch(e.target.value)}
                 className="min-w-0 flex-1 bg-transparent text-[#1d1d1f] placeholder:text-[#86868b] outline-none" 
                 placeholder="Search fleet, routes, or dispatch commands..." 
               />
-              <button onClick={() => setCommand(false)} aria-label="Close command palette">
+              <button onClick={() => { setCommand(false); setCmdSearch(''); }} aria-label="Close command palette">
                 <X className="size-4" />
               </button>
             </div>
             
             <div className="mt-2 space-y-1">
               {[
-                'Open Yokohama Port Disruption Report',
-                'Inspect Vessel MV Tokyo Express AIS Telemetry',
-                'Trigger 500-Sample Digital Twin Monte Carlo',
-                'Dispatch Daily IMO Notice to Destination Port',
-              ].map(item => (
-                <button 
-                  key={item} 
-                  onClick={() => setCommand(false)} 
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-[#1d1d1f] hover:bg-[#f5f5f7] transition"
-                >
-                  <Sparkles className="size-4 text-[#087ef5]" />
-                  {item}
-                </button>
+                { label: 'Open Decision Agents Intelligence Grid', action: () => { setTab('decision-engine'); setCommand(false); setCmdSearch(''); } },
+                { label: 'Inspect Cargo Journey Risk & Cascading Bottlenecks', action: () => { setTab('cargo-risk'); setCommand(false); setCmdSearch(''); } },
+                { label: 'Open Yokohama Port Disruption Report', action: () => { setTab('reports'); setCommand(false); setCmdSearch(''); } },
+                { label: 'Inspect Fleet AIS Telemetry & Logistics Routes', action: () => { setTab('logistics'); setCommand(false); setCmdSearch(''); } },
+                { label: 'Trigger Digital Twin Simulation Analysis', action: () => { setTab('decision-engine'); setCommand(false); setCmdSearch(''); } },
+                { label: 'Manage Inventory Safety Stock & SKUs', action: () => { setTab('inventory'); setCommand(false); setCmdSearch(''); } },
+              ]
+                .filter(cmd => !cmdSearch || cmd.label.toLowerCase().includes(cmdSearch.toLowerCase()))
+                .map(cmd => (
+                  <button 
+                    key={cmd.label} 
+                    onClick={cmd.action} 
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-[#1d1d1f] hover:bg-[#f5f5f7] transition"
+                  >
+                    <Sparkles className="size-4 text-[#087ef5]" />
+                    {cmd.label}
+                  </button>
               ))}
             </div>
           </div>

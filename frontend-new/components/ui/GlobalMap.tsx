@@ -5,9 +5,12 @@ import 'leaflet/dist/leaflet.css'
 import { 
   Navigation, Ship, ShieldCheck, AlertTriangle, CheckCircle2, 
   Layers, ZoomIn, ZoomOut, RotateCcw, MapPin, Waves, Compass,
-  ChevronDown, ChevronUp, X, Maximize2, Minimize2, Sparkles, Check
+  ChevronDown, ChevronUp, X, Maximize2, Minimize2, Sparkles, Check,
+  CloudRain, ShieldAlert, Anchor, Activity
 } from 'lucide-react'
 import seaRoutesData from '@/lib/searoutes.json'
+import { getMaritimeRiskZones, type MaritimeRiskZone } from '@/lib/api'
+import { MAP_CONFIG, MARITIME_CORRIDORS } from '@/lib/config'
 
 export interface RouteDetail {
   id: string
@@ -33,14 +36,14 @@ export interface RouteDetail {
 // Commercial maritime corridor for tracked container #MSKU-9824-0
 const activeCorridor: RouteDetail = {
   id: 'COR-01',
-  name: 'Mumbai JNPT ➔ Singapore Tuas Hub ➔ Port of Yokohama',
+  name: `${MARITIME_CORRIDORS.ORIGIN.name} ➔ ${MARITIME_CORRIDORS.TRANSSHIPMENT.name} ➔ ${MARITIME_CORRIDORS.DESTINATION.name}`,
   vessel: 'CSCL Globe Supermax / CMA CGM Jacques Saadé',
-  originName: 'Jawaharlal Nehru Port (Mumbai, IN)',
-  hubName: 'Singapore Tuas Transshipment Hub (SG)',
-  destName: 'Port of Yokohama (JP)',
-  originCoords: [18.95, 72.95],
-  hubCoords: [1.29, 103.85],
-  destCoords: [35.44, 139.64],
+  originName: MARITIME_CORRIDORS.ORIGIN.name,
+  hubName: MARITIME_CORRIDORS.TRANSSHIPMENT.name,
+  destName: MARITIME_CORRIDORS.DESTINATION.name,
+  originCoords: MARITIME_CORRIDORS.ORIGIN.coords,
+  hubCoords: MARITIME_CORRIDORS.TRANSSHIPMENT.coords,
+  destCoords: MARITIME_CORRIDORS.DESTINATION.coords,
   waypoints: (seaRoutesData as any).corridor_1 as [number, number][],
   bypassWaypoints: (seaRoutesData as any).corridor_bypass as [number, number][],
   status: 'critical',
@@ -114,9 +117,27 @@ export default function GlobalMap() {
   const vesselProgressRef = useRef<number>(0.24) // Start along Indian Ocean
   const [selectedCorridor, setSelectedCorridor] = useState<RouteDetail>(activeCorridor)
   const [showBypass, setShowBypass] = useState<boolean>(true)
+  const [showWeather, setShowWeather] = useState<boolean>(true)
+  const [showGeopolitical, setShowGeopolitical] = useState<boolean>(true)
+  const [showCongestion, setShowCongestion] = useState<boolean>(true)
+  const [riskZones, setRiskZones] = useState<MaritimeRiskZone[]>([])
+  const [selectedZone, setSelectedZone] = useState<MaritimeRiskZone | null>(null)
   const [isMapReady, setIsMapReady] = useState<boolean>(false)
   const [inspectorOpen, setInspectorOpen] = useState<boolean>(false)
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
+
+  // Fetch real-time maritime risk & disruption zones from backend API
+  useEffect(() => {
+    let active = true
+    getMaritimeRiskZones()
+      .then(res => {
+        if (active && res && res.zones) {
+          setRiskZones(res.zones)
+        }
+      })
+      .catch(() => {})
+    return () => { active = false }
+  }, [])
 
   useEffect(() => {
     let isCancelled = false
@@ -142,10 +163,10 @@ export default function GlobalMap() {
 
       // Initialize Leaflet Map framed on the Mumbai -> Singapore -> Yokohama Corridor
       map = L.map(mapContainerRef.current, {
-        center: [16.0, 98.0],
-        zoom: 4,
-        minZoom: 2,
-        maxZoom: 12,
+        center: MAP_CONFIG.DEFAULT_CENTER,
+        zoom: MAP_CONFIG.DEFAULT_ZOOM,
+        minZoom: MAP_CONFIG.MIN_ZOOM,
+        maxZoom: MAP_CONFIG.MAX_ZOOM,
         zoomControl: false,
         attributionControl: false,
       })
@@ -157,8 +178,8 @@ export default function GlobalMap() {
         return
       }
 
-      // Add high-resolution light CartoDB Positron tile layer
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      // Add high-resolution light CartoDB Positron tile layer from config
+      L.tileLayer(MAP_CONFIG.TILE_URL, {
         subdomains: 'abcd',
         maxZoom: 19,
       }).addTo(map)
@@ -188,7 +209,7 @@ export default function GlobalMap() {
     }
   }, [])
 
-  // Re-render routes when showBypass or isMapReady changes
+  // Re-render routes when layer toggles, risk zones, or map ready status change
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return
     const render = async () => {
@@ -196,7 +217,7 @@ export default function GlobalMap() {
       renderCorridors(L, mapInstanceRef.current)
     }
     render()
-  }, [showBypass, isMapReady])
+  }, [showBypass, showWeather, showGeopolitical, showCongestion, isMapReady, riskZones])
 
   // Invalidate map size when fullscreen toggles
   useEffect(() => {
@@ -215,14 +236,82 @@ export default function GlobalMap() {
 
     // Clear previous layers
     map.eachLayer((layer: any) => {
-      if (layer instanceof L.Polyline || layer instanceof L.Marker || layer instanceof L.CircleMarker) {
+      if (layer instanceof L.Polyline || layer instanceof L.Polygon || layer instanceof L.Marker || layer instanceof L.Circle || layer instanceof L.CircleMarker) {
         map.removeLayer(layer)
       }
     })
 
+    // 1. Render Dynamic Operational Risk & Disruption Layers (Underneath routes & ship marker)
+    if (riskZones.length > 0) {
+      riskZones.forEach(zone => {
+        // A. Weather / Sea-State Swell Risk Zones
+        if (zone.type === 'weather' && showWeather && zone.polygon) {
+          const poly = L.polygon(zone.polygon, {
+            color: zone.severity === 'CRITICAL' ? '#0284c7' : '#0ea5e9',
+            fillColor: '#38bdf8',
+            fillOpacity: 0.22,
+            weight: 1.5,
+            dashArray: '5, 5',
+            className: 'risk-zone-weather-polygon',
+          }).addTo(map)
+
+          poly.bindTooltip(`<b>🌊 ${zone.name}</b><br/>${zone.description}`, {
+            direction: 'top',
+            className: 'custom-leaflet-tooltip',
+          })
+          poly.on('click', () => {
+            setSelectedZone(zone)
+            setInspectorOpen(true)
+          })
+        }
+
+        // B. Geopolitical & Chokepoint Security Risk Zones
+        if (zone.type === 'geopolitical' && showGeopolitical && zone.polygon) {
+          const poly = L.polygon(zone.polygon, {
+            color: '#e11d48',
+            fillColor: '#f43f5e',
+            fillOpacity: 0.24,
+            weight: 1.5,
+            dashArray: '4, 6',
+            className: 'risk-zone-geo-polygon',
+          }).addTo(map)
+
+          poly.bindTooltip(`<b>🛡️ ${zone.name}</b><br/>${zone.description}`, {
+            direction: 'top',
+            className: 'custom-leaflet-tooltip',
+          })
+          poly.on('click', () => {
+            setSelectedZone(zone)
+            setInspectorOpen(true)
+          })
+        }
+
+        // C. Port Congestion & Bottleneck Rings
+        if (zone.type === 'congestion' && showCongestion && zone.center) {
+          const circle = L.circle(zone.center, {
+            radius: (zone.radius_km || 35) * 1000,
+            color: zone.severity === 'HIGH' ? '#f59e0b' : '#eab308',
+            fillColor: '#f59e0b',
+            fillOpacity: 0.22,
+            weight: 1.5,
+            dashArray: '3, 4',
+          }).addTo(map)
+
+          circle.bindTooltip(`<b>⚓ ${zone.name}</b><br/>${zone.description}`, {
+            direction: 'top',
+            className: 'custom-leaflet-tooltip',
+          })
+          circle.on('click', () => {
+            setSelectedZone(zone)
+            setInspectorOpen(true)
+          })
+        }
+      })
+    }
+
     const corridor = activeCorridor
 
-    // 1. Standard Commercial Route Polyline (Nominal Mumbai -> Singapore -> Yokohama)
+    // 2. Standard Commercial Route Polyline (Nominal Mumbai -> Singapore -> Yokohama)
     const line = L.polyline(corridor.waypoints, {
       color: corridor.color,
       weight: 3.5,
@@ -234,10 +323,11 @@ export default function GlobalMap() {
     }).addTo(map)
 
     line.on('click', () => {
+      setSelectedZone(null)
       setInspectorOpen(true)
     })
 
-    // 2. Scenario B Southern Bypass Path (OR-Tools CP-SAT Typhoon Swell Bypass)
+    // 3. Scenario B Southern Bypass Path (OR-Tools CP-SAT Typhoon Swell Bypass)
     if (corridor.bypassWaypoints && showBypass) {
       const bypassLine = L.polyline(corridor.bypassWaypoints, {
         color: '#34c759',
@@ -250,11 +340,12 @@ export default function GlobalMap() {
       }).addTo(map)
 
       bypassLine.on('click', () => {
+        setSelectedZone(null)
         setInspectorOpen(true)
       })
     }
 
-    // 3. Origin Pin (Mumbai JNPT)
+    // 4. Origin Pin (Mumbai JNPT)
     const originPin = L.circleMarker(corridor.originCoords, {
       radius: 6,
       fillColor: '#ff3b30',
@@ -575,14 +666,78 @@ export default function GlobalMap() {
             className="flex items-center gap-2.5 rounded-full border border-[#d2d2d7]/90 bg-white/95 px-4 py-2 text-xs font-semibold text-[#1d1d1f] shadow-lg backdrop-blur-xl hover:bg-white active:scale-95 transition"
           >
             <Navigation className="size-3.5 text-[#087ef5]" />
-            <span>{selectedCorridor.name}</span>
-            <span className="flow-badge bg-[#ffebe8] text-[#ff3b30]">
-              {selectedCorridor.riskFactor}% Risk
+            <span>{selectedZone ? selectedZone.name : selectedCorridor.name}</span>
+            <span className={`flow-badge ${selectedZone ? 'bg-[#fff4e5] text-[#b45309]' : 'bg-[#ffebe8] text-[#ff3b30]'}`}>
+              {selectedZone ? `${selectedZone.severity} RISK` : `${selectedCorridor.riskFactor}% Risk`}
             </span>
             <ChevronDown className="size-3.5 text-[#86868b]" />
           </button>
+        ) : selectedZone ? (
+          /* Zone Risk Inspector Card */
+          <div className="rounded-2xl border border-[#d2d2d7]/80 bg-white/95 p-4 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-[#e5e5e7] pb-2 mb-3">
+              <div className="flex items-center gap-2">
+                {selectedZone.type === 'weather' && <CloudRain className="size-4 text-[#0284c7]" />}
+                {selectedZone.type === 'geopolitical' && <ShieldAlert className="size-4 text-[#e11d48]" />}
+                {selectedZone.type === 'congestion' && <Anchor className="size-4 text-[#f59e0b]" />}
+                <span className="flow-label text-[#1d1d1f] uppercase">
+                  {selectedZone.type} RISK ZONE
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`flow-badge ${
+                  selectedZone.severity === 'CRITICAL' ? 'bg-[#ffebe8] text-[#ff3b30]' : 'bg-[#fff4e5] text-[#b45309]'
+                }`}>
+                  {selectedZone.severity} SEVERITY
+                </span>
+                <button 
+                  onClick={() => { setSelectedZone(null); setInspectorOpen(false); }}
+                  className="rounded-full p-1 text-[#86868b] hover:bg-[#f5f5f7] transition"
+                  title="Close Inspector"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-bold text-[#1d1d1f]">{selectedZone.name}</h4>
+              <p className="text-[11px] text-[#4b5563] mt-1 leading-relaxed">{selectedZone.description}</p>
+              
+              <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] bg-[#fafaf9] p-2.5 rounded-xl border border-[#e5e5e7]">
+                {selectedZone.metrics.map(m => (
+                  <div key={m.label}>
+                    <span className="text-[#86868b] uppercase text-[8px]">{m.label}</span>
+                    <p className="font-mono font-bold text-[#1d1d1f]">{m.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-2.5 flex items-center justify-between text-[9px] text-[#9ca3af]">
+                <span>Telemetry: <strong className="text-[#4b5563]">{selectedZone.source}</strong></span>
+                <span className="font-mono text-[#34c759] flex items-center gap-1">
+                  <span className="size-1.5 rounded-full bg-[#34c759] inline-block"></span> LIVE
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-2.5 border-t border-[#f0f0f2] flex items-center justify-between">
+              <button
+                onClick={() => setSelectedZone(null)}
+                className="text-[10px] font-semibold text-[#087ef5] hover:underline"
+              >
+                ← View Active Corridor
+              </button>
+              <button
+                onClick={() => { setSelectedZone(null); setInspectorOpen(false); }}
+                className="text-[10px] font-medium text-[#6e6e73] hover:text-[#1d1d1f]"
+              >
+                Close ✕
+              </button>
+            </div>
+          </div>
         ) : (
-          /* Expanded Floating Telemetry Card */
+          /* Expanded Floating Corridor Telemetry Card */
           <div className="rounded-2xl border border-[#d2d2d7]/80 bg-white/95 p-4 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-[#e5e5e7] pb-2 mb-3">
               <div className="flex items-center gap-2">
@@ -678,15 +833,69 @@ export default function GlobalMap() {
         </button>
       </div>
 
-      {/* Bottom Floating Legend Pills */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-xl border border-[#d2d2d7]/80 bg-white/90 px-3.5 py-2 shadow-lg backdrop-blur-xl text-[10px] z-10">
-        <span className="flex items-center gap-1.5 font-medium text-[#1d1d1f]">
-          <span className="inline-block w-4 h-0.5 border-b-2 border-dashed border-[#ff3b30]" /> Nominal Voyage (Storm Disruption)
-        </span>
-        <span className="text-[#d2d2d7]">|</span>
-        <span className="flex items-center gap-1.5 font-medium text-[#34c759]">
-          <span className="inline-block w-4 h-0.5 border-b-2 border-dashed border-[#34c759]" /> OR-Tools Southern Weather Bypass
-        </span>
+      {/* Bottom Floating Operational Toolbar & Legend (Non-overlapping container) */}
+      <div className="absolute bottom-4 inset-x-4 flex flex-wrap items-center justify-between gap-2.5 pointer-events-none z-10">
+        {/* Left: Risk Layer Toggles */}
+        <div className="pointer-events-auto flex flex-wrap items-center gap-1.5 rounded-2xl border border-[#d2d2d7]/80 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl text-[10px]">
+          <span className="px-2 font-semibold text-[#86868b] uppercase text-[8px] tracking-wider flex items-center gap-1">
+            <Layers className="size-3 text-[#087ef5]" /> Risk Layers:
+          </span>
+
+          {/* Weather Layer Toggle */}
+          <button
+            onClick={() => setShowWeather(v => !v)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-medium transition ${
+              showWeather ? 'bg-[#0284c7]/15 text-[#0369a1] border border-[#0284c7]/30' : 'bg-transparent text-[#9ca3af] hover:text-[#4b5563]'
+            }`}
+          >
+            <CloudRain className="size-3" />
+            <span>Weather Swell</span>
+          </button>
+
+          {/* Geopolitical Layer Toggle */}
+          <button
+            onClick={() => setShowGeopolitical(v => !v)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-medium transition ${
+              showGeopolitical ? 'bg-[#e11d48]/15 text-[#be123c] border border-[#e11d48]/30' : 'bg-transparent text-[#9ca3af] hover:text-[#4b5563]'
+            }`}
+          >
+            <ShieldAlert className="size-3" />
+            <span>Geopolitics</span>
+          </button>
+
+          {/* Port Congestion Toggle */}
+          <button
+            onClick={() => setShowCongestion(v => !v)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-medium transition ${
+              showCongestion ? 'bg-[#f59e0b]/15 text-[#b45309] border border-[#f59e0b]/30' : 'bg-transparent text-[#9ca3af] hover:text-[#4b5563]'
+            }`}
+          >
+            <Anchor className="size-3" />
+            <span>Port Congestion</span>
+          </button>
+
+          {/* Bypass Route Toggle */}
+          <button
+            onClick={() => setShowBypass(v => !v)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-medium transition ${
+              showBypass ? 'bg-[#34c759]/15 text-[#15803d] border border-[#34c759]/30' : 'bg-transparent text-[#9ca3af] hover:text-[#4b5563]'
+            }`}
+          >
+            <Activity className="size-3" />
+            <span>Bypass Route</span>
+          </button>
+        </div>
+
+        {/* Right: Route Legend */}
+        <div className="pointer-events-auto hidden xl:flex items-center gap-2 rounded-xl border border-[#d2d2d7]/80 bg-white/95 px-3.5 py-2 shadow-lg backdrop-blur-xl text-[10px]">
+          <span className="flex items-center gap-1.5 font-medium text-[#1d1d1f]">
+            <span className="inline-block w-3.5 h-0.5 border-b-2 border-dashed border-[#ff3b30]" /> Nominal Voyage
+          </span>
+          <span className="text-[#d2d2d7]">|</span>
+          <span className="flex items-center gap-1.5 font-medium text-[#34c759]">
+            <span className="inline-block w-3.5 h-0.5 border-b-2 border-dashed border-[#34c759]" /> Southern Bypass
+          </span>
+        </div>
       </div>
 
     </div>

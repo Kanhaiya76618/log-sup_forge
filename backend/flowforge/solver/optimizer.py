@@ -4,8 +4,9 @@ Multi-Objective Route Optimization using Google OR-Tools CP-SAT Solver.
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from .network import GLOBAL_PORTS, haversine_distance_nm
+from ..config import settings
 
 logger = logging.getLogger("flowforge.solver.optimizer")
 
@@ -20,10 +21,15 @@ except ImportError:
 class RouteOptimizer:
     """Calculates Pareto optimal maritime recovery plans using OR-Tools CP-SAT."""
 
-    def __init__(self):
-        self.fuel_price_per_mt = 620.0
-        self.hourly_vessel_cost = 1750.0
-        self.demurrage_rate_per_day = 12000.0
+    def __init__(
+        self,
+        fuel_price_per_mt: Optional[float] = None,
+        hourly_vessel_cost: Optional[float] = None,
+        demurrage_rate_per_day: Optional[float] = None,
+    ):
+        self.fuel_price_per_mt = fuel_price_per_mt if fuel_price_per_mt is not None else settings.FUEL_PRICE_PER_MT
+        self.hourly_vessel_cost = hourly_vessel_cost if hourly_vessel_cost is not None else settings.HOURLY_VESSEL_COST
+        self.demurrage_rate_per_day = demurrage_rate_per_day if demurrage_rate_per_day is not None else settings.DEMURRAGE_RATE_PER_DAY
 
     def solve_pareto_routes(
         self,
@@ -85,6 +91,7 @@ class RouteOptimizer:
                 "demurrage_usd": demurrage_a,
                 "total_cost_usd": total_loss_a,
                 "net_savings_usd": savings_a,
+                "savings_usd": savings_a,
                 "loss_reduction_pct": 32.0,
                 "safety_score": 68,
                 "recommended": False,
@@ -108,6 +115,7 @@ class RouteOptimizer:
                 "demurrage_usd": demurrage_b,
                 "total_cost_usd": total_loss_b,
                 "net_savings_usd": savings_b,
+                "savings_usd": savings_b,
                 "loss_reduction_pct": 63.0,
                 "safety_score": 96,
                 "recommended": True,
@@ -132,6 +140,7 @@ class RouteOptimizer:
                 "demurrage_usd": demurrage_c,
                 "total_cost_usd": total_loss_c,
                 "net_savings_usd": savings_c,
+                "savings_usd": savings_c,
                 "loss_reduction_pct": 44.0,
                 "safety_score": 88,
                 "recommended": False,

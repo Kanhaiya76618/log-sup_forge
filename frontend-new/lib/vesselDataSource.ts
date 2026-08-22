@@ -1,13 +1,15 @@
+import { AIS_CONFIG, MARITIME_CORRIDORS } from './config'
+
 export interface PositionReport {
   mmsi: string
-  vesselName?: string
+  vesselName: string
   lat: number
   lon: number
-  sog: number // Speed over ground in knots
-  cog: number // Course over ground in degrees
-  heading: number // True heading in degrees
-  timestamp: number // Epoch ms
-  status?: string
+  sog: number      // Speed Over Ground in knots
+  cog: number      // Course Over Ground in degrees
+  heading: number  // Heading in degrees
+  timestamp: number
+  status?: string  // e.g. 'Under way using engine'
 }
 
 export type PositionUpdateCallback = (report: PositionReport) => void
@@ -16,10 +18,10 @@ export interface VesselDataSource {
   onPositionUpdate(callback: PositionUpdateCallback): () => void
   connect(): void
   disconnect(): void
+  getStatus?(): 'connected' | 'connecting' | 'disconnected' | 'error'
+  onStatusChange?(callback: (status: 'connected' | 'connecting' | 'disconnected' | 'error') => void): () => void
   setMmsiFilter(mmsiList: string[]): void
   setBoundingBox(bbox: [[number, number], [number, number]]): void
-  getStatus(): 'connected' | 'connecting' | 'disconnected' | 'error'
-  onStatusChange?(callback: (status: 'connected' | 'connecting' | 'disconnected' | 'error') => void): () => void
 }
 
 /**
@@ -39,9 +41,9 @@ export class AISStreamSource implements VesselDataSource {
   private reconnectAttempts = 0
   private maxReconnectDelay = 30000
 
-  constructor(apiKey: string = '', mmsiList: string[] = [], boundingBox?: [[number, number], [number, number]]) {
+  constructor(apiKey: string = AIS_CONFIG.API_KEY, mmsiList: string[] = [], boundingBox?: [[number, number], [number, number]]) {
     this.apiKey = apiKey
-    this.mmsiList = mmsiList
+    this.mmsiList = mmsiList.length > 0 ? mmsiList : [AIS_CONFIG.DEFAULT_MMSI]
     this.boundingBox = boundingBox
   }
 
@@ -89,7 +91,7 @@ export class AISStreamSource implements VesselDataSource {
 
     this.setStatus('connecting')
     try {
-      this.ws = new WebSocket('wss://stream.aisstream.io/v0/stream')
+      this.ws = new WebSocket(AIS_CONFIG.WS_URL)
 
       this.ws.onopen = () => {
         this.setStatus('connected')
@@ -187,13 +189,13 @@ export class StubbedAISSource implements VesselDataSource {
   private status: 'connected' | 'connecting' | 'disconnected' | 'error' = 'disconnected'
   private currentVesselIndex = 0
 
-  // Real Authentic AIS Transponder Vessels with true MMSI & GPS positions
+  // Real Authentic AIS Transponder Vessels driven by centralized configuration
   private activeVessels: PositionReport[] = [
     {
-      mmsi: '477265800',
-      vesselName: 'CSCL GLOBE SUPERMAX',
-      lat: 18.95,
-      lon: 72.95,
+      mmsi: AIS_CONFIG.DEFAULT_MMSI,
+      vesselName: AIS_CONFIG.DEFAULT_VESSEL_NAME,
+      lat: MARITIME_CORRIDORS.ORIGIN.coords[0],
+      lon: MARITIME_CORRIDORS.ORIGIN.coords[1],
       sog: 18.2,
       cog: 65.0,
       heading: 65,
@@ -202,8 +204,8 @@ export class StubbedAISSource implements VesselDataSource {
     {
       mmsi: '566089000',
       vesselName: 'SINGAPORE STAR',
-      lat: 1.29,
-      lon: 103.85,
+      lat: MARITIME_CORRIDORS.TRANSSHIPMENT.coords[0],
+      lon: MARITIME_CORRIDORS.TRANSSHIPMENT.coords[1],
       sog: 14.5,
       cog: 42.0,
       heading: 42,
@@ -212,8 +214,8 @@ export class StubbedAISSource implements VesselDataSource {
     {
       mmsi: '431002340',
       vesselName: 'YOKOHAMA EXPRESS',
-      lat: 35.44,
-      lon: 139.64,
+      lat: MARITIME_CORRIDORS.DESTINATION.coords[0],
+      lon: MARITIME_CORRIDORS.DESTINATION.coords[1],
       sog: 0.2,
       cog: 180.0,
       heading: 180,

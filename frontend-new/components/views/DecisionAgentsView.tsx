@@ -15,6 +15,7 @@ import {
   SimulationResult,
   DisruptionResult
 } from '@/lib/api'
+import { MARITIME_CORRIDORS, AIS_CONFIG } from '@/lib/config'
 
 export default function DecisionAgentsView() {
   const [selectedAgent, setSelectedAgent] = useState<number>(0)
@@ -88,9 +89,9 @@ export default function DecisionAgentsView() {
   }
 
   const agents: AgentStep[] = pipelineData?.agent_steps || [
-    { step: '01', name: 'AIS Radar Sentinel', category: 'API Stream + Telemetry Parser', status: 'ONLINE', model: 'Open-Meteo V2 + AIS MarineTraffic Stream', output: 'Anomaly flagged: 2.8m wave swell along Mumbai-Yokohama corridor at 18.95N, 72.95E.' },
+    { step: '01', name: 'AIS Radar Sentinel', category: 'API Stream + Telemetry Parser', status: 'ONLINE', model: 'Open-Meteo V2 + AIS MarineTraffic Stream', output: `Anomaly flagged: 2.8m wave swell along ${MARITIME_CORRIDORS.ORIGIN.code}-${MARITIME_CORRIDORS.DESTINATION.code} corridor at ${MARITIME_CORRIDORS.ORIGIN.coords[0]}N, ${MARITIME_CORRIDORS.ORIGIN.coords[1]}E.` },
     { step: '02', name: 'Disruption Forecaster (XGBoost)', category: 'Trained ExtraTrees Pipeline', status: 'CRITICAL', model: 'Trained ExtraTrees Classifier', output: 'Disruption Probability: 82% (Threshold > 45% exceeded).' },
-    { step: '03', name: 'ETA Slip Estimator (LightGBM)', category: 'Predictive Schedule Regressor', status: 'ETA SLIP', model: 'LightGBM Regression Engine', output: 'Predicted Schedule Delay: +4.2 days slip for CSCL Globe Supermax.' },
+    { step: '03', name: 'ETA Slip Estimator (LightGBM)', category: 'Predictive Schedule Regressor', status: 'ETA SLIP', model: 'LightGBM Regression Engine', output: `Predicted Schedule Delay: +4.2 days slip for ${AIS_CONFIG.DEFAULT_VESSEL_NAME}.` },
     { step: '04', name: 'Port Quay Sentinel', category: 'Berth Bottleneck Forecaster', status: 'AT RISK', model: 'RandomForest Dwell Forecaster (31-Port Matrix)', output: 'Yokohama Port Dwell: 31.0 hours · Berth capacity at 74%.' },
     { step: '05', name: 'Supply Chain Shockwave Shield', category: 'Buffer Stockout Protector', status: 'STOCKOUT', model: 'Downstream ERP Stockout Predictor', output: 'SKU-005 (Pharmaceuticals) predicted stockout in 5.8 days at Yokohama buffer.' },
     { step: '06', name: 'Demurrage & Exposure Assessor', category: 'Financial Loss Engine', status: 'EXPOSURE', model: 'Contractual Demurrage Matrix', output: 'Total Financial Exposure: $42,000 USD ($18K fuel + $12K demurrage + $12K buffer penalty).' },

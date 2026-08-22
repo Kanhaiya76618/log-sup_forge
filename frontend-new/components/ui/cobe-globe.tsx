@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from "react"
 import createGlobe from "cobe"
 import { VesselDataSource, PositionReport, StubbedAISSource, AISStreamSource } from "@/lib/vesselDataSource"
+import { AIS_CONFIG } from "@/lib/config"
 import { Radio, Wifi, WifiOff, Compass, Ship, Clock, ChevronUp, ChevronDown, X, Info } from "lucide-react"
 
 export interface Marker {
@@ -58,7 +59,7 @@ export function Globe({
   diffuse = 1.5,
   mapSamples = 16000,
   dataSource,
-  targetMmsi = "477265800",
+  targetMmsi = AIS_CONFIG.DEFAULT_MMSI,
   showLiveAisPanel = true,
 }: GlobeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -73,9 +74,9 @@ export function Globe({
   // Real-Time Live AIS Position State (Never fabricated, updated strictly on report arrival)
   const [liveVesselReport, setLiveVesselReport] = useState<PositionReport | null>({
     mmsi: targetMmsi,
-    vesselName: "CSCL GLOBE SUPERMAX",
-    lat: 18.95,
-    lon: 72.95,
+    vesselName: AIS_CONFIG.DEFAULT_VESSEL_NAME,
+    lat: AIS_CONFIG.DEFAULT_LOCATION[0],
+    lon: AIS_CONFIG.DEFAULT_LOCATION[1],
     sog: 18.2,
     cog: 65.0,
     heading: 65,
@@ -84,7 +85,7 @@ export function Globe({
   const [connStatus, setConnStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('connected')
   const [secondsAgo, setSecondsAgo] = useState(0)
   const [mmsiInput, setMmsiInput] = useState(targetMmsi)
-  const liveVesselLocationRef = useRef<[number, number]>([18.95, 72.95])
+  const liveVesselLocationRef = useRef<[number, number]>(AIS_CONFIG.DEFAULT_LOCATION)
 
   const [zoomScale, setZoomScale] = useState(1)
   const zoomRef = useRef(1)

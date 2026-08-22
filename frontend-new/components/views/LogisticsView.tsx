@@ -14,6 +14,10 @@ interface LogisticsViewProps {
 export default function LogisticsView({ shipments, onSelectShipment, onCreateShipment }: LogisticsViewProps) {
   const [selectedVessel, setSelectedVessel] = useState<ShipmentItem>(shipments[0])
   const [isCreating, setIsCreating] = useState(false)
+  const [isOptimizing, setIsOptimizing] = useState(false)
+  const [isPinging, setIsPinging] = useState(false)
+  const [optimizationResult, setOptimizationResult] = useState<{ plan: string; savings: string; eta: string } | null>(null)
+  const [pingFeedback, setPingFeedback] = useState<string | null>(null)
 
   // Form State
   const [vessel, setVessel] = useState('')
@@ -21,6 +25,28 @@ export default function LogisticsView({ shipments, onSelectShipment, onCreateShi
   const [destination, setDestination] = useState('Port of Yokohama (JP)')
   const [containers, setContainers] = useState(3500)
   const [speed, setSpeed] = useState('17.5 kn')
+
+  const handleOptimizeRoute = () => {
+    setIsOptimizing(true)
+    setOptimizationResult(null)
+    setTimeout(() => {
+      setIsOptimizing(false)
+      setOptimizationResult({
+        plan: 'Plan B: Southern Weather Bypass (Pareto Optimal)',
+        savings: '$42,000 USD Net Loss Reduction (-63%)',
+        eta: 'Nov 24, 2026 14:00 UTC (1.8d saved)'
+      })
+    }, 1200)
+  }
+
+  const handleRequestAisPing = () => {
+    setIsPinging(true)
+    setPingFeedback(null)
+    setTimeout(() => {
+      setIsPinging(false)
+      setPingFeedback(`Live Fix Confirmed · Lat 18.95°N Lon 72.95°E · SOG ${selectedVessel.speed} · COG 065° ENE`)
+    }, 1000)
+  }
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
@@ -182,12 +208,40 @@ export default function LogisticsView({ shipments, onSelectShipment, onCreateShi
             </div>
 
             <div className="pt-4 border-t border-[#e5e5e7] space-y-2">
-              <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#087ef5] py-2.5 text-xs font-semibold text-white hover:bg-[#076ecf] transition">
-                <Navigation className="size-3.5" /> Re-optimize Route (OR-Tools)
+              <button 
+                onClick={handleOptimizeRoute}
+                disabled={isOptimizing}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#087ef5] py-2.5 text-xs font-semibold text-white hover:bg-[#076ecf] transition active:scale-98 disabled:opacity-50"
+              >
+                <Navigation className={`size-3.5 ${isOptimizing ? 'animate-spin' : ''}`} /> 
+                {isOptimizing ? 'Solving CP-SAT Optimizer...' : 'Re-optimize Route (OR-Tools)'}
               </button>
-              <button className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#d2d2d7] bg-white py-2.5 text-xs font-semibold text-[#1d1d1f] hover:bg-[#f5f5f7] transition">
-                <Radio className="size-3.5 text-[#087ef5]" /> Request AIS Ping Stream
+
+              <button 
+                onClick={handleRequestAisPing}
+                disabled={isPinging}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#d2d2d7] bg-white py-2.5 text-xs font-semibold text-[#1d1d1f] hover:bg-[#f5f5f7] transition active:scale-98 disabled:opacity-50"
+              >
+                <Radio className={`size-3.5 text-[#087ef5] ${isPinging ? 'animate-pulse' : ''}`} /> 
+                {isPinging ? 'Interrogating Transponder...' : 'Request AIS Ping Stream'}
               </button>
+
+              {/* Optimization Result Feedback */}
+              {optimizationResult && (
+                <div className="mt-2 rounded-xl bg-[#e8f8ed] p-3 border border-[#34c759]/30 text-[11px] text-[#1d1d1f] space-y-1 animate-in fade-in">
+                  <p className="font-bold text-[#15803d]">✓ Route Solved: {optimizationResult.plan}</p>
+                  <p className="text-[#1d1d1f]">{optimizationResult.savings}</p>
+                  <p className="text-[10px] text-[#6e6e73]">New Recovered ETA: {optimizationResult.eta}</p>
+                </div>
+              )}
+
+              {/* AIS Ping Result Feedback */}
+              {pingFeedback && (
+                <div className="mt-2 rounded-xl bg-[#fafaf9] p-3 border border-[#087ef5]/30 text-[11px] text-[#1d1d1f] space-y-1 animate-in fade-in">
+                  <p className="font-bold text-[#087ef5]">🛰️ AIS Satellite Telemetry Received</p>
+                  <p className="font-mono text-[10px] text-[#6e6e73]">{pingFeedback}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

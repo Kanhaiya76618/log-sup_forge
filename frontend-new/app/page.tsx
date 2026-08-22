@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Globe2, Menu, X, ShieldCheck, Sparkles, Navigation, Layers3 } from 'lucide-react'
+import { ASSETS_CONFIG } from '@/lib/config'
 
 // Status dot badge component with Clay-Glass styling
 function Status({ label, tone = 'success' }: { label: string; tone?: 'success' | 'warning' | 'critical' }) {
@@ -78,12 +79,63 @@ export default function LandingPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Guarantee continuous smooth video playback without pause
+  // Guarantee 100% instant zero-click video autoplay across all browsers (Safari, Chrome, iOS)
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {
-        // Autoplay policy fallback: already muted
-      })
+    const video = videoRef.current
+    if (!video) return
+
+    video.defaultMuted = true
+    video.muted = true
+    video.setAttribute('muted', '')
+    video.setAttribute('playsinline', '')
+    video.setAttribute('webkit-playsinline', 'true')
+    video.setAttribute('autoplay', '')
+
+    const attemptAutoplay = () => {
+      if (!video) return
+      video.muted = true
+      const playPromise = video.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // If browser initially paused, resume on earliest passive user interaction
+          const resume = () => {
+            if (video) {
+              video.muted = true
+              video.play().catch(() => {})
+            }
+            window.removeEventListener('pointerdown', resume)
+            window.removeEventListener('touchstart', resume)
+            window.removeEventListener('scroll', resume)
+            window.removeEventListener('keydown', resume)
+          }
+          window.addEventListener('pointerdown', resume, { once: true, passive: true })
+          window.addEventListener('touchstart', resume, { once: true, passive: true })
+          window.addEventListener('scroll', resume, { once: true, passive: true })
+          window.addEventListener('keydown', resume, { once: true, passive: true })
+        })
+      }
+    }
+
+    if (video.readyState >= 2) {
+      attemptAutoplay()
+    } else {
+      video.addEventListener('loadedmetadata', attemptAutoplay, { once: true })
+      video.addEventListener('canplay', attemptAutoplay, { once: true })
+    }
+
+    // Safety: prevent any accidental pauses
+    const handlePause = () => {
+      if (video && video.paused) {
+        video.muted = true
+        video.play().catch(() => {})
+      }
+    }
+    video.addEventListener('pause', handlePause)
+
+    return () => {
+      video.removeEventListener('pause', handlePause)
+      video.removeEventListener('loadedmetadata', attemptAutoplay)
+      video.removeEventListener('canplay', attemptAutoplay)
     }
   }, [])
 
@@ -168,16 +220,17 @@ export default function LandingPage() {
           loop
           muted
           playsInline
+          controls={false}
           preload="auto"
           disablePictureInPicture
           disableRemotePlayback
-          className="absolute inset-0 size-full object-cover object-center pointer-events-none transform-gpu will-change-transform"
+          className="absolute inset-0 size-full object-cover object-center pointer-events-none transform-gpu will-change-transform select-none"
           onEnded={(e) => {
             e.currentTarget.currentTime = 0
             e.currentTarget.play().catch(() => {})
           }}
         >
-          <source src="/0822.mp4" type="video/mp4" />
+          <source src={ASSETS_CONFIG.HERO_VIDEO_SRC} type="video/mp4" />
           Your browser does not support HTML5 video.
         </video>
 
@@ -244,7 +297,7 @@ export default function LandingPage() {
           <div className="relative mt-14 min-h-[480px] overflow-hidden rounded-[36px] border border-white/90 bg-white/60 shadow-[0_24px_70px_rgba(0,0,0,0.08),inset_0_3px_6px_rgba(255,255,255,0.95),inset_0_-3px_6px_rgba(0,0,0,0.03)] backdrop-blur-xl">
             {/* Background image */}
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/container_port_aerial-cfcTcy8nZNAaq4T0zDJ74VhW7yZJcp.webp"
+              src={ASSETS_CONFIG.PORT_AERIAL_IMAGE}
               alt="Container Port Aerial"
               className="absolute inset-0 size-full object-cover opacity-100"
             />

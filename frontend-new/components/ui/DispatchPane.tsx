@@ -3,25 +3,8 @@
 import React from 'react'
 import { X, MapPin, Zap, Layers3, ArrowRight } from 'lucide-react'
 import { Globe, Marker, Arc } from '@/components/ui/cobe-globe'
+import { GLOBE_MARKERS as globeMarkers, GLOBE_ARCS as globeArcs } from '@/lib/config'
 import StatusBadge from './StatusBadge'
-
-interface DispatchPaneProps {
-  onClose: () => void
-  onNavigateToTab: (tab: string) => void
-  activeLayers: string[]
-  onToggleLayer: (layer: string) => void
-}
-
-const globeMarkers: Marker[] = [
-  { id: 'mumbai', location: [18.95, 72.95], label: 'Mumbai JNPT (BOM)' },
-  { id: 'singapore', location: [1.29, 103.85], label: 'Singapore Tuas (SIN)' },
-  { id: 'yokohama', location: [35.44, 139.64], label: 'Port of Yokohama (YOK)' },
-]
-
-const globeArcs: Arc[] = [
-  { id: 'mumbai-singapore', from: [18.95, 72.95], to: [1.29, 103.85], label: 'Mumbai → Singapore' },
-  { id: 'singapore-yokohama', from: [1.29, 103.85], to: [35.44, 139.64], label: 'Singapore → Yokohama' },
-]
 
 export default function DispatchPane({
   onClose,

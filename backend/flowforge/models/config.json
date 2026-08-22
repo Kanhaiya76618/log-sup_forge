@@ -1,0 +1,37 @@
+{
+    "ETA_FEATURES": [
+        "Distance_km",
+        "Weight_MT",
+        "Weather_Risk",
+        "Carrier_Risk",
+        "Geo_Risk",
+        "Port_Congestion",
+        "Operational_Stress",
+        "Route_Risk",
+        "Geo_Port_Risk",
+        "Weather_Port_Risk",
+        "Geo_Weather_Risk",
+        "Weather_Carrier_Risk",
+        "Port_Carrier_Risk"
+    ],
+    "DELAY_FEATURES": [
+        "Distance_km",
+        "Weight_MT",
+        "Fuel_Price_Index",
+        "Baseline_ETA_hours",
+        "Weather_Risk",
+        "Carrier_Risk",
+        "Geo_Risk",
+        "Geopolitical_Risk_Score",
+        "Port_Congestion",
+        "Operational_Stress",
+        "Route_Risk",
+        "Geo_Port_Risk",
+        "Weather_Port_Risk",
+        "Geo_Weather_Risk",
+        "Weather_Carrier_Risk",
+        "Port_Carrier_Risk"
+    ],
+    "DELAY_THRESHOLD": 0.4,
+    "agent": "FlowForge Agent 3 - ETA / Delay Prediction"
+}

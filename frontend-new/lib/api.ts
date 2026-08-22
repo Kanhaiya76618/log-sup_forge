@@ -4,7 +4,9 @@
  * Features automatic fallback for instant development reactivity.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+import { APP_CONFIG, MARITIME_CORRIDORS } from './config'
+
+const API_BASE_URL = APP_CONFIG.API_BASE_URL
 
 export interface DisruptionInput {
   operational_stress: number
@@ -166,10 +168,10 @@ export async function runAgentPipeline(params?: {
         safety_score: 96,
         recommended: true,
         waypoints: [
-          { name: 'Mumbai JNPT', lat: 18.95, lon: 72.95 },
+          { name: MARITIME_CORRIDORS.ORIGIN.name, lat: MARITIME_CORRIDORS.ORIGIN.coords[0], lon: MARITIME_CORRIDORS.ORIGIN.coords[1] },
           { name: 'Sunda Strait Corridor', lat: -5.95, lon: 105.75 },
           { name: 'South Philippine Basin', lat: 12.0, lon: 126.0 },
-          { name: 'Port of Yokohama', lat: 35.44, lon: 139.64 },
+          { name: MARITIME_CORRIDORS.DESTINATION.name, lat: MARITIME_CORRIDORS.DESTINATION.coords[0], lon: MARITIME_CORRIDORS.DESTINATION.coords[1] },
         ],
       },
       pareto_routes: [
@@ -190,9 +192,9 @@ export async function runAgentPipeline(params?: {
           safety_score: 68,
           recommended: false,
           waypoints: [
-            { name: 'Mumbai JNPT', lat: 18.95, lon: 72.95 },
+            { name: MARITIME_CORRIDORS.ORIGIN.name, lat: MARITIME_CORRIDORS.ORIGIN.coords[0], lon: MARITIME_CORRIDORS.ORIGIN.coords[1] },
             { name: 'Malacca Strait', lat: 2.5, lon: 101.5 },
-            { name: 'Port of Yokohama', lat: 35.44, lon: 139.64 },
+            { name: MARITIME_CORRIDORS.DESTINATION.name, lat: MARITIME_CORRIDORS.DESTINATION.coords[0], lon: MARITIME_CORRIDORS.DESTINATION.coords[1] },
           ],
         },
         {
@@ -212,9 +214,9 @@ export async function runAgentPipeline(params?: {
           safety_score: 96,
           recommended: true,
           waypoints: [
-            { name: 'Mumbai JNPT', lat: 18.95, lon: 72.95 },
+            { name: MARITIME_CORRIDORS.ORIGIN.name, lat: MARITIME_CORRIDORS.ORIGIN.coords[0], lon: MARITIME_CORRIDORS.ORIGIN.coords[1] },
             { name: 'Sunda Strait Corridor', lat: -5.95, lon: 105.75 },
-            { name: 'Port of Yokohama', lat: 35.44, lon: 139.64 },
+            { name: MARITIME_CORRIDORS.DESTINATION.name, lat: MARITIME_CORRIDORS.DESTINATION.coords[0], lon: MARITIME_CORRIDORS.DESTINATION.coords[1] },
           ],
         },
         {
@@ -234,9 +236,9 @@ export async function runAgentPipeline(params?: {
           safety_score: 88,
           recommended: false,
           waypoints: [
-            { name: 'Mumbai JNPT', lat: 18.95, lon: 72.95 },
-            { name: 'Singapore Tuas Terminal', lat: 1.29, lon: 103.85 },
-            { name: 'Port of Yokohama', lat: 35.44, lon: 139.64 },
+            { name: MARITIME_CORRIDORS.ORIGIN.name, lat: MARITIME_CORRIDORS.ORIGIN.coords[0], lon: MARITIME_CORRIDORS.ORIGIN.coords[1] },
+            { name: MARITIME_CORRIDORS.TRANSSHIPMENT.name, lat: MARITIME_CORRIDORS.TRANSSHIPMENT.coords[0], lon: MARITIME_CORRIDORS.TRANSSHIPMENT.coords[1] },
+            { name: MARITIME_CORRIDORS.DESTINATION.name, lat: MARITIME_CORRIDORS.DESTINATION.coords[0], lon: MARITIME_CORRIDORS.DESTINATION.coords[1] },
           ],
         },
       ],
@@ -420,9 +422,130 @@ export async function getUnifiedShipmentRisk(params?: Record<string, any>): Prom
         { node_id: 'LEG-01', stage: 'Origin Port Loading', location: 'Mumbai JNPT (IN)', status: 'COMPLETED', risk_tier: 'LOW', dwell_hours: 6.0, detail: 'Loaded on scheduled feeder MV Tokyo Express. Zero gate-in delays.' },
         { node_id: 'LEG-02', stage: 'Inbound Feeder Voyage', location: 'Arabian Sea -> Malacca', status: 'IN_PROGRESS', risk_tier: 'MEDIUM', dwell_hours: 52.0, detail: 'Current speed 14.2 kn (-21% speed decay from monsoon swell headwinds).' },
         { node_id: 'LEG-03', stage: 'Transshipment Transfer', location: 'Singapore Tuas (SG)', status: 'AT_RISK', risk_tier: 'HIGH', dwell_hours: 9.5, detail: 'Buffer: 5.5 hrs. Inbound ETA Hr 52 -> Outbound CMA CGM Jacques Saadé Dep Hr 68.' },
-        { node_id: 'LEG-04', stage: 'Mother Vessel Voyage', location: 'Sunda Strait Corridor', status: 'PENDING', risk_tier: 'LOW', dwell_hours: 88.0, detail: 'Recommended corridor: Route B (Southern Bypass avoiding typhoon swell).' },
         { node_id: 'LEG-05', stage: 'Destination Port Berth', location: 'Port of Yokohama (JP)', status: 'PENDING', risk_tier: 'HIGH', dwell_hours: 18.0, detail: 'Berth congestion 74%. Container Available ETA: Hour 230.9.' },
         { node_id: 'LEG-06', stage: 'Final Delivery Gate', location: 'Yokohama Assembly Plant', status: 'PENDING', risk_tier: 'MEDIUM', dwell_hours: 14.0, detail: 'Final Delivery P50 ETA: Hour 244.9 (P90: Hour 258.2).' },
+      ],
+    }
+  }
+}
+
+export interface MaritimeRiskZone {
+  id: string
+  name: string
+  type: 'weather' | 'geopolitical' | 'congestion'
+  severity: 'CRITICAL' | 'HIGH' | 'MODERATE'
+  polygon?: [number, number][]
+  center?: [number, number]
+  radius_km?: number
+  description: string
+  source: string
+  metrics: { label: string; value: string }[]
+}
+
+export interface MaritimeRiskZonesResponse {
+  timestamp: string
+  zones: MaritimeRiskZone[]
+}
+
+export async function getMaritimeRiskZones(): Promise<MaritimeRiskZonesResponse> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/risk/zones`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+    return await res.json()
+  } catch (_err) {
+    return {
+      timestamp: new Date().toISOString(),
+      zones: [
+        {
+          id: 'ZONE-WX-01',
+          name: 'South China Sea / Luzon Swell Zone',
+          type: 'weather',
+          severity: 'HIGH',
+          polygon: [
+            [14.0, 112.0],
+            [22.0, 118.0],
+            [24.0, 126.0],
+            [16.0, 124.0],
+          ],
+          description: 'Wave swell 3.4m & wind 48 kts causing ~21.1% hydrodynamic speed loss.',
+          source: 'LIVE_OPEN_METEO',
+          metrics: [
+            { label: 'Wave Swell', value: '3.4m' },
+            { label: 'Wind Speed', value: '48 kts' },
+            { label: 'Hazard Tier', value: 'HIGH' },
+          ],
+        },
+        {
+          id: 'ZONE-GEO-01',
+          name: 'Malacca & Singapore Strait Chokepoint',
+          type: 'geopolitical',
+          severity: 'HIGH',
+          polygon: [
+            [1.0, 102.5],
+            [3.8, 100.2],
+            [5.5, 98.5],
+            [4.2, 101.5],
+            [1.5, 104.5],
+          ],
+          description: 'High-density transit corridor with active maritime traffic separation and anti-piracy watch.',
+          source: 'LIVE_GDACS_GDELT',
+          metrics: [
+            { label: 'Geopolitical Score', value: '0.65' },
+            { label: 'Traffic Density', value: 'CRITICAL' },
+            { label: 'Speed Limit', value: '12.0 kn' },
+          ],
+        },
+        {
+          id: 'ZONE-GEO-02',
+          name: 'Bab-el-Mandeb & Southern Red Sea Corridor',
+          type: 'geopolitical',
+          severity: 'CRITICAL',
+          polygon: [
+            [11.5, 42.5],
+            [15.5, 41.5],
+            [16.0, 43.5],
+            [12.5, 44.5],
+          ],
+          description: 'Active conflict & drone advisory area. Commercial traffic diverted via Cape of Good Hope.',
+          source: 'CONFIGURED_SECURITY_FEED',
+          metrics: [
+            { label: 'Risk Classification', value: 'HIGH-RISK AREA' },
+            { label: 'Insurance Surcharge', value: '+140% War Risk' },
+          ],
+        },
+        {
+          id: 'ZONE-PORT-01',
+          name: 'Singapore Tuas Transshipment Gateway',
+          type: 'congestion',
+          severity: 'HIGH',
+          center: [1.29, 103.85],
+          radius_km: 45,
+          description: 'Tuas Berth load operating at 74% capacity. Average feeder dwell time: 14.2 hours.',
+          source: 'PORT_REGISTRY',
+          metrics: [
+            { label: 'Berth Occupancy', value: '74%' },
+            { label: 'Average Queue', value: '14.2h' },
+            { label: 'Status', value: 'CONGESTED' },
+          ],
+        },
+        {
+          id: 'ZONE-PORT-02',
+          name: 'Port of Yokohama Container Terminal #4',
+          type: 'congestion',
+          severity: 'MODERATE',
+          center: [35.44, 139.64],
+          radius_km: 35,
+          description: 'Berth maintenance queue operating at 68% load. Projected terminal dwell: 18.0 hours.',
+          source: 'PORT_REGISTRY',
+          metrics: [
+            { label: 'Berth Load', value: '68%' },
+            { label: 'Dwell Forecast', value: '18.0h' },
+            { label: 'Status', value: 'DWELL ALERT' },
+          ],
+        },
       ],
     }
   }

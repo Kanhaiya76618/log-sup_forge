@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Activity, Radio, AlertTriangle, ShieldCheck, Ship, Wind, Waves, ArrowRight, Gauge, Play, RefreshCw } from 'lucide-react'
+import { MARITIME_CORRIDORS, AIS_CONFIG } from '@/lib/config'
 
 export default function LiveOperationsView() {
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -12,9 +13,9 @@ export default function LiveOperationsView() {
   }
 
   const liveFeeds = [
-    { id: 'AIS-01', source: 'AIS Transponder #8842', vessel: 'MV Tokyo Express', speed: '18.2 kn', heading: '065° ENE', lat: '18.95 N', lng: '72.95 E', status: 'Optimal' },
-    { id: 'AIS-02', source: 'Satellite Uplink #1092', vessel: 'CSCL Globe Supermax', speed: '14.1 kn', heading: '112° ESE', lat: '35.44 N', lng: '139.64 E', status: 'Warning - High Swell' },
-    { id: 'AIS-03', source: 'Tuas Marine Radar Station', vessel: 'Maersk Mc-Kinney', speed: '19.5 kn', heading: '280° W', lat: '1.29 N', lng: '103.85 E', status: 'Optimal' },
+    { id: 'AIS-01', source: 'AIS Transponder #8842', vessel: 'MV Tokyo Express', speed: '18.2 kn', heading: '065° ENE', lat: `${MARITIME_CORRIDORS.ORIGIN.coords[0]}° N`, lng: `${MARITIME_CORRIDORS.ORIGIN.coords[1]}° E`, status: 'Optimal' },
+    { id: 'AIS-02', source: 'Satellite Uplink #1092', vessel: AIS_CONFIG.DEFAULT_VESSEL_NAME, speed: '14.1 kn', heading: '112° ESE', lat: `${MARITIME_CORRIDORS.DESTINATION.coords[0]}° N`, lng: `${MARITIME_CORRIDORS.DESTINATION.coords[1]}° E`, status: 'Warning - High Swell' },
+    { id: 'AIS-03', source: 'Tuas Marine Radar Station', vessel: 'Maersk Mc-Kinney', speed: '19.5 kn', heading: '280° W', lat: `${MARITIME_CORRIDORS.TRANSSHIPMENT.coords[0]}° N`, lng: `${MARITIME_CORRIDORS.TRANSSHIPMENT.coords[1]}° E`, status: 'Optimal' },
   ]
 
   const liveTelemetry = [

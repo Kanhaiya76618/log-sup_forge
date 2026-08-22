@@ -1,10 +1,14 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Activity, Radio, AlertTriangle, ShieldCheck, Ship, Wind, Waves, ArrowRight, Gauge, Play, RefreshCw } from 'lucide-react'
+import { Activity, Radio, AlertTriangle, ShieldCheck, Ship, Wind, Waves, ArrowRight, Gauge, Play, RefreshCw, Navigation } from 'lucide-react'
+import VoyageCheckpointsRibbon from '@/components/ui/VoyageCheckpointsRibbon'
+import { VoyageCheckpoint } from '@/lib/api'
 
 export default function LiveOperationsView() {
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [selectedVoyageId, setSelectedVoyageId] = useState('SH-2049')
+  const [activeCheckpoint, setActiveCheckpoint] = useState<VoyageCheckpoint | null>(null)
 
   const handleRefresh = () => {
     setIsRefreshing(true)
@@ -12,9 +16,9 @@ export default function LiveOperationsView() {
   }
 
   const liveFeeds = [
-    { id: 'AIS-01', source: 'AIS Transponder #8842', vessel: 'MV Tokyo Express', speed: '18.2 kn', heading: '065° ENE', lat: '18.95 N', lng: '72.95 E', status: 'Optimal' },
-    { id: 'AIS-02', source: 'Satellite Uplink #1092', vessel: 'CSCL Globe Supermax', speed: '14.1 kn', heading: '112° ESE', lat: '35.44 N', lng: '139.64 E', status: 'Warning - High Swell' },
-    { id: 'AIS-03', source: 'Tuas Marine Radar Station', vessel: 'Maersk Mc-Kinney', speed: '19.5 kn', heading: '280° W', lat: '1.29 N', lng: '103.85 E', status: 'Optimal' },
+    { id: 'SH-2049', source: 'Satellite Uplink #1092', vessel: 'CSCL Globe Supermax', speed: '14.2 kn', heading: '065° ENE', lat: '1.29 N', lng: '103.85 E', status: 'Warning - High Swell Risk', corridor: 'Mumbai ➔ Singapore ➔ Yokohama' },
+    { id: 'SH-2048', source: 'AIS Transponder #8842', vessel: 'MV Tokyo Express', speed: '18.2 kn', heading: '065° ENE', lat: '18.95 N', lng: '72.95 E', status: 'Optimal', corridor: 'Mumbai ➔ Yokohama (Direct)' },
+    { id: 'SH-2050', source: 'Tuas Marine Radar Station', vessel: 'Maersk Mc-Kinney', speed: '19.5 kn', heading: '280° W', lat: '1.29 N', lng: '103.85 E', status: 'Optimal', corridor: 'Singapore ➔ Rotterdam Gateway' },
   ]
 
   const liveTelemetry = [
@@ -25,18 +29,18 @@ export default function LiveOperationsView() {
   ]
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <p className="text-[10px] font-bold tracking-[.18em] text-[#087ef5] uppercase">REAL-TIME TELEMETRY & AIS STREAMS</p>
           <h2 className="mt-1 text-2xl font-semibold tracking-[-.04em] text-[#1d1d1f]">Live Operations Command</h2>
-          <p className="text-xs text-[#6e6e73]">Active satellite feeds, marine weather radars, and autonomous anomaly detection</p>
+          <p className="text-xs text-[#6e6e73]">Active satellite feeds, marine weather radars, and autonomous checkpoint telemetry</p>
         </div>
 
         <button 
           onClick={handleRefresh}
-          className="flex items-center gap-2 rounded-xl bg-[#1d1d1f] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-black transition"
+          className="flex items-center gap-2 rounded-xl bg-[#1d1d1f] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-black transition cursor-pointer"
         >
           <RefreshCw className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh Telemetry
         </button>
@@ -53,12 +57,18 @@ export default function LiveOperationsView() {
         ))}
       </div>
 
+      {/* 🚀 Checkpoints & Telemetry Ribbon */}
+      <VoyageCheckpointsRibbon 
+        voyageId={selectedVoyageId}
+        onSelectCheckpoint={(cp) => setActiveCheckpoint(cp)}
+      />
+
       {/* Real-time Feeds Grid */}
       <div className="rounded-[28px] border border-[#d2d2d7] bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between border-b border-[#e5e5e7] pb-4 mb-4">
           <div className="flex items-center gap-2">
             <Radio className="size-4 text-[#34c759] animate-pulse" />
-            <h3 className="text-sm font-semibold text-[#1d1d1f]">Active Ocean Vessel Transponders</h3>
+            <h3 className="text-sm font-semibold text-[#1d1d1f]">Active Fleet Vessels & Corridors</h3>
           </div>
           <span className="rounded-full bg-[#e8f8ed] px-2.5 py-0.5 text-[9px] font-semibold text-[#34c759]">
             3 BEACONS ONLINE
@@ -66,34 +76,51 @@ export default function LiveOperationsView() {
         </div>
 
         <div className="space-y-3">
-          {liveFeeds.map((feed) => (
-            <div key={feed.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-[#fafaf9] p-4 border border-[#e5e5e7] hover:border-[#087ef5] transition">
-              <div className="flex items-center gap-3.5">
-                <div className="flex size-9 items-center justify-center rounded-xl bg-[#087ef5]/10 text-[#087ef5]">
-                  <Ship className="size-4" />
+          {liveFeeds.map((feed) => {
+            const isSelected = feed.id === selectedVoyageId
+            return (
+              <div 
+                key={feed.id} 
+                onClick={() => setSelectedVoyageId(feed.id)}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl p-4 border transition cursor-pointer ${
+                  isSelected 
+                    ? 'bg-[#f0f7ff] border-[#087ef5] shadow-xs ring-1 ring-[#087ef5]/20' 
+                    : 'bg-[#fafaf9] border-[#e5e5e7] hover:border-[#087ef5]'
+                }`}
+              >
+                <div className="flex items-center gap-3.5">
+                  <div className={`flex size-9 items-center justify-center rounded-xl ${
+                    isSelected ? 'bg-[#087ef5] text-white' : 'bg-[#087ef5]/10 text-[#087ef5]'
+                  }`}>
+                    <Ship className="size-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs font-semibold text-[#1d1d1f]">{feed.vessel}</h4>
+                      <span className="text-[9px] text-[#86868b]">({feed.id})</span>
+                    </div>
+                    <p className="text-[10px] text-[#86868b]">{feed.corridor} · Lat {feed.lat}, Lng {feed.lng}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-[#1d1d1f]">{feed.vessel}</h4>
-                  <p className="text-[10px] text-[#86868b]">{feed.source} · Lat {feed.lat}, Lng {feed.lng}</p>
+
+                <div className="flex items-center gap-6 text-xs">
+                  <div>
+                    <span className="text-[9px] text-[#86868b] block">Speed / Heading</span>
+                    <strong className="text-[#1d1d1f]">{feed.speed} · {feed.heading}</strong>
+                  </div>
+
+                  <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${
+                    feed.status.includes('Warning') ? 'bg-[#fff5eb] text-[#ff9f0a]' : 'bg-[#e8f8ed] text-[#34c759]'
+                  }`}>
+                    {feed.status}
+                  </span>
                 </div>
               </div>
-
-              <div className="flex items-center gap-6 text-xs">
-                <div>
-                  <span className="text-[9px] text-[#86868b] block">Speed / Heading</span>
-                  <strong className="text-[#1d1d1f]">{feed.speed} · {feed.heading}</strong>
-                </div>
-
-                <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${
-                  feed.status === 'Optimal' ? 'bg-[#e8f8ed] text-[#34c759]' : 'bg-[#fff5eb] text-[#ff9f0a]'
-                }`}>
-                  {feed.status}
-                </span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
   )
 }
+

@@ -112,6 +112,7 @@ export default function GlobalMap() {
   const shipMarkerRef = useRef<any>(null)
   const animationFrameRef = useRef<number | null>(null)
   const vesselProgressRef = useRef<number>(0.24) // Start along Indian Ocean
+  const [activeCorridorMode, setActiveCorridorMode] = useState<'nominal' | 'bypass'>('nominal')
   const [selectedCorridor, setSelectedCorridor] = useState<RouteDetail>(activeCorridor)
   const [showBypass, setShowBypass] = useState<boolean>(true)
   const [isMapReady, setIsMapReady] = useState<boolean>(false)
@@ -140,32 +141,33 @@ export default function GlobalMap() {
         (mapContainerRef.current as any)._leaflet_id = null
       }
 
-      // Initialize Leaflet Map framed on the Mumbai -> Singapore -> Yokohama Corridor
+      // Initialize map with Pacific/Indian Ocean center
       map = L.map(mapContainerRef.current, {
         center: [16.0, 98.0],
         zoom: 4,
         minZoom: 2,
-        maxZoom: 12,
+        maxZoom: 10,
         zoomControl: false,
         attributionControl: false,
+        worldCopyJump: true,
       })
 
-      if (isCancelled) {
-        try {
-          map.remove()
-        } catch {}
-        return
-      }
+      mapInstanceRef.current = map
 
-      // Add high-resolution light CartoDB Positron tile layer
+      // Clean, muted modern basemap tile layer (CartoDB Positron style)
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
         maxZoom: 19,
       }).addTo(map)
 
-      mapInstanceRef.current = map
-      setIsMapReady(true)
+      // Add marine bathymetry / ocean contour layer for maritime realism
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', {
+        opacity: 0.22,
+        maxZoom: 10,
+      }).addTo(map)
+
       renderCorridors(L, map)
+      setIsMapReady(true)
     }
 
     initMap()
@@ -188,7 +190,7 @@ export default function GlobalMap() {
     }
   }, [])
 
-  // Re-render routes when showBypass or isMapReady changes
+  // Re-render routes when showBypass or activeCorridorMode changes
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return
     const render = async () => {
@@ -196,7 +198,7 @@ export default function GlobalMap() {
       renderCorridors(L, mapInstanceRef.current)
     }
     render()
-  }, [showBypass, isMapReady])
+  }, [showBypass, activeCorridorMode, isMapReady])
 
   // Invalidate map size when fullscreen toggles
   useEffect(() => {
@@ -225,8 +227,8 @@ export default function GlobalMap() {
     // 1. Standard Commercial Route Polyline (Nominal Mumbai -> Singapore -> Yokohama)
     const line = L.polyline(corridor.waypoints, {
       color: corridor.color,
-      weight: 3.5,
-      opacity: 0.9,
+      weight: activeCorridorMode === 'nominal' ? 4.5 : 2.5,
+      opacity: activeCorridorMode === 'nominal' ? 1.0 : 0.45,
       dashArray: '7, 9',
       lineCap: 'round',
       lineJoin: 'round',
@@ -234,6 +236,7 @@ export default function GlobalMap() {
     }).addTo(map)
 
     line.on('click', () => {
+      setActiveCorridorMode('nominal')
       setInspectorOpen(true)
     })
 
@@ -241,8 +244,8 @@ export default function GlobalMap() {
     if (corridor.bypassWaypoints && showBypass) {
       const bypassLine = L.polyline(corridor.bypassWaypoints, {
         color: '#34c759',
-        weight: 3.5,
-        opacity: 0.95,
+        weight: activeCorridorMode === 'bypass' ? 4.5 : 2.5,
+        opacity: activeCorridorMode === 'bypass' ? 1.0 : 0.45,
         dashArray: '6, 8',
         lineCap: 'round',
         lineJoin: 'round',
@@ -250,11 +253,84 @@ export default function GlobalMap() {
       }).addTo(map)
 
       bypassLine.on('click', () => {
+        setActiveCorridorMode('bypass')
         setInspectorOpen(true)
       })
     }
 
-    // 3. Origin Pin (Mumbai JNPT)
+    // 3. Dynamic Checkpoints Based on Active Path Mode
+    const nominalCheckpoints = [
+      { id: 'CP-01', name: 'Mumbai JNPT Departure', coords: [18.95, 72.95], status: 'COMPLETED', covered: '0 NM (0%)', remaining: '5,170 NM', wave: '1.2m', wind: '18 km/h', risk: 'LOW', color: '#34c759' },
+      { id: 'CP-02', name: 'Sri Lanka Dondra Corridor', coords: [5.85, 80.55], status: 'COMPLETED', covered: '980 NM (19%)', remaining: '4,190 NM', wave: '2.1m', wind: '28 km/h', risk: 'MEDIUM', color: '#34c759' },
+      { id: 'CP-03', name: 'Malacca Strait Entry', coords: [5.25, 97.50], status: 'COMPLETED', covered: '1,890 NM (36.6%)', remaining: '3,280 NM', wave: '0.8m', wind: '14 km/h', risk: 'LOW', color: '#34c759' },
+      { id: 'CP-04', name: 'Singapore Tuas Hub', coords: [1.29, 103.85], status: 'ACTIVE', covered: '2,140 NM (41.4%)', remaining: '3,030 NM', wave: '0.6m', wind: '12 km/h', risk: 'HIGH', color: '#087ef5' },
+      { id: 'CP-05', name: 'South China Sea Mid Basin', coords: [12.50, 114.20], status: 'UPCOMING', covered: '3,250 NM (62.9%)', remaining: '1,920 NM', wave: '2.6m', wind: '36 km/h', risk: 'HIGH', color: '#ff9f0a' },
+      { id: 'CP-06', name: 'Luzon Strait / Taiwan (Storm Hazard)', coords: [22.80, 123.50], status: 'UPCOMING', covered: '4,310 NM (83.4%)', remaining: '860 NM', wave: '3.8m', wind: '52 km/h', risk: 'CRITICAL', color: '#ff3b30' },
+      { id: 'CP-07', name: 'Port of Yokohama Berth (+4.2d Slip)', coords: [35.44, 139.64], status: 'UPCOMING', covered: '5,170 NM (100%)', remaining: '0 NM', wave: '1.4m', wind: '20 km/h', risk: 'MEDIUM', color: '#1d1d1f' },
+    ]
+
+    const bypassCheckpoints = [
+      { id: 'BP-01', name: 'Mumbai JNPT Departure', coords: [18.95, 72.95], status: 'COMPLETED', covered: '0 NM (0%)', remaining: '5,170 NM', wave: '1.2m', wind: '18 km/h', risk: 'LOW', color: '#34c759' },
+      { id: 'BP-02', name: 'Sri Lanka Equatorial Corridor', coords: [5.85, 80.55], status: 'COMPLETED', covered: '980 NM (19%)', remaining: '4,190 NM', wave: '2.1m', wind: '28 km/h', risk: 'MEDIUM', color: '#34c759' },
+      { id: 'BP-03', name: 'Sunda Strait Corridor (Indonesia)', coords: [-5.95, 105.75], status: 'OPTIMAL', covered: '2,350 NM (45.4%)', remaining: '2,820 NM', wave: '1.1m', wind: '16 km/h', risk: 'LOW', color: '#34c759' },
+      { id: 'BP-04', name: 'Java Sea / Makassar Passage', coords: [-2.50, 118.80], status: 'OPTIMAL', covered: '2,980 NM (57.6%)', remaining: '2,190 NM', wave: '0.9m', wind: '14 km/h', risk: 'LOW', color: '#34c759' },
+      { id: 'BP-05', name: 'South Philippine Sea Deep Basin', coords: [12.00, 126.00], status: 'OPTIMAL', covered: '3,840 NM (74.3%)', remaining: '1,330 NM', wave: '1.4m', wind: '22 km/h', risk: 'LOW', color: '#34c759' },
+      { id: 'BP-06', name: 'Pacific East Kuroshio Approach', coords: [26.50, 134.20], status: 'OPTIMAL', covered: '4,620 NM (89.4%)', remaining: '550 NM', wave: '1.3m', wind: '19 km/h', risk: 'LOW', color: '#34c759' },
+      { id: 'BP-07', name: 'Port of Yokohama Berth (On-Time +0.8d)', coords: [35.44, 139.64], status: 'RECOMMENDED', covered: '5,170 NM (100%)', remaining: '0 NM', wave: '1.4m', wind: '20 km/h', risk: 'LOW', color: '#34c759' },
+    ]
+
+    const activeCheckpoints = activeCorridorMode === 'nominal' ? nominalCheckpoints : bypassCheckpoints
+
+    activeCheckpoints.forEach((cp) => {
+      const cpDiv = L.divIcon({
+        className: 'custom-cp-marker',
+        html: `
+          <div style="
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: ${cp.color}; 
+            color: white; 
+            border-radius: 9999px; 
+            width: 26px; 
+            height: 26px; 
+            font-size: 9px; 
+            font-weight: 800; 
+            border: 2px solid #ffffff; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+            ${cp.status === 'ACTIVE' || cp.status === 'OPTIMAL' ? 'ring: 3px solid #087ef5; animation: pulse 2s infinite;' : ''}
+          ">
+            ${cp.id.replace('CP-0', '').replace('BP-0', '')}
+          </div>
+        `,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      })
+
+      const cpMarker = L.marker(cp.coords as [number, number], { icon: cpDiv }).addTo(map)
+      
+      cpMarker.bindTooltip(`
+        <div style="font-family: inherit; font-size: 11px; padding: 2px 4px;">
+          <div style="font-weight: 800; color: #1d1d1f; border-bottom: 1px solid #e5e5e7; padding-bottom: 3px; margin-bottom: 3px;">
+            ${cp.id}: ${cp.name}
+          </div>
+          <div style="color: ${activeCorridorMode === 'nominal' ? '#087ef5' : '#34c759'}; font-weight: 600;">
+            Covered: ${cp.covered} · Remaining: ${cp.remaining}
+          </div>
+          <div style="color: #6e6e73; margin-top: 2px;">
+            🌊 Swell: <b>${cp.wave}</b> · 💨 Wind: <b>${cp.wind}</b> (${cp.risk} Risk)
+          </div>
+        </div>
+      `, {
+        permanent: false,
+        direction: 'top',
+        className: 'custom-leaflet-tooltip'
+      })
+
+      cpMarker.on('click', () => setInspectorOpen(true))
+    })
+
+    // 4. Origin & Hub High-Visibility Markers
     const originPin = L.circleMarker(corridor.originCoords, {
       radius: 6,
       fillColor: '#ff3b30',
@@ -271,7 +347,6 @@ export default function GlobalMap() {
     })
     originPin.on('click', () => setInspectorOpen(true))
 
-    // 4. Transshipment Hub Pin (Singapore Tuas)
     const hubPin = L.circleMarker(corridor.hubCoords, {
       radius: 6,
       fillColor: '#087ef5',
@@ -288,7 +363,6 @@ export default function GlobalMap() {
     })
     hubPin.on('click', () => setInspectorOpen(true))
 
-    // 5. Destination Pin (Port of Yokohama)
     const destPin = L.circleMarker(corridor.destCoords, {
       radius: 6,
       fillColor: '#1d1d1f',
@@ -305,8 +379,8 @@ export default function GlobalMap() {
     })
     destPin.on('click', () => setInspectorOpen(true))
 
-    // 6. Uber-Style Moving 3D Vessel Marker along Active Route
-    const activeRouteWaypoints = (showBypass && corridor.bypassWaypoints)
+    // 5. Uber-Style Moving 3D Vessel Marker along Selected Active Route
+    const activeRouteWaypoints = (activeCorridorMode === 'bypass' && corridor.bypassWaypoints)
       ? corridor.waypoints.slice(0, 6).concat(corridor.bypassWaypoints.slice(1))
       : corridor.waypoints
 
@@ -572,12 +646,12 @@ export default function GlobalMap() {
           /* Sleek Collapsed Pill */
           <button
             onClick={() => setInspectorOpen(true)}
-            className="flex items-center gap-2.5 rounded-full border border-[#d2d2d7]/90 bg-white/95 px-4 py-2 text-xs font-semibold text-[#1d1d1f] shadow-lg backdrop-blur-xl hover:bg-white active:scale-95 transition"
+            className="flex items-center gap-2.5 rounded-full border border-[#d2d2d7]/90 bg-white/95 px-4 py-2 text-xs font-semibold text-[#1d1d1f] shadow-lg backdrop-blur-xl hover:bg-white active:scale-95 transition cursor-pointer"
           >
-            <Navigation className="size-3.5 text-[#087ef5]" />
-            <span>{selectedCorridor.name}</span>
-            <span className="flow-badge bg-[#ffebe8] text-[#ff3b30]">
-              {selectedCorridor.riskFactor}% Risk
+            <Navigation className={`size-3.5 ${activeCorridorMode === 'bypass' ? 'text-[#34c759]' : 'text-[#087ef5]'}`} />
+            <span>{activeCorridorMode === 'bypass' ? 'Plan B: Southern Bypass (Optimal)' : selectedCorridor.name}</span>
+            <span className={`flow-badge ${activeCorridorMode === 'bypass' ? 'bg-[#e8f8ed] text-[#34c759]' : 'bg-[#ffebe8] text-[#ff3b30]'}`}>
+              {activeCorridorMode === 'bypass' ? '96 Safety Score' : `${selectedCorridor.riskFactor}% Risk`}
             </span>
             <ChevronDown className="size-3.5 text-[#86868b]" />
           </button>
@@ -586,18 +660,18 @@ export default function GlobalMap() {
           <div className="rounded-2xl border border-[#d2d2d7]/80 bg-white/95 p-4 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-[#e5e5e7] pb-2 mb-3">
               <div className="flex items-center gap-2">
-                <Navigation className="size-4 text-[#087ef5]" />
-                <span className="flow-label text-[#087ef5]">
-                  ACTIVE MARITIME CORRIDOR
+                <Navigation className={`size-4 ${activeCorridorMode === 'bypass' ? 'text-[#34c759]' : 'text-[#087ef5]'}`} />
+                <span className={`flow-label ${activeCorridorMode === 'bypass' ? 'text-[#34c759]' : 'text-[#087ef5]'}`}>
+                  {activeCorridorMode === 'bypass' ? 'OR-TOOLS OPTIMAL RECOVERY PLAN' : 'ACTIVE MARITIME CORRIDOR'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="flow-badge bg-[#ffebe8] text-[#ff3b30]">
-                  {selectedCorridor.riskFactor}% RISK · CRITICAL
+                <span className={`flow-badge ${activeCorridorMode === 'bypass' ? 'bg-[#e8f8ed] text-[#34c759]' : 'bg-[#ffebe8] text-[#ff3b30]'}`}>
+                  {activeCorridorMode === 'bypass' ? 'SAFE · LOSS REDUCED 63%' : `${selectedCorridor.riskFactor}% RISK · CRITICAL`}
                 </span>
                 <button 
                   onClick={() => setInspectorOpen(false)}
-                  className="rounded-full p-1 text-[#86868b] hover:bg-[#f5f5f7] transition"
+                  className="rounded-full p-1 text-[#86868b] hover:bg-[#f5f5f7] transition cursor-pointer"
                   title="Collapse Panel"
                 >
                   <X className="size-3.5" />
@@ -606,38 +680,49 @@ export default function GlobalMap() {
             </div>
 
             <div>
-              <h4 className="text-xs font-bold text-[#1d1d1f]">{selectedCorridor.name}</h4>
+              <h4 className="text-xs font-bold text-[#1d1d1f]">
+                {activeCorridorMode === 'bypass' 
+                  ? 'Plan B: Southern Weather Bypass (OR-Tools CP-SAT)' 
+                  : selectedCorridor.name}
+              </h4>
               <p className="text-[11px] text-[#6e6e73] font-medium mt-0.5">{selectedCorridor.vessel}</p>
               
               <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] bg-[#fafaf9] p-2.5 rounded-xl border border-[#e5e5e7]">
                 <div>
                   <span className="text-[#86868b] uppercase text-[8px]">Live Speed / Course</span>
-                  <p className="font-mono font-bold text-[#1d1d1f]">{selectedCorridor.speed} · {selectedCorridor.heading}</p>
+                  <p className="font-mono font-bold text-[#1d1d1f]">
+                    {activeCorridorMode === 'bypass' ? '16.0 kn · 035° NE' : `${selectedCorridor.speed} · ${selectedCorridor.heading}`}
+                  </p>
                 </div>
                 <div>
-                  <span className="text-[#86868b] uppercase text-[8px]">ETA Arrival Slip</span>
-                  <p className="font-mono font-bold text-[#ff3b30]">
-                    {selectedCorridor.eta}
+                  <span className="text-[#86868b] uppercase text-[8px]">
+                    {activeCorridorMode === 'bypass' ? 'Net Savings / ETA' : 'ETA Arrival Slip'}
+                  </span>
+                  <p className={`font-mono font-bold ${activeCorridorMode === 'bypass' ? 'text-[#34c759]' : 'text-[#ff3b30]'}`}>
+                    {activeCorridorMode === 'bypass' ? '+$42,000 USD (Nov 24)' : selectedCorridor.eta}
                   </p>
                 </div>
               </div>
 
               <p className="text-[10px] text-[#6e6e73] mt-2 line-clamp-1">
-                <strong>Cargo:</strong> {selectedCorridor.cargo}
+                <strong>Strategy:</strong> {activeCorridorMode === 'bypass' 
+                  ? 'Deviates 320 NM south of typhoon swell window to avoid hull stress.' 
+                  : selectedCorridor.cargo}
               </p>
             </div>
 
-            <div className="mt-3 pt-2.5 border-t border-[#f0f0f2] flex items-center justify-between">
-              <button
-                onClick={() => setShowBypass(v => !v)}
-                className="text-[10px] font-semibold text-[#34c759] flex items-center gap-1 hover:underline"
-              >
-                <Layers className="size-3" />
-                {showBypass ? 'Hide Southern Bypass Path' : 'Show Southern Bypass Path (+$42K)'}
-              </button>
+            <div className="mt-3 pt-2.5 border-t border-[#f0f0f2] flex items-center justify-between text-[10px]">
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setActiveCorridorMode(m => m === 'nominal' ? 'bypass' : 'nominal')}
+                  className="font-semibold text-[#087ef5] hover:underline cursor-pointer"
+                >
+                  Switch to {activeCorridorMode === 'nominal' ? 'Optimal Bypass' : 'Nominal Path'}
+                </button>
+              </div>
               <button
                 onClick={() => setInspectorOpen(false)}
-                className="text-[10px] font-medium text-[#6e6e73] hover:text-[#1d1d1f]"
+                className="font-medium text-[#6e6e73] hover:text-[#1d1d1f] cursor-pointer"
               >
                 Collapse ✕
               </button>
@@ -678,15 +763,39 @@ export default function GlobalMap() {
         </button>
       </div>
 
-      {/* Bottom Floating Legend Pills */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-xl border border-[#d2d2d7]/80 bg-white/90 px-3.5 py-2 shadow-lg backdrop-blur-xl text-[10px] z-10">
-        <span className="flex items-center gap-1.5 font-medium text-[#1d1d1f]">
-          <span className="inline-block w-4 h-0.5 border-b-2 border-dashed border-[#ff3b30]" /> Nominal Voyage (Storm Disruption)
-        </span>
+      {/* Bottom Floating Interactive Path Legend Selector */}
+      <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-2xl border border-[#d2d2d7]/90 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl text-[10px] z-10">
+        <button
+          onClick={() => setActiveCorridorMode('nominal')}
+          className={`flex items-center gap-2 rounded-xl px-3 py-1.5 font-semibold transition cursor-pointer ${
+            activeCorridorMode === 'nominal'
+              ? 'bg-[#ffebe8] text-[#ff3b30] border border-[#ffc2be] shadow-xs'
+              : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-[#f5f5f7]'
+          }`}
+        >
+          <span className="inline-block w-4 h-0.5 border-b-2 border-dashed border-[#ff3b30]" />
+          <span>Nominal Path (Storm Disrupted)</span>
+          {activeCorridorMode === 'nominal' && (
+            <span className="size-1.5 rounded-full bg-[#ff3b30] animate-pulse" />
+          )}
+        </button>
+
         <span className="text-[#d2d2d7]">|</span>
-        <span className="flex items-center gap-1.5 font-medium text-[#34c759]">
-          <span className="inline-block w-4 h-0.5 border-b-2 border-dashed border-[#34c759]" /> OR-Tools Southern Weather Bypass
-        </span>
+
+        <button
+          onClick={() => setActiveCorridorMode('bypass')}
+          className={`flex items-center gap-2 rounded-xl px-3 py-1.5 font-semibold transition cursor-pointer ${
+            activeCorridorMode === 'bypass'
+              ? 'bg-[#e8f8ed] text-[#34c759] border border-[#b7ebc7] shadow-xs'
+              : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-[#f5f5f7]'
+          }`}
+        >
+          <span className="inline-block w-4 h-0.5 border-b-2 border-dashed border-[#34c759]" />
+          <span>OR-Tools Optimal Bypass (Safe)</span>
+          {activeCorridorMode === 'bypass' && (
+            <span className="size-1.5 rounded-full bg-[#34c759] animate-pulse" />
+          )}
+        </button>
       </div>
 
     </div>

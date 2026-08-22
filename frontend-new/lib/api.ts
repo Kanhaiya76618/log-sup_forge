@@ -430,3 +430,196 @@ export async function getUnifiedShipmentRisk(params?: Record<string, any>): Prom
     }
   }
 }
+
+// ---------------------------------------------------------
+// Voyage Checkpoints & Telemetry Forecast Interfaces
+// ---------------------------------------------------------
+
+export interface CheckpointShipTelemetry {
+  speed_knots: number
+  heading_deg: number
+  engine_load_pct: number
+  fuel_burn_mt_day: number
+  draft_m: number
+  safety_status: string
+}
+
+export interface CheckpointForecastConditions {
+  wave_height_m: number
+  wind_speed_kmh: number
+  wind_direction: string
+  sea_state: string
+  visibility_nm: number
+  risk_tier: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  risk_score: number
+}
+
+export interface VoyageCheckpoint {
+  checkpoint_id: string
+  sequence: number
+  name: string
+  location_name: string
+  coordinates: { lat: number; lon: number }
+  category: 'PORT_DEPARTURE' | 'OPEN_OCEAN_TRANSIT' | 'STRAIT_CHOKEPOINT' | 'TRANSSHIPMENT_HUB' | 'STORM_BYPASS_ZONE' | 'PORT_ARRIVAL'
+  distance_covered_nm: number
+  distance_remaining_nm: number
+  progress_percent: number
+  elapsed_days: number
+  eta_or_passed: string
+  status: 'COMPLETED' | 'ACTIVE_CURRENT' | 'UPCOMING'
+  ship_telemetry: CheckpointShipTelemetry
+  forecast_conditions: CheckpointForecastConditions
+}
+
+export interface VoyageCheckpointsPayload {
+  voyage_id: string
+  vessel_name: string
+  route_name: string
+  total_distance_nm: number
+  distance_covered_nm: number
+  distance_remaining_nm: number
+  progress_percent: number
+  total_transit_days: number
+  elapsed_days: number
+  remaining_days: number
+  active_checkpoint_id: string
+  checkpoints: VoyageCheckpoint[]
+}
+
+export async function getVoyageCheckpoints(voyageId: string = 'SH-2049'): Promise<VoyageCheckpointsPayload> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/voyages/${voyageId}/checkpoints`)
+    if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+    return await res.json()
+  } catch (err) {
+    console.warn('API unavailable, returning fallback voyage checkpoints data:', err)
+    return {
+      voyage_id: voyageId,
+      vessel_name: 'CSCL Globe Supermax',
+      route_name: 'Mumbai JNPT ➔ Singapore Tuas Hub ➔ Port of Yokohama',
+      total_distance_nm: 5170,
+      distance_covered_nm: 2140,
+      distance_remaining_nm: 3030,
+      progress_percent: 41.4,
+      total_transit_days: 13.5,
+      elapsed_days: 5.8,
+      remaining_days: 7.7,
+      active_checkpoint_id: 'CP-04',
+      checkpoints: [
+        {
+          checkpoint_id: 'CP-01',
+          sequence: 1,
+          name: 'Mumbai JNPT Pilot Boarding Station',
+          location_name: 'Mumbai, India',
+          coordinates: { lat: 18.95, lon: 72.95 },
+          category: 'PORT_DEPARTURE',
+          distance_covered_nm: 0,
+          distance_remaining_nm: 5170,
+          progress_percent: 0.0,
+          elapsed_days: 0.0,
+          eta_or_passed: 'Nov 12, 2026 08:00 UTC (Passed)',
+          status: 'COMPLETED',
+          ship_telemetry: { speed_knots: 12.0, heading_deg: 185, engine_load_pct: 65, fuel_burn_mt_day: 42.0, draft_m: 14.8, safety_status: 'NORMAL' },
+          forecast_conditions: { wave_height_m: 1.2, wind_speed_kmh: 18.0, wind_direction: 'NW', sea_state: 'Calm to Slight Swell', visibility_nm: 10.0, risk_tier: 'LOW', risk_score: 12 }
+        },
+        {
+          checkpoint_id: 'CP-02',
+          sequence: 2,
+          name: 'Sri Lanka Dondra Head Corridor',
+          location_name: 'South of Sri Lanka',
+          coordinates: { lat: 5.85, lon: 80.55 },
+          category: 'OPEN_OCEAN_TRANSIT',
+          distance_covered_nm: 980,
+          distance_remaining_nm: 4190,
+          progress_percent: 19.0,
+          elapsed_days: 2.5,
+          eta_or_passed: 'Nov 14, 2026 20:00 UTC (Passed)',
+          status: 'COMPLETED',
+          ship_telemetry: { speed_knots: 17.8, heading_deg: 105, engine_load_pct: 82, fuel_burn_mt_day: 58.5, draft_m: 14.8, safety_status: 'NORMAL' },
+          forecast_conditions: { wave_height_m: 2.1, wind_speed_kmh: 28.0, wind_direction: 'SW', sea_state: 'Moderate Monsoon Swell', visibility_nm: 8.5, risk_tier: 'MEDIUM', risk_score: 38 }
+        },
+        {
+          checkpoint_id: 'CP-03',
+          sequence: 3,
+          name: 'Malacca Strait Western Entry',
+          location_name: 'Strait of Malacca (North Gate)',
+          coordinates: { lat: 5.25, lon: 97.50 },
+          category: 'STRAIT_CHOKEPOINT',
+          distance_covered_nm: 1890,
+          distance_remaining_nm: 3280,
+          progress_percent: 36.6,
+          elapsed_days: 5.0,
+          eta_or_passed: 'Nov 17, 2026 09:30 UTC (Passed)',
+          status: 'COMPLETED',
+          ship_telemetry: { speed_knots: 15.4, heading_deg: 130, engine_load_pct: 74, fuel_burn_mt_day: 49.0, draft_m: 14.7, safety_status: 'RESTRICTED SPEED' },
+          forecast_conditions: { wave_height_m: 0.8, wind_speed_kmh: 14.0, wind_direction: 'NE', sea_state: 'Calm Channel', visibility_nm: 7.0, risk_tier: 'LOW', risk_score: 22 }
+        },
+        {
+          checkpoint_id: 'CP-04',
+          sequence: 4,
+          name: 'Singapore Tuas Transshipment Hub',
+          location_name: 'Singapore Tuas Terminal',
+          coordinates: { lat: 1.29, lon: 103.85 },
+          category: 'TRANSSHIPMENT_HUB',
+          distance_covered_nm: 2140,
+          distance_remaining_nm: 3030,
+          progress_percent: 41.4,
+          elapsed_days: 5.8,
+          eta_or_passed: 'Nov 18, 2026 04:00 UTC (Active Buffer)',
+          status: 'ACTIVE_CURRENT',
+          ship_telemetry: { speed_knots: 14.2, heading_deg: 65, engine_load_pct: 68, fuel_burn_mt_day: 45.0, draft_m: 14.8, safety_status: 'BERTH CONGESTION BUFFER' },
+          forecast_conditions: { wave_height_m: 0.6, wind_speed_kmh: 12.0, wind_direction: 'E', sea_state: 'Smooth Roads', visibility_nm: 9.0, risk_tier: 'HIGH', risk_score: 74 }
+        },
+        {
+          checkpoint_id: 'CP-05',
+          sequence: 5,
+          name: 'South China Sea Central Basin',
+          location_name: 'South China Sea (Mid Corridor)',
+          coordinates: { lat: 12.50, lon: 114.20 },
+          category: 'OPEN_OCEAN_TRANSIT',
+          distance_covered_nm: 3250,
+          distance_remaining_nm: 1920,
+          progress_percent: 62.9,
+          elapsed_days: 8.8,
+          eta_or_passed: 'Nov 21, 2026 14:00 UTC (Estimated)',
+          status: 'UPCOMING',
+          ship_telemetry: { speed_knots: 16.5, heading_deg: 42, engine_load_pct: 80, fuel_burn_mt_day: 56.0, draft_m: 14.6, safety_status: 'PREDICTED NOMINAL' },
+          forecast_conditions: { wave_height_m: 2.6, wind_speed_kmh: 36.0, wind_direction: 'ENE', sea_state: 'High Swell Anomaly', visibility_nm: 6.0, risk_tier: 'HIGH', risk_score: 68 }
+        },
+        {
+          checkpoint_id: 'CP-06',
+          sequence: 6,
+          name: 'Luzon Strait / Ryukyu Outer Arc',
+          location_name: 'East of Taiwan / Ryukyu Trench',
+          coordinates: { lat: 22.80, lon: 123.50 },
+          category: 'STORM_BYPASS_ZONE',
+          distance_covered_nm: 4310,
+          distance_remaining_nm: 860,
+          progress_percent: 83.4,
+          elapsed_days: 11.5,
+          eta_or_passed: 'Nov 24, 2026 06:00 UTC (Estimated)',
+          status: 'UPCOMING',
+          ship_telemetry: { speed_knots: 16.0, heading_deg: 35, engine_load_pct: 82, fuel_burn_mt_day: 58.0, draft_m: 14.6, safety_status: 'SOUTHERN BYPASS APPLIED' },
+          forecast_conditions: { wave_height_m: 3.8, wind_speed_kmh: 52.0, wind_direction: 'NE', sea_state: 'Severe Typhoon Swell Periphery', visibility_nm: 4.5, risk_tier: 'CRITICAL', risk_score: 88 }
+        },
+        {
+          checkpoint_id: 'CP-07',
+          sequence: 7,
+          name: 'Port of Yokohama Berth Approach',
+          location_name: 'Tokyo Bay / Yokohama Gateway',
+          coordinates: { lat: 35.44, lon: 139.64 },
+          category: 'PORT_ARRIVAL',
+          distance_covered_nm: 5170,
+          distance_remaining_nm: 0,
+          progress_percent: 100.0,
+          elapsed_days: 13.5,
+          eta_or_passed: 'Nov 26, 2026 18:00 UTC (+4.2d Slip)',
+          status: 'UPCOMING',
+          ship_telemetry: { speed_knots: 10.5, heading_deg: 15, engine_load_pct: 55, fuel_burn_mt_day: 34.0, draft_m: 14.5, safety_status: 'BERTH DISCHARGE READY' },
+          forecast_conditions: { wave_height_m: 1.4, wind_speed_kmh: 20.0, wind_direction: 'NNE', sea_state: 'Moderate Harbor Swell', visibility_nm: 8.0, risk_tier: 'MEDIUM', risk_score: 45 }
+        }
+      ]
+    }
+  }
+}
+

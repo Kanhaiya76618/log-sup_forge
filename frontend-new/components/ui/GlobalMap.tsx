@@ -8,9 +8,23 @@ import {
   ChevronDown, ChevronUp, X, Maximize2, Minimize2, Sparkles, Check,
   CloudRain, ShieldAlert, Anchor, Activity
 } from 'lucide-react'
+import { AnalysisResult } from '@/lib/types'
+import { getPortCoordinates, generateNauticalWaypoints } from '@/lib/nauticalRoutes'
 import seaRoutesData from '@/lib/searoutes.json'
 import { getMaritimeRiskZones, type MaritimeRiskZone } from '@/lib/api'
 import { MAP_CONFIG, MARITIME_CORRIDORS } from '@/lib/config'
+
+export interface GlobalMapProps {
+  result?: AnalysisResult
+  origin?: string
+  hub?: string
+  destination?: string
+  vesselName?: string
+  waypoints?: [number, number][]
+  bypassWaypoints?: [number, number][]
+  riskFactor?: number
+  speed?: string
+}
 
 export interface RouteDetail {
   id: string
@@ -109,13 +123,56 @@ function getInterpolatedVesselPosition(waypoints: [number, number][], t: number)
   return { lat, lng, heading }
 }
 
-export default function GlobalMap() {
+export default function GlobalMap({
+  result,
+  origin,
+  hub,
+  destination,
+  vesselName,
+  waypoints,
+  bypassWaypoints,
+  riskFactor,
+  speed,
+}: GlobalMapProps = {}) {
+  const originName = origin || result?.scenarioInput.origin || MARITIME_CORRIDORS.ORIGIN.name
+  const hubName = hub || result?.scenarioInput.transshipmentHub || MARITIME_CORRIDORS.TRANSSHIPMENT.name
+  const destName = destination || result?.scenarioInput.destination || MARITIME_CORRIDORS.DESTINATION.name
+  const vessel = vesselName || result?.scenarioInput.vesselName || 'CSCL Globe Supermax'
+
+  const originCoords = getPortCoordinates(originName, MARITIME_CORRIDORS.ORIGIN.coords)
+  const hubCoords = getPortCoordinates(hubName, MARITIME_CORRIDORS.TRANSSHIPMENT.coords)
+  const destCoords = getPortCoordinates(destName, MARITIME_CORRIDORS.DESTINATION.coords)
+
+  const nominalWaypoints = waypoints || generateNauticalWaypoints(originName, hubName, destName, false)
+  const dynamicBypassWaypoints = bypassWaypoints || generateNauticalWaypoints(originName, hubName, destName, true)
+
+  const dynamicCorridor: RouteDetail = {
+    id: result?.id || 'COR-01',
+    name: result?.affectedCorridor || `${originName} ➔ ${hubName} ➔ ${destName}`,
+    vessel: vessel,
+    originName,
+    hubName,
+    destName,
+    originCoords,
+    hubCoords,
+    destCoords,
+    waypoints: nominalWaypoints,
+    bypassWaypoints: dynamicBypassWaypoints,
+    status: (result?.riskLevel as any) || 'critical',
+    speed: speed || (result?.scenarioInput ? `${result.scenarioInput.currentSpeedKnots} kn` : '18.2 kn'),
+    heading: '065° ENE',
+    eta: result ? `+${result.predictedDelayDays}d slip` : 'Nov 26, 2026 (+4.2d)',
+    riskFactor: riskFactor ?? result?.disruptionProbability ?? 82,
+    cargo: result ? `Cargo manifest value $${(result.scenarioInput.costRules.cargoValueUsd / 1000000).toFixed(1)}M` : 'Automotive ECUs & Battery Packs ($35.2M)',
+    color: '#ff3b30',
+  }
+
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const shipMarkerRef = useRef<any>(null)
   const animationFrameRef = useRef<number | null>(null)
   const vesselProgressRef = useRef<number>(0.24) // Start along Indian Ocean
-  const [selectedCorridor, setSelectedCorridor] = useState<RouteDetail>(activeCorridor)
+  const [selectedCorridor, setSelectedCorridor] = useState<RouteDetail>(dynamicCorridor)
   const [showBypass, setShowBypass] = useState<boolean>(true)
   const [showWeather, setShowWeather] = useState<boolean>(true)
   const [showGeopolitical, setShowGeopolitical] = useState<boolean>(true)
@@ -125,6 +182,10 @@ export default function GlobalMap() {
   const [isMapReady, setIsMapReady] = useState<boolean>(false)
   const [inspectorOpen, setInspectorOpen] = useState<boolean>(false)
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
+
+  useEffect(() => {
+    setSelectedCorridor(dynamicCorridor)
+  }, [result, origin, hub, destination, vesselName])
 
   // Fetch real-time maritime risk & disruption zones from backend API
   useEffect(() => {
@@ -309,7 +370,7 @@ export default function GlobalMap() {
       })
     }
 
-    const corridor = activeCorridor
+    const corridor = dynamicCorridor
 
     // 2. Standard Commercial Route Polyline (Nominal Mumbai -> Singapore -> Yokohama)
     const line = L.polyline(corridor.waypoints, {

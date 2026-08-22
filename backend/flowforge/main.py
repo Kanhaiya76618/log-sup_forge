@@ -3,9 +3,19 @@ backend/flowforge/main.py
 FlowForge Maritime Disruption OS & Multi-Agent Intelligence Layer API.
 """
 
+import os
 import sys
 import logging
+from pathlib import Path
 from contextlib import asynccontextmanager
+
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_backend_dir = os.path.dirname(_current_dir)
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
+
 from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError

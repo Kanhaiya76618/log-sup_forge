@@ -1,5 +1,6 @@
 import { AnalysisResult, ScenarioInput, RouteOption, DecisionAgent } from './types'
 import seaRoutesData from './searoutes.json'
+import { generateNauticalWaypoints } from './nauticalRoutes'
 
 const STORAGE_KEY = 'flowforge_scenarios_history'
 
@@ -224,7 +225,25 @@ export function getSavedScenarios(): AnalysisResult[] {
     }
     let parsed = JSON.parse(raw)
     if (Array.isArray(parsed)) {
-      parsed = parsed.filter(s => s && s.id && s.scenarioInput?.title && s.recommendedRoute)
+      parsed = parsed
+        .filter(s => s && s.id && s.scenarioInput?.title && s.recommendedRoute)
+        .map(s => {
+          const origin = s.scenarioInput.origin || 'Mumbai'
+          const hub = s.scenarioInput.transshipmentHub || 'Singapore'
+          const dest = s.scenarioInput.destination || 'Yokohama'
+          const nominal = generateNauticalWaypoints(origin, hub, dest, false)
+          const bypass = generateNauticalWaypoints(origin, hub, dest, true)
+          if (s.recommendedRoute) {
+            s.recommendedRoute.waypoints = bypass
+          }
+          if (Array.isArray(s.routeComparison)) {
+            s.routeComparison.forEach(r => {
+              if (r.type === 'RECOMMENDED_REROUTE') r.waypoints = bypass
+              else r.waypoints = nominal
+            })
+          }
+          return s
+        })
       if (parsed.length > 0) return parsed
     }
     return defaultPreloadedScenarios
@@ -273,6 +292,9 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
 
   const resultId = `SCN-${Date.now().toString().slice(-6)}`
 
+  const nominalWaypoints = generateNauticalWaypoints(input.origin, input.transshipmentHub || 'Singapore Tuas Hub', input.destination, false)
+  const bypassWaypoints = generateNauticalWaypoints(input.origin, input.transshipmentHub || 'Singapore Tuas Hub', input.destination, true)
+
   const routeA: RouteOption = {
     id: 'ROUTE-A',
     name: 'Plan A: Do Nothing (Nominal Corrupted Route)',
@@ -292,7 +314,7 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
     riskScorePercent: disruptionProb,
     recommended: false,
     confidenceScore: 28.0,
-    waypoints: (seaRoutesData as any).corridor_1 || []
+    waypoints: nominalWaypoints
   }
 
   const routeB: RouteOption = {
@@ -314,7 +336,7 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
     riskScorePercent: 16,
     recommended: true,
     confidenceScore: 95.2,
-    waypoints: (seaRoutesData as any).corridor_bypass || []
+    waypoints: bypassWaypoints
   }
 
   const routeC: RouteOption = {
@@ -336,7 +358,7 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
     riskScorePercent: 44,
     recommended: false,
     confidenceScore: 72.0,
-    waypoints: (seaRoutesData as any).corridor_1 || []
+    waypoints: nominalWaypoints
   }
 
   const newResult: AnalysisResult = {

@@ -114,7 +114,7 @@ export default function ScenarioDetailPage() {
             </div>
             <span className="flow-badge bg-[#e8f8ed] text-[#34c759]">OR-TOOLS CP-SAT ROUTE ACTIVE</span>
           </div>
-          <GlobalMap />
+          <GlobalMap result={scenario} />
         </div>
 
         {/* 3. Side-by-Side Route Comparison Table */}

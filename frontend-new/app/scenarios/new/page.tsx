@@ -6,19 +6,15 @@ import BuilderProgress from '@/components/scenarios/builder/BuilderProgress'
 import ShipmentStage from '@/components/scenarios/builder/ShipmentStage'
 import VesselVoyageStage from '@/components/scenarios/builder/VesselVoyageStage'
 import DisruptionStage from '@/components/scenarios/builder/DisruptionStage'
-import ConstraintsStage from '@/components/scenarios/builder/ConstraintsStage'
-import CostBusinessStage from '@/components/scenarios/builder/CostBusinessStage'
-import ReviewStage from '@/components/scenarios/builder/ReviewStage'
+import FinalStage from '@/components/scenarios/builder/FinalStage'
 import { ScenarioInput } from '@/lib/types'
 import { evaluateScenarioInput } from '@/lib/scenarioData'
 
 const steps = [
-  'Shipment',
-  'Vessel & Speed',
-  'Disruption',
-  'Constraints',
-  'Costs & Rules',
-  'Review & Run'
+  'Shipment & Route',
+  'Vessel Profile',
+  'Disruption Event',
+  'Rules & Run'
 ]
 
 export default function NewScenarioPage() {
@@ -38,12 +34,12 @@ export default function NewScenarioPage() {
     scheduledTransitHours: 192,
     disruption: {
       type: 'severe_weather',
-      severity: 78,
+      severity: 0,
       affectedNode: 'South China Sea / Luzon Strait',
-      predictedDelayHours: 52.8,
-      waveHeightMeters: 3.4,
-      windSpeedKmh: 58,
-      description: 'Tropical cyclone swell causing 21.1% vessel speed decay along nominal sea lane.'
+      predictedDelayHours: 0,
+      waveHeightMeters: 0,
+      windSpeedKmh: 0,
+      description: ''
     },
     constraints: {
       maxBudgetUsd: 50000,
@@ -94,18 +90,23 @@ export default function NewScenarioPage() {
             <span className="size-1.5 rounded-full bg-white" />
           </span>
           <span>FLOWFORGE</span>
-          <span className="hidden xl:inline text-[#86868b] font-normal">/ SCENARIO BUILDER WIZARD</span>
+          <span className="hidden xl:inline text-[#86868b] font-normal">/ SCENARIO BUILDER</span>
         </a>
 
-        <a
-          href="/scenarios"
-          className="text-xs font-semibold text-[#6e6e73] hover:text-[#1d1d1f] transition"
-        >
-          Cancel & Exit
-        </a>
+        <div className="flex items-center gap-3">
+          <span className="hidden sm:inline text-[10px] font-bold text-[#86868b] uppercase tracking-wider">
+            Step {currentStep} of {steps.length}
+          </span>
+          <a
+            href="/scenarios"
+            className="text-xs font-semibold text-[#6e6e73] hover:text-[#1d1d1f] transition"
+          >
+            Cancel & Exit
+          </a>
+        </div>
       </header>
 
-      <div className="mx-auto max-w-[1000px] px-4 pb-16 pt-28 space-y-6">
+      <div className="mx-auto max-w-[960px] px-4 pb-20 pt-28 space-y-5">
         <BuilderProgress
           currentStep={currentStep}
           steps={steps}
@@ -146,29 +147,13 @@ export default function NewScenarioPage() {
           )}
 
           {currentStep === 4 && (
-            <ConstraintsStage
-              constraints={formData.constraints}
-              onChange={updateConstraints}
-              onNext={() => setCurrentStep(5)}
-              onPrev={() => setCurrentStep(3)}
-            />
-          )}
-
-          {currentStep === 5 && (
-            <CostBusinessStage
-              costRules={formData.costRules}
-              onChange={updateCostRules}
-              onNext={() => setCurrentStep(6)}
-              onPrev={() => setCurrentStep(4)}
-            />
-          )}
-
-          {currentStep === 6 && (
-            <ReviewStage
+            <FinalStage
               input={formData}
               isSubmitting={isSubmitting}
+              onChangeConstraints={updateConstraints}
+              onChangeCostRules={updateCostRules}
               onSubmit={handleSubmit}
-              onPrev={() => setCurrentStep(5)}
+              onPrev={() => setCurrentStep(3)}
             />
           )}
         </div>

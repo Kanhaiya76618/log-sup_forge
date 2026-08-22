@@ -247,7 +247,7 @@ export default function GlobalMap() {
 
     const corridor = activeCorridor
     const activeRouteWaypoints = (activeCorridorMode === 'bypass' && corridor.bypassWaypoints)
-      ? corridor.waypoints.slice(0, 6).concat(corridor.bypassWaypoints.slice(1))
+      ? corridor.bypassWaypoints
       : corridor.waypoints
 
     const progressT = scrubberProgress / 100.0

@@ -108,21 +108,60 @@ function getInterpolatedVesselPosition(waypoints: [number, number][], t: number)
   return { lat, lng, heading }
 }
 
-export default function GlobalMap() {
+export interface GlobalMapProps {
+  corridor?: RouteDetail
+  scenarioResult?: any
+}
+
+export default function GlobalMap({ corridor: propCorridor, scenarioResult }: GlobalMapProps = {}) {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const shipMarkerRef = useRef<any>(null)
   const animationFrameRef = useRef<number | null>(null)
-  const vesselProgressRef = useRef<number>(0.24) // Start along Indian Ocean
+  const vesselProgressRef = useRef<number>(0.24)
   const [activeCorridorMode, setActiveCorridorMode] = useState<'nominal' | 'bypass'>('nominal')
-  const [selectedCorridor, setSelectedCorridor] = useState<RouteDetail>(activeCorridor)
   const [showBypass, setShowBypass] = useState<boolean>(true)
   const [isMapReady, setIsMapReady] = useState<boolean>(false)
   const [inspectorOpen, setInspectorOpen] = useState<boolean>(false)
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
 
+  // Derive active corridor dynamically from scenarioResult, propCorridor, or activeCorridor default
+  const dynamicCorridor: RouteDetail = React.useMemo(() => {
+    if (propCorridor) return propCorridor
+    if (scenarioResult) {
+      const rec = scenarioResult.recommendedRoute
+      const comp = scenarioResult.routeComparison
+      const nominalWps = comp?.[0]?.waypoints || rec?.waypoints || activeCorridor.waypoints
+      const bypassWps = rec?.waypoints || activeCorridor.bypassWaypoints
+
+      return {
+        id: scenarioResult.id || 'SCN-CUSTOM',
+        name: scenarioResult.affectedCorridor || activeCorridor.name,
+        vessel: scenarioResult.scenarioInput?.vesselName || activeCorridor.vessel,
+        originName: scenarioResult.scenarioInput?.origin || activeCorridor.originName,
+        hubName: scenarioResult.scenarioInput?.transshipmentHub || activeCorridor.hubName,
+        destName: scenarioResult.scenarioInput?.destination || activeCorridor.destName,
+        originCoords: (nominalWps[0] as [number, number]) || activeCorridor.originCoords,
+        hubCoords: (nominalWps[Math.floor(nominalWps.length / 2)] as [number, number]) || activeCorridor.hubCoords,
+        destCoords: (nominalWps[nominalWps.length - 1] as [number, number]) || activeCorridor.destCoords,
+        waypoints: nominalWps as [number, number][],
+        bypassWaypoints: bypassWps as [number, number][],
+        status: (scenarioResult.riskLevel === 'critical' ? 'critical' : 'delayed') as any,
+        speed: `${rec?.speedKnots || 16.8} kn`,
+        heading: '065° ENE',
+        eta: rec?.etaDate || 'Nov 26, 2026',
+        riskFactor: scenarioResult.disruptionProbability || 75,
+        cargo: 'High-Value Commercial Cargo ($35.2M)',
+        color: '#ff3b30'
+      }
+    }
+    return activeCorridor
+  }, [propCorridor, scenarioResult])
+
+  const [selectedCorridor, setSelectedCorridor] = useState<RouteDetail>(dynamicCorridor)
+
   // Movable Ship Node & Timeline Scrubber State
-  const [scrubberProgress, setScrubberProgress] = useState<number>(41.4) // Default at Singapore Tuas (Active Node)
+  const [scrubberProgress, setScrubberProgress] = useState<number>(35.0)
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
 
   useEffect(() => {
@@ -245,14 +284,22 @@ export default function GlobalMap() {
       }
     })
 
-    const corridor = activeCorridor
-    const activeRouteWaypoints = (activeCorridorMode === 'bypass' && corridor.bypassWaypoints)
+    const corridor = dynamicCorridor
+    const activeRouteWaypoints = (activeCorridorMode === 'bypass' && corridor.bypassWaypoints && corridor.bypassWaypoints.length > 0)
       ? corridor.bypassWaypoints
       : corridor.waypoints
 
+    // Auto-fit map to route bounding box
+    if (activeRouteWaypoints && activeRouteWaypoints.length >= 2) {
+      try {
+        map.fitBounds(L.latLngBounds(activeRouteWaypoints), { padding: [50, 50], maxZoom: 7 })
+      } catch {}
+    }
+
     const progressT = scrubberProgress / 100.0
     const currentPos = getInterpolatedVesselPosition(activeRouteWaypoints, progressT)
-    const currentCoveredNM = Math.round(progressT * 5170)
+    const totalDistNm = (corridor as any).totalDistanceNM || Math.round(activeRouteWaypoints.length * 115) || 5170
+    const currentCoveredNM = Math.round(progressT * totalDistNm)
 
     // Split activeRouteWaypoints into Completed Historical Leg vs Forward Dynamic Leg
     const { distances, total } = getRoutePathStats(activeRouteWaypoints)
@@ -308,23 +355,19 @@ export default function GlobalMap() {
 
     // 3. Dynamic Checkpoints Based on Active Path Mode & Current Progress S(t)
     const nominalCheckpoints = [
-      { id: 'CP-01', name: 'Mumbai JNPT Departure', coords: [18.95, 72.95], dist: 0, wave: '1.2m', wind: '18 km/h', risk: 'LOW' },
-      { id: 'CP-02', name: 'Sri Lanka Dondra Corridor', coords: [5.85, 80.55], dist: 980, wave: '2.1m', wind: '28 km/h', risk: 'MEDIUM' },
-      { id: 'CP-03', name: 'Malacca Strait Entry', coords: [5.25, 97.50], dist: 1890, wave: '0.8m', wind: '14 km/h', risk: 'LOW' },
-      { id: 'CP-04', name: 'Singapore Tuas Hub', coords: [1.29, 103.85], dist: 2140, wave: '0.6m', wind: '12 km/h', risk: 'HIGH' },
-      { id: 'CP-05', name: 'South China Sea Mid Basin', coords: [12.50, 114.20], dist: 3250, wave: '2.6m', wind: '36 km/h', risk: 'HIGH' },
-      { id: 'CP-06', name: 'Luzon Strait / Taiwan (Storm Hazard)', coords: [22.80, 123.50], dist: 4310, wave: '3.8m', wind: '52 km/h', risk: 'CRITICAL' },
-      { id: 'CP-07', name: 'Port of Yokohama Berth (+4.2d Slip)', coords: [35.44, 139.64], dist: 5170, wave: '1.4m', wind: '20 km/h', risk: 'MEDIUM' },
+      { id: 'CP-01', name: `${corridor.originName} Departure`, coords: corridor.originCoords, dist: 0, wave: '1.2m', wind: '18 km/h', risk: 'LOW' },
+      { id: 'CP-02', name: 'Open Sea Transit Corrdor', coords: activeRouteWaypoints[Math.floor(activeRouteWaypoints.length * 0.25)] || corridor.originCoords, dist: Math.round(totalDistNm * 0.25), wave: '2.1m', wind: '28 km/h', risk: 'MEDIUM' },
+      { id: 'CP-03', name: 'Major Navigation Passage / Hub', coords: corridor.hubCoords || activeRouteWaypoints[Math.floor(activeRouteWaypoints.length * 0.5)], dist: Math.round(totalDistNm * 0.5), wave: '0.8m', wind: '14 km/h', risk: 'LOW' },
+      { id: 'CP-04', name: 'Deep Ocean Approach Basin', coords: activeRouteWaypoints[Math.floor(activeRouteWaypoints.length * 0.75)] || corridor.destCoords, dist: Math.round(totalDistNm * 0.75), wave: '2.6m', wind: '36 km/h', risk: 'HIGH' },
+      { id: 'CP-05', name: `${corridor.destName} Berth`, coords: corridor.destCoords, dist: totalDistNm, wave: '1.4m', wind: '20 km/h', risk: 'LOW' },
     ]
 
     const bypassCheckpoints = [
-      { id: 'BP-01', name: 'Mumbai JNPT Departure', coords: [18.95, 72.95], dist: 0, wave: '1.2m', wind: '18 km/h', risk: 'LOW' },
-      { id: 'BP-02', name: 'Sri Lanka Equatorial Corridor', coords: [5.85, 80.55], dist: 980, wave: '2.1m', wind: '28 km/h', risk: 'MEDIUM' },
-      { id: 'BP-03', name: 'Sunda Strait Corridor (Indonesia)', coords: [-5.95, 105.75], dist: 2350, wave: '1.1m', wind: '16 km/h', risk: 'LOW' },
-      { id: 'BP-04', name: 'Java Sea / Makassar Passage', coords: [-2.50, 118.80], dist: 2980, wave: '0.9m', wind: '14 km/h', risk: 'LOW' },
-      { id: 'BP-05', name: 'South Philippine Sea Deep Basin', coords: [12.00, 126.00], dist: 3840, wave: '1.4m', wind: '22 km/h', risk: 'LOW' },
-      { id: 'BP-06', name: 'Pacific East Kuroshio Approach', coords: [26.50, 134.20], dist: 4620, wave: '1.3m', wind: '19 km/h', risk: 'LOW' },
-      { id: 'BP-07', name: 'Port of Yokohama Berth (On-Time +0.8d)', coords: [35.44, 139.64], dist: 5170, wave: '1.4m', wind: '19 km/h', risk: 'LOW' },
+      { id: 'BP-01', name: `${corridor.originName} Departure`, coords: corridor.originCoords, dist: 0, wave: '1.2m', wind: '18 km/h', risk: 'LOW' },
+      { id: 'BP-02', name: 'Alternative Deep Water Channel', coords: activeRouteWaypoints[Math.floor(activeRouteWaypoints.length * 0.25)] || corridor.originCoords, dist: Math.round(totalDistNm * 0.25), wave: '1.5m', wind: '20 km/h', risk: 'LOW' },
+      { id: 'BP-03', name: 'Optimal Weather Bypass Passage', coords: activeRouteWaypoints[Math.floor(activeRouteWaypoints.length * 0.5)] || corridor.hubCoords, dist: Math.round(totalDistNm * 0.5), wave: '1.1m', wind: '16 km/h', risk: 'LOW' },
+      { id: 'BP-04', name: 'Calm Sea Basin Corridor', coords: activeRouteWaypoints[Math.floor(activeRouteWaypoints.length * 0.75)] || corridor.destCoords, dist: Math.round(totalDistNm * 0.75), wave: '1.4m', wind: '22 km/h', risk: 'LOW' },
+      { id: 'BP-05', name: `${corridor.destName} Berth (On-Time)`, coords: corridor.destCoords, dist: totalDistNm, wave: '1.4m', wind: '19 km/h', risk: 'LOW' },
     ]
 
     const activeCheckpoints = activeCorridorMode === 'nominal' ? nominalCheckpoints : bypassCheckpoints

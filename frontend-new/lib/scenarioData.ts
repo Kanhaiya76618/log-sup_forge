@@ -1,5 +1,6 @@
 import { AnalysisResult, ScenarioInput, RouteOption, DecisionAgent } from './types'
 import seaRoutesData from './searoutes.json'
+import { resolveRoute, routeDistanceNm } from './routeEngine'
 
 const STORAGE_KEY = 'flowforge_scenarios_history'
 
@@ -269,12 +270,27 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
 
   const resultId = `SCN-${Date.now().toString().slice(-6)}`
 
+  // Dynamically resolve nautical waypoints for the user-selected Origin & Destination
+  const nominalWaypoints = resolveRoute(input.origin, input.destination)
+  const nominalDistNm = routeDistanceNm(nominalWaypoints) || 4890
+
+  // Calculate bypass route
+  const isIndiaToJapan = (input.origin.includes('Mumbai') || input.origin.includes('Mundra') || input.origin.includes('Chennai')) &&
+                         (input.destination.includes('Yokohama') || input.destination.includes('Tokyo') || input.destination.includes('Nagoya'))
+  const bypassWaypoints = isIndiaToJapan && (seaRoutesData as any).corridor_bypass
+    ? ((seaRoutesData as any).corridor_bypass as [number, number][])
+    : nominalWaypoints.map(([lat, lon], idx) => {
+        if (idx === 0 || idx === nominalWaypoints.length - 1) return [lat, lon] as [number, number]
+        return [lat - 2.5, lon + 1.8] as [number, number]
+      })
+  const bypassDistNm = Math.round(nominalDistNm * 1.06)
+
   const routeA: RouteOption = {
     id: 'ROUTE-A',
     name: 'Plan A: Do Nothing (Nominal Corrupted Route)',
     type: 'CURRENT_DELAYED',
     pathSummary: `Direct corridor passing through ${input.disruption.affectedNode}`,
-    distanceNm: 4890,
+    distanceNm: nominalDistNm,
     speedKnots: parseFloat(currentSpeed.toFixed(1)),
     transitTimeHours: input.scheduledTransitHours + delayHours,
     etaDate: new Date(Date.now() + (input.scheduledTransitHours + delayHours) * 3600000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
@@ -288,7 +304,7 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
     riskScorePercent: disruptionProb,
     recommended: false,
     confidenceScore: 28.0,
-    waypoints: (seaRoutesData as any).corridor_1 || []
+    waypoints: nominalWaypoints
   }
 
   const routeB: RouteOption = {
@@ -296,7 +312,7 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
     name: 'Plan B: OR-Tools Optimal Multi-Objective Bypass',
     type: 'RECOMMENDED_REROUTE',
     pathSummary: `Southern Weather Bypass avoiding ${input.disruption.affectedNode}`,
-    distanceNm: 5120,
+    distanceNm: bypassDistNm,
     speedKnots: 17.6,
     transitTimeHours: input.scheduledTransitHours + bypassHours,
     etaDate: new Date(Date.now() + (input.scheduledTransitHours + bypassHours) * 3600000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
@@ -310,7 +326,7 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
     riskScorePercent: 16,
     recommended: true,
     confidenceScore: 95.2,
-    waypoints: (seaRoutesData as any).corridor_bypass || []
+    waypoints: bypassWaypoints
   }
 
   const routeC: RouteOption = {
@@ -318,7 +334,7 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
     name: 'Plan C: Engine Throttle Speed Recovery',
     type: 'SPEED_BOOST',
     pathSummary: 'Full-power navigation with high bunker consumption',
-    distanceNm: 4890,
+    distanceNm: nominalDistNm,
     speedKnots: 21.0,
     transitTimeHours: input.scheduledTransitHours + (delayHours * 0.45),
     etaDate: new Date(Date.now() + (input.scheduledTransitHours + (delayHours * 0.45)) * 3600000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
@@ -332,7 +348,7 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
     riskScorePercent: 44,
     recommended: false,
     confidenceScore: 72.0,
-    waypoints: (seaRoutesData as any).corridor_1 || []
+    waypoints: nominalWaypoints
   }
 
   const newResult: AnalysisResult = {

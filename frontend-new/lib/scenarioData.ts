@@ -219,13 +219,13 @@ export function getSavedScenarios(): AnalysisResult[] {
   if (typeof window === 'undefined') return defaultPreloadedScenarios
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) {
+    if (raw === null) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultPreloadedScenarios))
       return defaultPreloadedScenarios
     }
     let parsed = JSON.parse(raw)
     if (Array.isArray(parsed)) {
-      parsed = parsed
+      return parsed
         .filter(s => s && s.id && s.scenarioInput?.title && s.recommendedRoute)
         .map(s => {
           const origin = s.scenarioInput.origin || 'Mumbai'
@@ -244,17 +244,16 @@ export function getSavedScenarios(): AnalysisResult[] {
           }
           return s
         })
-      if (parsed.length > 0) return parsed
     }
-    return defaultPreloadedScenarios
+    return []
   } catch {
-    return defaultPreloadedScenarios
+    return []
   }
 }
 
 export function getScenarioById(id: string): AnalysisResult | null {
   const scenarios = getSavedScenarios()
-  return scenarios.find(s => s.id === id) || scenarios[0] || null
+  return scenarios.find(s => s.id === id) || defaultPreloadedScenarios[0] || null
 }
 
 export function saveScenario(result: AnalysisResult): void {
@@ -266,6 +265,28 @@ export function saveScenario(result: AnalysisResult): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
   } catch (err) {
     console.error('Failed to save scenario:', err)
+  }
+}
+
+export function deleteScenario(id: string): AnalysisResult[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const existing = getSavedScenarios()
+    const updated = existing.filter(s => s.id !== id)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+    return updated
+  } catch (err) {
+    console.error('Failed to delete scenario:', err)
+    return []
+  }
+}
+
+export function clearAllScenarios(): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+  } catch (err) {
+    console.error('Failed to clear scenarios:', err)
   }
 }
 

@@ -140,6 +140,25 @@ async def get_decision_history(
     )
 
 
+@router.post(
+    "/decisions/clear",
+    summary="Clear all human decision history records from SQLite decision memory",
+)
+@router.delete(
+    "/decisions/history",
+    summary="Delete human decision history records",
+)
+async def clear_decision_history(
+    profile_key: Optional[str] = Query(None, description="Optional profile key to clear only specific profile decisions")
+):
+    count = decision_memory_store.clear_decision_history(profile_key=profile_key)
+    return {
+        "status": "SUCCESS",
+        "deleted_count": count,
+        "message": f"Cleared {count} human decision records from decision memory."
+    }
+
+
 @router.get(
     "/preferences",
     response_model=PreferenceProfileResponse,

@@ -135,6 +135,19 @@ export default function Dashboard() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string; role: string; avatar?: string } | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const raw = localStorage.getItem('flowforge_auth_user')
+      if (raw) {
+        try {
+          setCurrentUser(JSON.parse(raw))
+        } catch {}
+      }
+    }
+  }, [])
+
   return (
     <main className="min-h-screen bg-[#f7f8fa] text-[#1d1d1f] selection:bg-[#087ef5] selection:text-white">
       {/* Top Floating Glass Navigation Header */}
@@ -192,6 +205,19 @@ export default function Dashboard() {
             <span className="size-1.5 rounded-full bg-[#34c759] animate-pulse shadow-[0_0_6px_#34c759]" />
             LIVE AIS ACTIVE
           </span>
+
+          <a
+            href="/login"
+            title="Switch User / Sign Out"
+            className="flex items-center gap-2 rounded-full border border-white/90 bg-white/80 pl-1 pr-2.5 sm:pr-3 py-1 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_2px_rgba(255,255,255,0.9)] hover:bg-white transition shrink-0"
+          >
+            <span className="flex size-6 items-center justify-center rounded-full bg-[#087ef5] text-white font-bold text-[10px]">
+              {currentUser ? currentUser.name[0] : 'A'}
+            </span>
+            <span className="text-[11px] font-bold text-[#1d1d1f] hidden xl:inline">
+              {currentUser ? currentUser.name.split(' ')[0] : 'Alex'}
+            </span>
+          </a>
 
           <button 
             onClick={() => setDrawer(v => !v)} 
@@ -329,7 +355,9 @@ export default function Dashboard() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between px-1">
                 <div>
                   <p className="text-[10px] font-semibold tracking-[.2em] text-[#087ef5] uppercase">OPERATIONS COMMAND CENTER</p>
-                  <h1 className="mt-1.5 text-3xl font-semibold tracking-[-.06em] text-[#1d1d1f] md:text-5xl">Good morning, Alex.</h1>
+                  <h1 className="mt-1.5 text-3xl font-semibold tracking-[-.06em] text-[#1d1d1f] md:text-5xl">
+                    Good morning, {currentUser ? currentUser.name.split(' ')[0] : 'Alex'}.
+                  </h1>
                   <p className="mt-1.5 text-sm text-[#6e6e73]">Jawaharlal Nehru (Mumbai) ➔ Port of Yokohama · Active Maritime Exception Corridor</p>
                 </div>
               </div>

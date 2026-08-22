@@ -196,6 +196,18 @@ class DecisionMemoryStore:
             })
         return history
 
+    def clear_decision_history(self, profile_key: Optional[str] = None) -> int:
+        """Deletes all human decision history records from SQLite database."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            if profile_key:
+                cursor.execute("DELETE FROM human_decisions WHERE profile_key = ?", (profile_key,))
+            else:
+                cursor.execute("DELETE FROM human_decisions")
+            deleted_count = cursor.rowcount
+            conn.commit()
+        return deleted_count
+
     # ── User Preference Weights Operations ────────────────────────────────────
 
     def get_preference_weights(self, profile_key: str = "GLOBAL") -> Dict[str, Any]:

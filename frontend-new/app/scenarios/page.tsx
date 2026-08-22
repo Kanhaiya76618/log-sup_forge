@@ -1,18 +1,35 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Search, Layers3, Sparkles, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react'
-import { getSavedScenarios } from '@/lib/scenarioData'
+import { Plus, Search, Layers3, Sparkles, ArrowRight, ShieldCheck, RefreshCw, Trash2 } from 'lucide-react'
+import { getSavedScenarios, deleteScenario, clearAllScenarios } from '@/lib/scenarioData'
 import { AnalysisResult } from '@/lib/types'
 import HistoryCard from '@/components/scenarios/history/HistoryCard'
 
 export default function ScenariosPage() {
   const [scenarios, setScenarios] = useState<AnalysisResult[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [deletedMsg, setDeletedMsg] = useState<string | null>(null)
 
   useEffect(() => {
     setScenarios(getSavedScenarios())
   }, [])
+
+  const handleDelete = (id: string) => {
+    const updated = deleteScenario(id)
+    setScenarios(updated)
+    setDeletedMsg(`Deleted scenario ${id}`)
+    setTimeout(() => setDeletedMsg(null), 2500)
+  }
+
+  const handleClearAll = () => {
+    if (window.confirm('Are you sure you want to clear all scenario history?')) {
+      clearAllScenarios()
+      setScenarios([])
+      setDeletedMsg('Cleared all scenario history')
+      setTimeout(() => setDeletedMsg(null), 2500)
+    }
+  }
 
   const filtered = scenarios.filter(s => 
     s?.scenarioInput?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -28,7 +45,7 @@ export default function ScenariosPage() {
           <span className="flex size-6 items-center justify-center rounded-full bg-[#1d1d1f]">
             <span className="size-1.5 rounded-full bg-white" />
           </span>
-          <span className="whitespace-nowrap">FLOWFORGE</span>
+          <span className="whitespace-nowrap font-black">FLOWFORGE</span>
           <span className="hidden xl:inline text-[#86868b] font-normal whitespace-nowrap">/ SCENARIO INTELLIGENCE</span>
         </a>
 
@@ -57,17 +74,35 @@ export default function ScenariosPage() {
               Scenario History & Recovery Models
             </h1>
             <p className="mt-1 text-xs text-[#6e6e73]">
-              Review past disruption evaluations, OR-Tools solver runs, and digital twin results.
+              Review past disruption evaluations, OR-Tools solver runs, and digital twin results. ({scenarios.length} saved)
             </p>
           </div>
 
-          <a
-            href="/scenarios/new"
-            className="flex items-center gap-2 self-start rounded-xl bg-[#1d1d1f] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-black transition active:scale-95"
-          >
-            <Plus className="size-4" /> New Simulation Wizard
-          </a>
+          <div className="flex items-center gap-2 self-start">
+            {scenarios.length > 0 && (
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="flex items-center gap-1.5 rounded-xl border border-[#ff3b30]/30 bg-[#fff5f4] px-3.5 py-2.5 text-xs font-semibold text-[#ff3b30] hover:bg-[#ffebe8] transition active:scale-95"
+              >
+                <Trash2 className="size-3.5" /> Clear All
+              </button>
+            )}
+            <a
+              href="/scenarios/new"
+              className="flex items-center gap-2 rounded-xl bg-[#1d1d1f] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-black transition active:scale-95"
+            >
+              <Plus className="size-4" /> New Simulation Wizard
+            </a>
+          </div>
         </div>
+
+        {deletedMsg && (
+          <div className="flex items-center gap-2 rounded-xl bg-[#1d1d1f] text-white px-4 py-2.5 text-xs font-semibold shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+            <Trash2 className="size-3.5 text-[#ff3b30]" />
+            <span>{deletedMsg}</span>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="flex items-center gap-3 rounded-2xl border border-[#d2d2d7] bg-white p-3 shadow-sm">
@@ -85,12 +120,12 @@ export default function ScenariosPage() {
         <div className="space-y-3">
           {filtered.length > 0 ? (
             filtered.map((item) => (
-              <HistoryCard key={item.id} scenario={item} />
+              <HistoryCard key={item.id} scenario={item} onDelete={handleDelete} />
             ))
           ) : (
             <div className="rounded-2xl bg-white p-12 text-center border border-[#d2d2d7]">
-              <p className="text-sm font-semibold text-[#1d1d1f]">No scenarios found</p>
-              <p className="text-xs text-[#86868b] mt-1">Try a different search query or create a new scenario.</p>
+              <p className="text-sm font-semibold text-[#1d1d1f]">No scenarios in history</p>
+              <p className="text-xs text-[#86868b] mt-1">Create a new scenario simulation to start building decision models.</p>
               <a
                 href="/scenarios/new"
                 className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#087ef5] px-4 py-2 text-xs font-semibold text-white shadow-sm"

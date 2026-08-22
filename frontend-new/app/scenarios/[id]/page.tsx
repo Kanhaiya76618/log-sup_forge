@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, RefreshCw, Send, Check, Sparkles, MapPin, Layers } from 'lucide-react'
-import { getScenarioById, evaluateScenarioInput } from '@/lib/scenarioData'
+import { getScenarioById, evaluateScenarioInput, defaultPreloadedScenarios } from '@/lib/scenarioData'
 import { AnalysisResult } from '@/lib/types'
 import RecommendationCard from '@/components/scenarios/results/RecommendationCard'
 import RouteComparison from '@/components/scenarios/results/RouteComparison'
@@ -13,34 +13,51 @@ import DecisionEvidence from '@/components/scenarios/results/DecisionEvidence'
 import CalculationLogic from '@/components/scenarios/results/CalculationLogic'
 import WhatIfAnalysis from '@/components/scenarios/results/WhatIfAnalysis'
 import FactorsAndConstraints from '@/components/scenarios/results/FactorsAndConstraints'
+import NegotiationAuditTrail from '@/components/scenarios/results/NegotiationAuditTrail'
 import GlobalMap from '@/components/ui/GlobalMap'
 import StatusBadge from '@/components/ui/StatusBadge'
 
 export default function ScenarioDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const id = typeof params?.id === 'string' ? params.id : 'SCN-2026-001'
   
-  const [scenario, setScenario] = useState<AnalysisResult | null>(null)
-  const [selectedRouteId, setSelectedRouteId] = useState<string>('ROUTE-B')
+  const [scenario, setScenario] = useState<AnalysisResult>(() => {
+    let scenarioId = 'SCN-2026-001'
+    if (typeof window !== 'undefined') {
+      const parts = window.location.pathname.split('/')
+      const lastPart = parts[parts.length - 1]
+      if (lastPart && lastPart !== '[id]') {
+        scenarioId = lastPart
+      }
+    }
+    return getScenarioById(scenarioId) || defaultPreloadedScenarios[0]
+  })
+
+  const [selectedRouteId, setSelectedRouteId] = useState<string>(() => scenario.recommendedRoute?.id || 'ROUTE-B')
   const [ediSent, setEdiSent] = useState(false)
   const [isRecomputing, setIsRecomputing] = useState(false)
+  const [decisionRefreshTrigger, setDecisionRefreshTrigger] = useState(0)
 
   useEffect(() => {
-    const loaded = getScenarioById(id)
+    let scenarioId = 'SCN-2026-001'
+    if (params && typeof params.id === 'string') {
+      scenarioId = params.id
+    } else if (typeof window !== 'undefined') {
+      const parts = window.location.pathname.split('/')
+      const lastPart = parts[parts.length - 1]
+      if (lastPart && lastPart !== '[id]') {
+        scenarioId = lastPart
+      }
+    }
+
+    const loaded = getScenarioById(scenarioId) || defaultPreloadedScenarios[0]
     if (loaded) {
       setScenario(loaded)
-      setSelectedRouteId(loaded.recommendedRoute.id)
+      if (loaded.recommendedRoute) {
+        setSelectedRouteId(loaded.recommendedRoute.id)
+      }
     }
-  }, [id])
-
-  if (!scenario) {
-    return (
-      <main className="min-h-screen bg-[#f7f7f5] flex items-center justify-center">
-        <p className="text-xs font-semibold text-[#86868b]">Loading scenario results...</p>
-      </main>
-    )
-  }
+  }, [params])
 
   const handleRecompute = async () => {
     setIsRecomputing(true)
@@ -59,39 +76,34 @@ export default function ScenarioDetailPage() {
             href="/scenarios"
             className="flex items-center gap-1 text-xs font-semibold text-[#6e6e73] hover:text-[#1d1d1f] transition"
           >
-            <ArrowLeft className="size-4" /> Scenarios
+            <ArrowLeft className="size-4" /> All Scenarios
           </a>
           <span className="text-[#d2d2d7]">/</span>
-          <span className="font-mono text-xs font-bold text-[#087ef5]">{scenario.id}</span>
+          <span className="font-mono text-xs font-bold text-[#1d1d1f]">{scenario.id}</span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={handleRecompute}
             disabled={isRecomputing}
-            className="flex items-center gap-1.5 rounded-xl border border-[#d2d2d7] bg-white px-3 py-1.5 text-xs font-semibold text-[#1d1d1f] hover:bg-[#f5f5f7] transition"
+            className="flex items-center gap-1.5 rounded-xl border border-[#d2d2d7] bg-white px-3 py-1.5 text-xs font-semibold text-[#1d1d1f] hover:bg-[#f5f5f7] transition active:scale-95 disabled:opacity-50"
           >
             <RefreshCw className={`size-3.5 ${isRecomputing ? 'animate-spin' : ''}`} />
-            Re-solve
+            {isRecomputing ? 'Optimizing...' : 'Re-Run Multi-Agent'}
           </button>
-          <a
-            href="/scenarios/new"
-            className="flow-pill bg-[#087ef5] text-white shadow-sm hover:bg-[#076ecf]"
-          >
-            + New Scenario
-          </a>
         </div>
       </header>
 
-      {/* Main Content Workspace */}
-      <div className="mx-auto max-w-[1400px] px-4 pb-16 pt-28 md:px-8 space-y-6">
+      {/* Main Content Area */}
+      <div className="mx-auto max-w-[1400px] px-4 pb-24 pt-24 space-y-6 md:px-8">
         
-        {/* Title Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1">
+        {/* Scenario Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-[#087ef5]">{scenario.id}</span>
-              <StatusBadge status={scenario.riskLevel === 'critical' ? 'CRITICAL DISRUPTION' : 'HIGH RISK'} variant="danger" pulse />
+              <span className="font-mono text-xs font-bold text-[#087ef5]">SCENARIO {scenario.id}</span>
+              <span className="text-xs text-[#86868b]">·</span>
+              <span className="text-xs text-[#86868b]">{new Date(scenario.createdAt).toLocaleDateString()}</span>
             </div>
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-[#1d1d1f]">
               {scenario.scenarioInput.title}
@@ -102,10 +114,19 @@ export default function ScenarioDetailPage() {
           </div>
         </div>
 
-        {/* 1. Recommendation Summary Card */}
-        <RecommendationCard result={scenario} />
+        {/* 1. Recommendation Summary Card with Challenge #705 Actions */}
+        <RecommendationCard 
+          result={scenario} 
+          onDecisionRecorded={() => setDecisionRefreshTrigger(v => v + 1)}
+        />
 
-        {/* 2. Interactive Global Sea Lanes Map */}
+        {/* 2. Challenge #705 Negotiation Support & Adaptive Learning Profile */}
+        <NegotiationAuditTrail 
+          refreshTrigger={decisionRefreshTrigger} 
+          shipmentId={scenario.scenarioInput?.shipmentId || scenario.id}
+        />
+
+        {/* 3. Interactive Global Sea Lanes Map */}
         <div className="rounded-[28px] border border-[#d2d2d7] bg-white p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">

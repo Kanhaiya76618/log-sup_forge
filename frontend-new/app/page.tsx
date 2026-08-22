@@ -170,10 +170,16 @@ export default function LandingPage() {
           {/* Right — CTA */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
-              href="/dashboard"
-              className="hidden sm:flex items-center gap-2 rounded-full bg-[#087ef5] px-4 py-2 sm:px-5 sm:py-2.5 text-[11px] sm:text-xs font-bold text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_2px_3px_rgba(255,255,255,0.4)] hover:bg-[#076ecf] hover:shadow-[0_10px_24px_rgba(8,126,245,0.45)] transition active:scale-95 whitespace-nowrap"
+              href="/login"
+              className="hidden sm:inline text-xs font-bold text-[#6e6e73] hover:text-[#1d1d1f] px-3 py-2 rounded-xl transition"
             >
-              LAUNCH APP <ArrowRight className="size-3.5" />
+              Sign In
+            </Link>
+            <Link
+              href="/login"
+              className="flex items-center gap-2 rounded-full bg-[#087ef5] px-4 py-2 sm:px-5 sm:py-2.5 text-[11px] sm:text-xs font-bold text-white shadow-[0_8px_20px_rgba(8,126,245,0.35),inset_0_2px_3px_rgba(255,255,255,0.4)] hover:bg-[#076ecf] hover:shadow-[0_10px_24px_rgba(8,126,245,0.45)] transition active:scale-95 whitespace-nowrap"
+            >
+              LAUNCH APP / SIGN UP <ArrowRight className="size-3.5" />
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -188,7 +194,7 @@ export default function LandingPage() {
         {/* Mobile Dropdown */}
         {menuOpen && (
           <div className="mx-auto mt-2 max-w-[1440px] rounded-[24px] border border-white/90 bg-white/95 p-5 shadow-[0_24px_60px_rgba(0,0,0,0.12)] backdrop-blur-2xl lg:hidden">
-            <div className="flex flex-col gap-3 text-xs font-bold">
+            <div className="flex flex-col gap-2.5 text-xs font-bold">
               {navLinks.map((link) => (
                 <Link
                   key={link.label}
@@ -199,13 +205,22 @@ export default function LandingPage() {
                   {link.label}
                 </Link>
               ))}
-              <Link
-                href="/dashboard"
-                onClick={() => setMenuOpen(false)}
-                className="mt-2 flex items-center justify-center gap-2 rounded-xl bg-[#087ef5] py-3 text-xs font-bold text-white shadow-lg shadow-[#087ef5]/30 active:scale-98"
-              >
-                LAUNCH APP <ArrowRight className="size-3.5" />
-              </Link>
+              <div className="pt-2 border-t border-[#e5e5e7] flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-center py-2.5 text-xs font-bold text-[#1d1d1f] rounded-xl bg-black/5 hover:bg-black/10 transition"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-[#087ef5] py-3 text-xs font-bold text-white shadow-lg shadow-[#087ef5]/30 active:scale-98"
+                >
+                  LAUNCH APP / SIGN UP <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
             </div>
           </div>
         )}

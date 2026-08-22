@@ -76,9 +76,9 @@ export default function NewScenarioPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    await new Promise(r => setTimeout(r, 600))
+    await new Promise(r => setTimeout(r, 400))
     const result = evaluateScenarioInput(formData)
-    router.push(`/scenarios/${result.id}`)
+    window.location.href = `/scenarios/${result.id}`
   }
 
   return (

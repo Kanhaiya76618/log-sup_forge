@@ -1,8 +1,12 @@
 import { AnalysisResult, ScenarioInput, RouteOption, DecisionAgent } from './types'
-import seaRoutesData from './searoutes.json'
-import { resolveRoute, routeDistanceNm } from './routeEngine'
+import { resolveRoute, resolveBypassRoute, routeDistanceNm } from './routeEngine'
 
 const STORAGE_KEY = 'flowforge_scenarios_history'
+
+const DEMO_NOMINAL = resolveRoute('Jawaharlal Nehru Port (Mumbai, IN)', 'Port of Yokohama (JP)')
+const DEMO_BYPASS = resolveBypassRoute('Jawaharlal Nehru Port (Mumbai, IN)', 'Port of Yokohama (JP)', 'South China Sea / Luzon Strait')
+const DEMO_NOMINAL_DIST = routeDistanceNm(DEMO_NOMINAL) || 4890
+const DEMO_BYPASS_DIST = routeDistanceNm(DEMO_BYPASS) || 5120
 
 export const defaultPreloadedScenarios: AnalysisResult[] = [
   {
@@ -12,9 +16,9 @@ export const defaultPreloadedScenarios: AnalysisResult[] = [
       title: 'Typhoon Swell & South China Sea Bypass',
       shipmentId: 'SH-4092',
       vesselName: 'CSCL Globe Supermax',
-      origin: 'Mumbai JNPT (IN)',
+      origin: 'Jawaharlal Nehru Port (Mumbai, IN)',
       destination: 'Port of Yokohama (JP)',
-      transshipmentHub: 'Singapore Tuas (SG)',
+      transshipmentHub: 'Singapore Tuas Hub (SG)',
       currentSpeedKnots: 14.2,
       scheduledTransitHours: 192,
       disruption: {
@@ -52,8 +56,8 @@ export const defaultPreloadedScenarios: AnalysisResult[] = [
       id: 'ROUTE-B',
       name: 'Plan B: Southern Weather Bypass (OR-Tools Optimal)',
       type: 'RECOMMENDED_REROUTE',
-      pathSummary: 'South of Taiwan via Celebes/Philippine Sea Corridor',
-      distanceNm: 5120,
+      pathSummary: 'Sunda Strait & Halmahera Pacific Deep Fairway',
+      distanceNm: DEMO_BYPASS_DIST,
       speedKnots: 17.8,
       transitTimeHours: 201.2,
       etaDate: 'Nov 27, 2026 14:00',
@@ -67,7 +71,7 @@ export const defaultPreloadedScenarios: AnalysisResult[] = [
       riskScorePercent: 18,
       recommended: true,
       confidenceScore: 94.6,
-      waypoints: (seaRoutesData as any).corridor_bypass || []
+      waypoints: DEMO_BYPASS
     },
     routeComparison: [
       {
@@ -75,7 +79,7 @@ export const defaultPreloadedScenarios: AnalysisResult[] = [
         name: 'Plan A: Do Nothing (Nominal Route in Storm)',
         type: 'CURRENT_DELAYED',
         pathSummary: 'Direct Luzon Strait Nominal Corridor',
-        distanceNm: 4890,
+        distanceNm: DEMO_NOMINAL_DIST,
         speedKnots: 13.8,
         transitTimeHours: 244.8,
         etaDate: 'Nov 30, 2026 06:00',
@@ -89,14 +93,14 @@ export const defaultPreloadedScenarios: AnalysisResult[] = [
         riskScorePercent: 82,
         recommended: false,
         confidenceScore: 32.0,
-        waypoints: (seaRoutesData as any).corridor_1 || []
+        waypoints: DEMO_NOMINAL
       },
       {
         id: 'ROUTE-B',
         name: 'Plan B: Southern Weather Bypass (Recommended)',
         type: 'RECOMMENDED_REROUTE',
-        pathSummary: 'Celebes & Philippine Sea Southern Bypass',
-        distanceNm: 5120,
+        pathSummary: 'Halmahera Deep Sea Southern Bypass',
+        distanceNm: DEMO_BYPASS_DIST,
         speedKnots: 17.8,
         transitTimeHours: 201.2,
         etaDate: 'Nov 27, 2026 14:00',
@@ -110,14 +114,14 @@ export const defaultPreloadedScenarios: AnalysisResult[] = [
         riskScorePercent: 18,
         recommended: true,
         confidenceScore: 94.6,
-        waypoints: (seaRoutesData as any).corridor_bypass || []
+        waypoints: DEMO_BYPASS
       },
       {
         id: 'ROUTE-C',
         name: 'Plan C: Full Throttle Speed Boost',
         type: 'SPEED_BOOST',
         pathSummary: 'Nominal Route with 21.5 kn Engine Burn',
-        distanceNm: 4890,
+        distanceNm: DEMO_NOMINAL_DIST,
         speedKnots: 21.5,
         transitTimeHours: 216.0,
         etaDate: 'Nov 28, 2026 09:00',
@@ -131,7 +135,7 @@ export const defaultPreloadedScenarios: AnalysisResult[] = [
         riskScorePercent: 46,
         recommended: false,
         confidenceScore: 71.4,
-        waypoints: (seaRoutesData as any).corridor_1 || []
+        waypoints: DEMO_NOMINAL
       }
     ],
     decisionEvidence: [
@@ -274,13 +278,9 @@ export function evaluateScenarioInput(input: ScenarioInput): AnalysisResult {
   const nominalWaypoints = resolveRoute(input.origin, input.destination)
   const nominalDistNm = routeDistanceNm(nominalWaypoints) || 4890
 
-  // Calculate bypass route (100% water without overland shifting)
-  const isIndiaToJapan = (input.origin.includes('Mumbai') || input.origin.includes('Mundra') || input.origin.includes('Chennai')) &&
-                         (input.destination.includes('Yokohama') || input.destination.includes('Tokyo') || input.destination.includes('Nagoya'))
-  const bypassWaypoints = isIndiaToJapan && (seaRoutesData as any).corridor_bypass
-    ? ((seaRoutesData as any).corridor_bypass as [number, number][])
-    : nominalWaypoints
-  const bypassDistNm = isIndiaToJapan ? 5120 : Math.round(nominalDistNm * 1.05)
+  // Calculate bypass route dynamically using NavMesh graph (100% water)
+  const bypassWaypoints = resolveBypassRoute(input.origin, input.destination, input.disruption.affectedNode)
+  const bypassDistNm = routeDistanceNm(bypassWaypoints) || Math.round(nominalDistNm * 1.06)
 
 
   const routeA: RouteOption = {

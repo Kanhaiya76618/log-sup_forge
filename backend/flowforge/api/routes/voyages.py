@@ -336,3 +336,35 @@ def get_voyage_checkpoints(voyage_id: str):
     fallback["voyage_id"] = voyage_id
     return fallback
 
+
+class DynamicRerouteRequest(dict):
+    pass
+
+
+@router.post("/{voyage_id}/reroute-dynamic")
+def reroute_from_movable_node(voyage_id: str, payload: Dict[str, Any]):
+    """
+    Solves remaining voyage path originating from live movable ship node S(t) = (lat, lon).
+    Enforces deep-water channel snapping, heading continuity, and 4D weather evaluation.
+    """
+    from ...solver.dynamic_node_router import dynamic_movable_router
+    
+    lat = float(payload.get("lat", 5.85))
+    lon = float(payload.get("lon", 80.55))
+    speed = float(payload.get("speed_knots", 16.0))
+    heading = float(payload.get("heading_deg", 65.0))
+    progress = float(payload.get("progress_pct", 25.0))
+    mode = str(payload.get("mode", "bypass"))
+    
+    result = dynamic_movable_router.solve_dynamic_branch(
+        current_lat=lat,
+        current_lon=lon,
+        current_speed=speed,
+        current_heading=heading,
+        progress_pct=progress,
+        mode=mode
+    )
+    result["voyage_id"] = voyage_id
+    return result
+
+

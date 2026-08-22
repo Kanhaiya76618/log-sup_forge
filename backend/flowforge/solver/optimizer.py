@@ -148,3 +148,6 @@ class RouteOptimizer:
 
 
 route_optimizer = RouteOptimizer()
+
+def optimize(*args, **kwargs):
+    return route_optimizer.solve_pareto_routes(*args, **kwargs)
